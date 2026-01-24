@@ -1,0 +1,23 @@
+:root {
+  /* Background colors */
+  --bg-card: #16161d;
+  --bg-dark: #0a0a0f;
+  
+  /* Accent colors */
+  --accent-cyan: #00f0ff;
+  --accent-purple: #b829ff;
+  --accent-gold: #ffd700;
+  --accent-pink: #ff2e97;
+  
+  /* Text colors */
+  --text-white: #ffffff;
+  --text-gray-400: #9ca3af;
+  --text-gray-600: #4b5563;
+  --text-gray-800: #1f2937;
+  
+  /* Border colors */
+  --border-cyan-light: rgba(0, 240, 255, 0.1);
+  --border-cyan-medium: rgba(0, 240, 255, 0.2);
+  --border-purple-light: rgba(184, 41, 255, 0.2);
+  --border-gray-dark: #1f2937;
+}
