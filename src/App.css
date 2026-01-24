@@ -5,9 +5,13 @@
   
   /* Accent colors */
   --accent-cyan: #00f0ff;
+  --accent-cyan-darker: #00b8cc;
   --accent-purple: #b829ff;
+  --accent-purple-darker: #8a1fbf;
   --accent-gold: #ffd700;
+  --accent-gold-darker: #ccab00;
   --accent-pink: #ff2e97;
+  --accent-pink-darker: #cc2478;
   
   /* Text colors */
   --text-white: #ffffff;

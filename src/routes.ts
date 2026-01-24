@@ -10,6 +10,14 @@ export const router = createBrowserRouter([
 			{
 				index: true,
 				Component: Profile
+			},
+			{
+				path: "/events",
+				Component: null
+			},
+			{
+				path: "/shop",
+				Component: null
 			}
 		]
 	}
