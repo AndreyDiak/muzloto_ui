@@ -9,7 +9,7 @@ interface ProcessEventCodeParams {
 
 export async function processEventCode({
   code,
-  telegramId,
+  telegramId: _telegramId,
   onSuccess,
   onError,
 }: ProcessEventCodeParams): Promise<void> {
