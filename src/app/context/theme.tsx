@@ -1,4 +1,5 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
+import { useTelegram } from './telegram';
 import type { TTheme } from '../../entities/theme/types';
 
 interface ThemeContextType {
@@ -13,45 +14,43 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
+  const { tg } = useTelegram();
   const [theme, setTheme] = useState<TTheme | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const tg = window.Telegram?.WebApp;
+    if (!tg) {
+      setIsLoading(false);
+      return;
+    }
 
-    if (tg) {
-      tg.ready();
+    const themeData: TTheme = {
+      colorScheme: tg.colorScheme,
+      themeParams: tg.themeParams,
+      backgroundColor: tg.backgroundColor,
+      headerColor: tg.headerColor,
+    };
 
-      const themeData: TTheme = {
+    setTheme(themeData);
+
+    const handleThemeChange = () => {
+      const updatedTheme: TTheme = {
         colorScheme: tg.colorScheme,
         themeParams: tg.themeParams,
         backgroundColor: tg.backgroundColor,
         headerColor: tg.headerColor,
       };
+      setTheme(updatedTheme);
+    };
 
-      setTheme(themeData);
+    tg.onEvent('themeChanged', handleThemeChange);
 
-      const handleThemeChange = () => {
-        const updatedTheme: TTheme = {
-          colorScheme: tg.colorScheme,
-          themeParams: tg.themeParams,
-          backgroundColor: tg.backgroundColor,
-          headerColor: tg.headerColor,
-        };
-        setTheme(updatedTheme);
-      };
+    setIsLoading(false);
 
-      tg.onEvent('themeChanged', handleThemeChange);
-
-      setIsLoading(false);
-
-      return () => {
-        tg.offEvent('themeChanged', handleThemeChange);
-      };
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
+    return () => {
+      tg.offEvent('themeChanged', handleThemeChange);
+    };
+  }, [tg]);
 
   const value: ThemeContextType = {
     theme,

@@ -1,5 +1,5 @@
 import { Award, Target, TrendingUp, Trophy } from 'lucide-react';
-import { useUser } from '../../app/context/user';
+import { useSession } from '../../app/context/session';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import { ProfileAchievements } from './_achievements';
 import { ProfileStats } from './_stats';
@@ -21,7 +21,7 @@ const achievements = [
 ];
 
 export function Profile() {
-  const { user } = useUser();
+  const { user } = useSession();
 
   return (
     <div className="p-4 space-y-6">

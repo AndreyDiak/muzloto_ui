@@ -1,11 +1,15 @@
+import { useSession } from '@/app/context/session';
+import { cn } from '@/lib/utils';
 import { Calendar, Coins, ShoppingBag, User } from 'lucide-react';
 import { memo, useState } from 'react';
-import { Link, Outlet } from 'react-router';
+import { Link, Outlet, useLocation } from 'react-router';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 
 export const BasicLayout = () => {
   // const location = useLocation();
-  const [coins, setCoins] = useState(0);
+  // const [coins, setCoins] = useState(0);
+  const { profile } = useSession();
+  const coins = profile?.balance ?? 0;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col max-w-md mx-auto">
@@ -21,8 +25,7 @@ export const BasicLayout = () => {
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto pb-20">\
-        {/* FIXME: Вынести coins и setCoins в контекст */}
-        <Outlet context={{ coins, setCoins }} />
+        <Outlet />
       </main>
       {/* Bottom navigation */}
       <Navigation />
@@ -31,6 +34,7 @@ export const BasicLayout = () => {
 };
 
 const Navigation = () => {
+  const location = useLocation();
   const navItems = [
     { path: '/', icon: User, label: 'Профиль' },
     { path: '/events', icon: Calendar, label: 'Афиша' },
@@ -45,14 +49,13 @@ const Navigation = () => {
             <Link
               key={path}
               to={path}
-              className={`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-all ${isActive
-                ? 'text-[#00f0ff]'
-                : 'text-gray-400 hover:text-gray-200'
-                }`}
+              className={
+                cn(`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-all`,
+                  isActive ? 'text-[#00f0ff]' : 'text-gray-400 hover:text-gray-200'
+                )}
             >
               <Icon
-                className={`w-6 h-6 ${isActive ? 'drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]' : ''
-                  }`}
+                className={cn(`w-6 h-6`, isActive ? 'drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]' : '')}
               />
               <span className="text-xs">{label}</span>
             </Link>
@@ -67,7 +70,10 @@ const Balance = memo(({ coins }: { coins: number; }) => {
   const [open, setOpen] = useState(false);
   return (
     <Tooltip open={open} onOpenChange={setOpen}>
-      <TooltipTrigger onClick={() => setOpen(true)} className="flex items-center gap-2 bg-[#0a0a0f] px-3 py-2 rounded-full border border-[#00f0ff]/30 neon-glow">
+      <TooltipTrigger
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 bg-[#0a0a0f] px-3 py-2 rounded-full border border-[#00f0ff]/30 neon-glow"
+      >
         <Coins className="w-5 h-5 text-[#ffd700]" />
         <span className="font-semibold text-[#ffd700]">{coins}</span>
       </TooltipTrigger>
@@ -79,4 +85,4 @@ const Balance = memo(({ coins }: { coins: number; }) => {
       </TooltipContent>
     </Tooltip>
   );
-});
+});;
