@@ -2,14 +2,14 @@ import { processEventCode } from "@/actions/process-event-code";
 import { processTransactionQR } from "@/actions/process-transaction-qr";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
-import { useToast } from "@/app/context/toast";
 import { useTelegram } from "@/app/context/telegram";
+import { useToast } from "@/app/context/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import type { TransactionQRData } from "@/entities/transaction";
 import { Keyboard, QrCode } from "lucide-react";
 import { memo, useRef, useState } from "react";
-import type { TransactionQRData } from "@/entities/transaction";
 
-export const ProfileEnterCode = memo(() => {
+export const ProfileSqan = memo(() => {
 	const { user, refetchProfile } = useSession();
 	const { showToast } = useToast();
 	const { showCoinAnimation } = useCoinAnimation();
@@ -29,14 +29,12 @@ export const ProfileEnterCode = memo(() => {
 						try {
 							// Проверяем, что текст не пустой
 							if (!text || typeof text !== 'string' || text.trim() === '') {
+								tg?.closeScanQrPopup?.();
 								showToast('QR код не распознан. Попробуйте еще раз.', 'error');
 								return;
 							}
 
 							const trimmedText = text.trim();
-
-							// Закрываем сканер сразу после получения текста
-							tg?.closeScanQrPopup?.();
 
 							// Пытаемся распарсить как JSON (транзакция)
 							let parsedData: TransactionQRData | null = null;
@@ -47,6 +45,8 @@ export const ProfileEnterCode = memo(() => {
 									processTransactionQR({
 										qrData: parsedData,
 										onSuccess: (data) => {
+											// Закрываем сканер после успешной обработки
+											tg?.closeScanQrPopup?.();
 											showToast(data.message, 'success');
 											if (data.type === 'add') {
 												showCoinAnimation(data.amount);
@@ -54,6 +54,8 @@ export const ProfileEnterCode = memo(() => {
 											refetchProfile();
 										},
 										onError: (message) => {
+											// Закрываем сканер при ошибке
+											tg?.closeScanQrPopup?.();
 											showToast(message, 'error');
 										},
 									});
@@ -67,9 +69,11 @@ export const ProfileEnterCode = memo(() => {
 							if (trimmedText.length === CODE_LENGTH) {
 								handleProcessEventCode(trimmedText.toUpperCase());
 							} else {
+								tg?.closeScanQrPopup?.();
 								showToast(`Неверный формат QR кода. Ожидается ${CODE_LENGTH} символов, получено ${trimmedText.length}`, 'error');
 							}
 						} catch (error) {
+							tg?.closeScanQrPopup?.();
 							showToast('Ошибка при обработке QR кода', 'error');
 						}
 					}
@@ -108,6 +112,9 @@ export const ProfileEnterCode = memo(() => {
 					const eventTitle = data.event.title;
 					const coinsEarned = data.coinsEarned;
 
+					// Закрываем сканер, если он еще открыт
+					tg?.closeScanQrPopup?.();
+
 					setCodeInputs(Array(5).fill(''));
 					setIsCodeModalOpen(false);
 
@@ -124,6 +131,9 @@ export const ProfileEnterCode = memo(() => {
 					}, 500);
 				},
 				onError: (error, statusCode) => {
+					// Закрываем сканер при ошибке
+					tg?.closeScanQrPopup?.();
+
 					if (statusCode === 409) {
 						setCodeInputs(Array(5).fill(''));
 						setIsCodeModalOpen(false);

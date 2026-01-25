@@ -1,7 +1,7 @@
 import { Award, Target, TrendingUp, Trophy } from 'lucide-react';
 import { ProfileAchievements } from './_achievements';
-import { ProfileEnterCode } from './_enter_code';
 import { ProfileInfo } from './_info';
+import { ProfileSqan } from './_sqan';
 import { ProfileStats } from './_stats';
 
 const stats = [
@@ -25,7 +25,7 @@ export function Profile() {
     <div className="p-4 space-y-6">
       <ProfileInfo />
 
-      <ProfileEnterCode />
+      <ProfileSqan />
 
       <ProfileStats stats={stats} />
 
