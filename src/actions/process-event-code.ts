@@ -3,8 +3,8 @@ import { http } from '../http';
 interface ProcessEventCodeParams {
   code: string;
   telegramId: number;
-  onSuccess?: (data: { event: { title: string }; newBalance: number }) => void;
-  onError?: (error: string) => void;
+  onSuccess?: (data: { event: { title: string }; newBalance: number, coinsEarned: number }) => void;
+  onError?: (error: string, statusCode?: number) => void;
 }
 
 export async function processEventCode({
@@ -60,14 +60,14 @@ export async function processEventCode({
       }
       
       const errorMessage = errorData.error || `Request failed with status ${response.status}`;
-      onError?.(errorMessage);
+      onError?.(errorMessage, response.status);
       return;
     }
 
     const responseData = await response.json();
 
     if (responseData?.error) {
-      onError?.(responseData.error);
+      onError?.(responseData.error, 400);
       return;
     }
 
@@ -78,10 +78,19 @@ export async function processEventCode({
     onSuccess?.({
       event: responseData.event || { title: 'событие' },
       newBalance: responseData.newBalance,
+      coinsEarned: responseData.coinsEarned
     });
   } catch (err: any) {
+    // Обрабатываем ошибки сети (CORS, недоступный сервер и т.д.)
+    if (err instanceof TypeError && err.message === 'Failed to fetch') {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const errorMessage = `Не удалось подключиться к серверу. Проверьте, что backend доступен по адресу: ${backendUrl}`;
+      onError?.(errorMessage, 0);
+      return;
+    }
+    
     const errorMessage = err?.message || err?.error?.message || 'Произошла ошибка при обработке кода';
-    onError?.(errorMessage);
+    onError?.(errorMessage, 500);
     throw err;
   }
 }

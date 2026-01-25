@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react';
 
 interface CoinAnimationProps {
   coins: number;
+  duration?: number;
   onComplete?: () => void;
 }
 
-export function CoinAnimation({ coins, onComplete }: CoinAnimationProps) {
+export function CoinAnimation({ coins, duration = 2500, onComplete }: CoinAnimationProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [scale, setScale] = useState(0);
   const [opacity, setOpacity] = useState(1);
@@ -18,22 +19,23 @@ export function CoinAnimation({ coins, onComplete }: CoinAnimationProps) {
       setCoinsVisible(true);
     }, 50);
 
+    const hideDelay = Math.max(500, duration - 500);
     const hideTimer = setTimeout(() => {
       setOpacity(0);
       setScale(0.8);
-    }, 2000);
+    }, hideDelay);
 
     const completeTimer = setTimeout(() => {
       setIsVisible(false);
       onComplete?.();
-    }, 2500);
+    }, duration);
 
     return () => {
       clearTimeout(showTimer);
       clearTimeout(hideTimer);
       clearTimeout(completeTimer);
     };
-  }, [onComplete]);
+  }, [duration, onComplete]);
 
   if (!isVisible) return null;
 

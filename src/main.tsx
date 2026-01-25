@@ -1,9 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
-import { TelegramProvider } from './app/context/telegram';
+import { CoinAnimationProvider } from './app/context/coin_animation.tsx';
 import { SessionProvider } from './app/context/session';
+import { TelegramProvider } from './app/context/telegram';
 import { ThemeProvider } from './app/context/theme';
+import { ToastProvider } from './app/context/toast';
+import { Toaster } from './components/ui/sonner';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
@@ -11,9 +14,14 @@ createRoot(document.getElementById('root')!).render(
     <TelegramProvider>
       <ThemeProvider>
         <SessionProvider>
-          <App />
+          <ToastProvider>
+            <CoinAnimationProvider>
+              <App />
+              <Toaster />
+            </CoinAnimationProvider>
+          </ToastProvider>
         </SessionProvider>
       </ThemeProvider>
     </TelegramProvider>
   </StrictMode>,
-)
+);
