@@ -3,9 +3,9 @@ import { useRef, useState } from 'react';
 import { processEventCode } from '../../actions/process-event-code';
 import { useSession } from '../../app/context/session';
 import { useTelegram } from '../../app/context/telegram';
+import { CoinAnimation } from '../../components/coin_animation';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
-import { http } from '../../http';
 import { ProfileAchievements } from './_achievements';
 import { ProfileStats } from './_stats';
 
@@ -31,12 +31,13 @@ export function Profile() {
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [codeInputs, setCodeInputs] = useState<string[]>(Array(5).fill(''));
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
+  const [earnedCoins, setEarnedCoins] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(5).fill(null));
   const CODE_LENGTH = 5;
 
   const handleScanQR = () => {
     if (!tg) {
-      console.warn('Telegram WebApp not available');
       return;
     }
 
@@ -46,7 +47,6 @@ export function Profile() {
       },
       async (text) => {
         if (text) {
-          // Обрабатываем отсканированный код
           await handleProcessEventCode(text);
         }
       }
@@ -59,7 +59,7 @@ export function Profile() {
 
   const handleProcessEventCode = async (code: string) => {
     if (isProcessing) {
-      return; // Предотвращаем множественные запросы
+      return;
     }
 
     if (!user?.id) {
@@ -76,41 +76,46 @@ export function Profile() {
         onSuccess: async (data) => {
           const eventTitle = data.event.title;
           const newBalance = data.newBalance;
+          const coinsEarned = 10;
 
-          tg?.showAlert(`Успешно! Вы зарегистрированы на мероприятие "${eventTitle}" и получили 10 монет! Новый баланс: ${newBalance}`);
+          setCodeInputs(Array(5).fill(''));
+          setIsCodeModalOpen(false);
 
-          // Обновляем профиль для отображения нового баланса
-          console.log('Refetching profile after successful registration...');
+          setEarnedCoins(coinsEarned);
+          setShowCoinAnimation(true);
+
           try {
             await refetchProfile();
-            console.log('Profile refetched successfully');
-
-            // Проверяем, что баланс обновился
-            const { data: { session: checkSession } } = await http.auth.getSession();
-            if (checkSession) {
-              const { data: updatedProfile } = await http
-                .from('profiles')
-                .select('balance')
-                .eq('telegram_id', user.id)
-                .single();
-              console.log('Current balance after refetch:', updatedProfile?.balance);
-            }
           } catch (refetchError) {
             console.error('Error refetching profile:', refetchError);
           }
 
-          // Закрываем модалку и очищаем поля
-          setCodeInputs(Array(5).fill(''));
-          setIsCodeModalOpen(false);
+          setTimeout(() => {
+            tg?.showAlert(`Успешно! Вы зарегистрированы на мероприятие "${eventTitle}". Новый баланс: ${newBalance} монет`);
+          }, 500);
         },
         onError: (error) => {
-          tg?.showAlert(error);
+          setCodeInputs(Array(5).fill(''));
+          setIsCodeModalOpen(false);
+
+          setTimeout(() => {
+            if (tg) {
+              tg.showAlert(error || 'Произошла ошибка при обработке кода');
+            }
+          }, 100);
         },
       });
     } catch (err: any) {
-      console.error('Error processing event code:', err);
       const errorMessage = err?.message || err?.error?.message || 'Произошла ошибка при обработке кода';
-      tg?.showAlert(errorMessage);
+
+      setCodeInputs(Array(5).fill(''));
+      setIsCodeModalOpen(false);
+
+      setTimeout(() => {
+        if (tg) {
+          tg.showAlert(errorMessage);
+        }
+      }, 100);
     } finally {
       setIsProcessing(false);
     }
@@ -127,22 +132,18 @@ export function Profile() {
   };
 
   const handleInputChange = (index: number, value: string) => {
-    // Берем последний символ и преобразуем в верхний регистр
-    // Если введено несколько символов (например, при вставке), берем последний
     const char = value.length > 0 ? value.slice(-1).toUpperCase() : '';
 
     const newInputs = [...codeInputs];
     newInputs[index] = char;
     setCodeInputs(newInputs);
 
-    // Если символ введен (даже если заменяет существующий), переходим к следующему input
     if (char && index < CODE_LENGTH - 1) {
       setTimeout(() => {
         inputRefs.current[index + 1]?.focus();
       }, 0);
     }
 
-    // Автоматически отправляем, если все поля заполнены
     if (char && index === CODE_LENGTH - 1) {
       const fullCode = newInputs.join('');
       if (fullCode.length === CODE_LENGTH) {
@@ -155,7 +156,6 @@ export function Profile() {
 
   const handleInputKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !codeInputs[index] && index > 0) {
-      // Если поле пустое, переходим к предыдущему и очищаем его
       const newInputs = [...codeInputs];
       newInputs[index - 1] = '';
       setCodeInputs(newInputs);
@@ -180,7 +180,6 @@ export function Profile() {
     if (!open) {
       setCodeInputs(Array(5).fill(''));
     } else {
-      // Фокусируем первый input при открытии модалки
       setTimeout(() => {
         inputRefs.current[0]?.focus();
       }, 100);
@@ -190,7 +189,13 @@ export function Profile() {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Profile Header */}
+      {showCoinAnimation && (
+        <CoinAnimation
+          coins={earnedCoins}
+          onComplete={() => setShowCoinAnimation(false)}
+        />
+      )}
+
       <div className="bg-[#16161d] rounded-2xl p-6 border border-[#00f0ff]/20 neon-glow">
         <div className="flex items-center gap-4">
           <Avatar size="lg" className='w-14! h-14!'>
@@ -204,7 +209,6 @@ export function Profile() {
         </div>
       </div>
 
-      {/* QR Scanner Block with Manual Code Input */}
       <div className="bg-linear-to-r from-[#00f0ff]/20 to-[#b829ff]/20 rounded-2xl p-0 border border-[#00f0ff]/30 flex items-stretch overflow-hidden">
         <button
           onClick={handleScanQR}
@@ -219,7 +223,6 @@ export function Profile() {
           </div>
         </button>
 
-        {/* Manual Code Input Button */}
         <button
           onClick={handleEnterCode}
           className="shrink-0 w-12 rounded-r-2xl bg-linear-to-br from-[#b829ff] to-[#00f0ff] flex items-center justify-center shadow-lg shadow-[#b829ff]/30 hover:scale-105 transition-transform active:scale-[0.95]"
@@ -229,20 +232,16 @@ export function Profile() {
         </button>
       </div>
 
-      {/* Stats Grid */}
       <ProfileStats stats={stats} />
 
-      {/* Achievements */}
       <ProfileAchievements achievements={achievements} />
 
-      {/* Code Input Dialog */}
       <Dialog open={isCodeModalOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-white text-center">Введите код</DialogTitle>
           </DialogHeader>
 
-          {/* Code blocks display */}
           <div className="flex gap-2 justify-center mb-6">
             {Array.from({ length: CODE_LENGTH }).map((_, index) => {
               const value = codeInputs[index] || '';
@@ -260,7 +259,6 @@ export function Profile() {
                   onChange={(e) => handleInputChange(index, e.target.value)}
                   onKeyDown={(e) => handleInputKeyDown(index, e)}
                   onFocus={(e) => {
-                    // Выделяем весь текст при фокусе, чтобы новый символ заменил старый
                     e.target.select();
                   }}
                   maxLength={1}
@@ -279,12 +277,10 @@ export function Profile() {
             })}
           </div>
 
-          {/* Instructions */}
           <p className="text-center text-gray-400 text-sm mb-4">
             Введите код из {CODE_LENGTH} символов
           </p>
 
-          {/* Action buttons */}
           <div className="flex">
             <button
               onClick={handleSubmitCode}
