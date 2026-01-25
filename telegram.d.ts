@@ -75,7 +75,7 @@ interface TWebApp {
   showConfirm: (message: string, callback?: (confirmed: boolean) => void) => void;
   showScanQrPopup: (params: {
     text?: string;
-  }, callback?: (text: string) => void) => void;
+  }, callback?: (text: string) => boolean | void) => void;
   closeScanQrPopup: () => void;
   readTextFromClipboard: (callback?: (text: string) => void) => void;
   requestWriteAccess: (callback?: (granted: boolean) => void) => void;

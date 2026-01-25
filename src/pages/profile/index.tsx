@@ -9,8 +9,8 @@ const stats = [
     icon: Trophy, label: 'Посещено событий', value: '14', textColor: 'var(--accent-gold)', bgColor: "var(--accent-gold-darker)", description: 'Вы посетили 14 событий'
   },
   { icon: Target, label: 'Активных билетов', value: '0', textColor: 'var(--accent-cyan)', bgColor: "var(--accent-cyan-darker)", description: 'У вас нет активных билетов' },
-  { icon: TrendingUp, label: 'Уровень', value: '1', textColor: 'var(--accent-purple)', bgColor: "var(--accent-purple-darker)", description: 'Вы находитесь на 1 уровне' },
-  { icon: Award, label: 'Достижения', value: '1', textColor: 'var(--accent-pink)', bgColor: "var(--accent-pink-darker)", description: 'У вас 1 достижение' },
+  { icon: TrendingUp, label: 'Уровень', value: '2', textColor: 'var(--accent-purple)', bgColor: "var(--accent-purple-darker)", description: 'Вы находитесь на 1 уровне' },
+  { icon: Award, label: 'Достижения', value: '2003', textColor: 'var(--accent-pink)', bgColor: "var(--accent-pink-darker)", description: 'У вас 1 достижение' },
 ];
 
 const achievements = [

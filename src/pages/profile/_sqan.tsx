@@ -18,21 +18,32 @@ export const ProfileSqan = memo(() => {
 	const [codeInputs, setCodeInputs] = useState<string[]>(Array(5).fill(''));
 	const [isProcessing, setIsProcessing] = useState(false);
 	const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(5).fill(null));
+	const isProcessingQRRef = useRef(false);
 	const CODE_LENGTH = 5;
 
 	const handleScanQR = () => {
 		if (tg?.showScanQrPopup) {
+			// Сбрасываем флаг обработки при открытии нового сканера
+			isProcessingQRRef.current = false;
+			
 			try {
 				tg.showScanQrPopup(
 					{ text: 'Отсканируйте QR код мероприятия или транзакции' },
 					(text: string) => {
+						// Защита от множественных вызовов
+						if (isProcessingQRRef.current) {
+							return true; // Закрываем попап, если уже обрабатываем
+						}
+
 						try {
 							// Проверяем, что текст не пустой
 							if (!text || typeof text !== 'string' || text.trim() === '') {
-								tg?.closeScanQrPopup?.();
 								showToast('QR код не распознан. Попробуйте еще раз.', 'error');
-								return;
+								return false; // Не закрываем попап, чтобы пользователь мог попробовать еще раз
 							}
+
+							// Устанавливаем флаг обработки
+							isProcessingQRRef.current = true;
 
 							const trimmedText = text.trim();
 
@@ -45,21 +56,19 @@ export const ProfileSqan = memo(() => {
 									processTransactionQR({
 										qrData: parsedData,
 										onSuccess: (data) => {
-											// Закрываем сканер после успешной обработки
-											tg?.closeScanQrPopup?.();
 											showToast(data.message, 'success');
 											if (data.type === 'add') {
 												showCoinAnimation(data.amount);
 											}
 											refetchProfile();
+											isProcessingQRRef.current = false;
 										},
 										onError: (message) => {
-											// Закрываем сканер при ошибке
-											tg?.closeScanQrPopup?.();
 											showToast(message, 'error');
+											isProcessingQRRef.current = false;
 										},
 									});
-									return;
+									return true; // Закрываем попап после успешного распознавания
 								}
 							} catch {
 								// Не JSON, возможно это код события
@@ -68,18 +77,22 @@ export const ProfileSqan = memo(() => {
 							// Если не транзакция, обрабатываем как код события
 							if (trimmedText.length === CODE_LENGTH) {
 								handleProcessEventCode(trimmedText.toUpperCase());
+								return true; // Закрываем попап после успешного распознавания
 							} else {
-								tg?.closeScanQrPopup?.();
 								showToast(`Неверный формат QR кода. Ожидается ${CODE_LENGTH} символов, получено ${trimmedText.length}`, 'error');
+								isProcessingQRRef.current = false;
+								return false; // Не закрываем попап для неверного формата
 							}
 						} catch (error) {
-							tg?.closeScanQrPopup?.();
 							showToast('Ошибка при обработке QR кода', 'error');
+							isProcessingQRRef.current = false;
+							return false; // Не закрываем попап при ошибке
 						}
 					}
 				);
 			} catch (error) {
 				showToast('Не удалось открыть сканер QR кода', 'error');
+				isProcessingQRRef.current = false;
 			}
 		} else {
 			// Если нативный сканер недоступен (например, на десктопе)
@@ -112,9 +125,6 @@ export const ProfileSqan = memo(() => {
 					const eventTitle = data.event.title;
 					const coinsEarned = data.coinsEarned;
 
-					// Закрываем сканер, если он еще открыт
-					tg?.closeScanQrPopup?.();
-
 					setCodeInputs(Array(5).fill(''));
 					setIsCodeModalOpen(false);
 
@@ -129,11 +139,10 @@ export const ProfileSqan = memo(() => {
 					setTimeout(() => {
 						showToast(`Успешно! Вы зарегистрированы на мероприятие "${eventTitle}".`, 'success');
 					}, 500);
+
+					isProcessingQRRef.current = false;
 				},
 				onError: (error, statusCode) => {
-					// Закрываем сканер при ошибке
-					tg?.closeScanQrPopup?.();
-
 					if (statusCode === 409) {
 						setCodeInputs(Array(5).fill(''));
 						setIsCodeModalOpen(false);
@@ -143,12 +152,15 @@ export const ProfileSqan = memo(() => {
 					} else {
 						showToast(error || 'Произошла ошибка при обработке кода', 'error');
 					}
+
+					isProcessingQRRef.current = false;
 				},
 			});
 		} catch (err: any) {
 			const errorMessage = err?.message || err?.error?.message || 'Произошла ошибка при обработке кода';
 			// Для неожиданных ошибок оставляем попап открытым
 			showToast(errorMessage, 'error');
+			isProcessingQRRef.current = false;
 		} finally {
 			setIsProcessing(false);
 		}
