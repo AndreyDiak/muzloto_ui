@@ -45,20 +45,17 @@ export function SessionProvider({ children }: SessionProviderProps) {
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
         setProfile(undefined);
       } else {
         setProfile(data);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
       setProfile(undefined);
     } finally {
       setIsProfileLoading(false);
     }
   }, []);
 
-  // Инициализация сессии Supabase и загрузка профиля
   useEffect(() => {
     if (!initData || isLoading || !user?.id) {
       return;
@@ -66,31 +63,25 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
     const initSupabaseSessionAndProfile = async () => {
       try {
-        // Проверяем существующую сессию
         const { data: { session: existingSession } } = await http.auth.getSession();
-
         if (existingSession) {
           const { data: { user: supabaseUser }, error: userError } = await http.auth.getUser();
 
           if (supabaseUser && !userError) {
             setIsSupabaseSessionReady(true);
-            // Загружаем профиль если сессия валидна
             await fetchProfile(user.id);
             return;
           }
         }
 
-        // Если сессии нет или она невалидна, создаем новую через Telegram
         const session = await getTelegramSession();
         await http.auth.setSession({
           access_token: session.access_token,
           refresh_token: session.refresh_token,
         });
         setIsSupabaseSessionReady(true);
-        // Загружаем профиль после создания сессии
         await fetchProfile(user.id);
       } catch (error) {
-        console.error('Error initializing Supabase session:', error);
         setIsSupabaseSessionReady(false);
       }
     };
@@ -98,7 +89,6 @@ export function SessionProvider({ children }: SessionProviderProps) {
     initSupabaseSessionAndProfile();
   }, [initData, isLoading, user?.id, fetchProfile]);
 
-  // Слушаем изменения сессии Supabase (обновление токена и т.д.)
   useEffect(() => {
     const {
       data: { subscription },
@@ -113,7 +103,6 @@ export function SessionProvider({ children }: SessionProviderProps) {
     };
   }, []);
 
-  // Инициализация данных Telegram сессии
   useEffect(() => {
     if (!tg) {
       setIsLoading(false);

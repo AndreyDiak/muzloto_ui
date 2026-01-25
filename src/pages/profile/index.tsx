@@ -1,6 +1,11 @@
-import { Award, Target, TrendingUp, Trophy } from 'lucide-react';
+import { Award, Keyboard, QrCode, Target, TrendingUp, Trophy } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { processEventCode } from '../../actions/process-event-code';
 import { useSession } from '../../app/context/session';
+import { useTelegram } from '../../app/context/telegram';
+import { CoinAnimation } from '../../components/coin_animation';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { ProfileAchievements } from './_achievements';
 import { ProfileStats } from './_stats';
 
@@ -21,11 +26,176 @@ const achievements = [
 ];
 
 export function Profile() {
-  const { user } = useSession();
+  const { user, refetchProfile } = useSession();
+  const { tg } = useTelegram();
+  const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
+  const [codeInputs, setCodeInputs] = useState<string[]>(Array(5).fill(''));
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showCoinAnimation, setShowCoinAnimation] = useState(false);
+  const [earnedCoins, setEarnedCoins] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(5).fill(null));
+  const CODE_LENGTH = 5;
+
+  const handleScanQR = () => {
+    if (!tg) {
+      return;
+    }
+
+    tg.showScanQrPopup(
+      {
+        text: 'Наведите камеру на QR-код',
+      },
+      async (text) => {
+        if (text) {
+          await handleProcessEventCode(text);
+        }
+      }
+    );
+  };
+
+  const handleEnterCode = () => {
+    setIsCodeModalOpen(true);
+  };
+
+  const handleProcessEventCode = async (code: string) => {
+    if (isProcessing) {
+      return;
+    }
+
+    if (!user?.id) {
+      tg?.showAlert('Ошибка: не удалось определить пользователя. Пожалуйста, перезагрузите страницу.');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      await processEventCode({
+        code,
+        telegramId: user.id,
+        onSuccess: async (data) => {
+          const eventTitle = data.event.title;
+          const newBalance = data.newBalance;
+          const coinsEarned = 10;
+
+          setCodeInputs(Array(5).fill(''));
+          setIsCodeModalOpen(false);
+
+          setEarnedCoins(coinsEarned);
+          setShowCoinAnimation(true);
+
+          try {
+            await refetchProfile();
+          } catch (refetchError) {
+            console.error('Error refetching profile:', refetchError);
+          }
+
+          setTimeout(() => {
+            tg?.showAlert(`Успешно! Вы зарегистрированы на мероприятие "${eventTitle}". Новый баланс: ${newBalance} монет`);
+          }, 500);
+        },
+        onError: (error) => {
+          setCodeInputs(Array(5).fill(''));
+          setIsCodeModalOpen(false);
+
+          setTimeout(() => {
+            if (tg) {
+              tg.showAlert(error || 'Произошла ошибка при обработке кода');
+            }
+          }, 100);
+        },
+      });
+    } catch (err: any) {
+      const errorMessage = err?.message || err?.error?.message || 'Произошла ошибка при обработке кода';
+
+      setCodeInputs(Array(5).fill(''));
+      setIsCodeModalOpen(false);
+
+      setTimeout(() => {
+        if (tg) {
+          tg.showAlert(errorMessage);
+        }
+      }, 100);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSubmitCode = async () => {
+    const code = codeInputs.join('');
+    if (code.length !== CODE_LENGTH) {
+      tg?.showAlert('Пожалуйста, введите полный код из 5 символов');
+      return;
+    }
+
+    await handleProcessEventCode(code);
+  };
+
+  const handleInputChange = (index: number, value: string) => {
+    const char = value.length > 0 ? value.slice(-1).toUpperCase() : '';
+
+    const newInputs = [...codeInputs];
+    newInputs[index] = char;
+    setCodeInputs(newInputs);
+
+    if (char && index < CODE_LENGTH - 1) {
+      setTimeout(() => {
+        inputRefs.current[index + 1]?.focus();
+      }, 0);
+    }
+
+    if (char && index === CODE_LENGTH - 1) {
+      const fullCode = newInputs.join('');
+      if (fullCode.length === CODE_LENGTH) {
+        setTimeout(() => {
+          handleSubmitCode();
+        }, 100);
+      }
+    }
+  };
+
+  const handleInputKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !codeInputs[index] && index > 0) {
+      const newInputs = [...codeInputs];
+      newInputs[index - 1] = '';
+      setCodeInputs(newInputs);
+      setTimeout(() => {
+        inputRefs.current[index - 1]?.focus();
+      }, 0);
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === 'ArrowRight' && index < CODE_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    } else if (e.key === 'Escape') {
+      handleCloseModal();
+    }
+  };
+
+  const handleCloseModal = () => {
+    setCodeInputs(Array(5).fill(''));
+    setIsCodeModalOpen(false);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setCodeInputs(Array(5).fill(''));
+    } else {
+      setTimeout(() => {
+        inputRefs.current[0]?.focus();
+      }, 100);
+    }
+    setIsCodeModalOpen(open);
+  };
 
   return (
     <div className="p-4 space-y-6">
-      {/* Profile Header */}
+      {showCoinAnimation && (
+        <CoinAnimation
+          coins={earnedCoins}
+          onComplete={() => setShowCoinAnimation(false)}
+        />
+      )}
+
       <div className="bg-[#16161d] rounded-2xl p-6 border border-[#00f0ff]/20 neon-glow">
         <div className="flex items-center gap-4">
           <Avatar size="lg" className='w-14! h-14!'>
@@ -39,11 +209,89 @@ export function Profile() {
         </div>
       </div>
 
-      {/* Stats Grid */}
+      <div className="bg-linear-to-r from-[#00f0ff]/20 to-[#b829ff]/20 rounded-2xl p-0 border border-[#00f0ff]/30 flex items-stretch overflow-hidden">
+        <button
+          onClick={handleScanQR}
+          className="flex-1 flex items-center gap-3 p-4 hover:opacity-90 transition-opacity active:scale-[0.98] rounded-l-2xl"
+        >
+          <div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-[#00f0ff] to-[#b829ff] flex items-center justify-center shadow-lg shadow-[#00f0ff]/30">
+            <QrCode className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1 text-left">
+            <h3 className="text-base font-semibold text-white mb-0.5">Отсканировать QR</h3>
+            <p className="text-xs text-gray-400">Открыть сканер</p>
+          </div>
+        </button>
+
+        <button
+          onClick={handleEnterCode}
+          className="shrink-0 w-12 rounded-r-2xl bg-linear-to-br from-[#b829ff] to-[#00f0ff] flex items-center justify-center shadow-lg shadow-[#b829ff]/30 hover:scale-105 transition-transform active:scale-[0.95]"
+          title="Ввести код вручную"
+        >
+          <Keyboard className="w-5 h-5 text-white" />
+        </button>
+      </div>
+
       <ProfileStats stats={stats} />
 
-      {/* Achievements */}
       <ProfileAchievements achievements={achievements} />
+
+      <Dialog open={isCodeModalOpen} onOpenChange={handleOpenChange}>
+        <DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-white text-center">Введите код</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex gap-2 justify-center mb-6">
+            {Array.from({ length: CODE_LENGTH }).map((_, index) => {
+              const value = codeInputs[index] || '';
+              const isFilled = value !== '';
+
+              return (
+                <input
+                  key={index}
+                  ref={(el) => {
+                    inputRefs.current[index] = el;
+                  }}
+                  type="text"
+                  inputMode="text"
+                  value={value}
+                  onChange={(e) => handleInputChange(index, e.target.value)}
+                  onKeyDown={(e) => handleInputKeyDown(index, e)}
+                  onFocus={(e) => {
+                    e.target.select();
+                  }}
+                  maxLength={1}
+                  className={`
+                    w-14 h-16 rounded-xl border-2 flex items-center justify-center
+                    text-center text-2xl font-bold
+                    transition-all duration-200
+                    focus:outline-none
+                    ${isFilled
+                      ? 'bg-linear-to-br from-[#00f0ff] to-[#b829ff] border-[#00f0ff] text-white shadow-lg shadow-[#00f0ff]/30 scale-105'
+                      : 'bg-[#0a0a0f] border-[#00f0ff]/30 text-gray-600 focus:border-[#00f0ff] focus:ring-2 focus:ring-[#00f0ff]/50'
+                    }
+                  `}
+                />
+              );
+            })}
+          </div>
+
+          <p className="text-center text-gray-400 text-sm mb-4">
+            Введите код из {CODE_LENGTH} символов
+          </p>
+
+          <div className="flex">
+            <button
+              onClick={handleSubmitCode}
+              disabled={codeInputs.join('').length !== CODE_LENGTH || isProcessing}
+              className="flex-1 px-4 py-2.5 bg-linear-to-r from-[#00f0ff] to-[#b829ff] rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-[#00f0ff]/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isProcessing ? 'Обработка...' : 'Подтвердить'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

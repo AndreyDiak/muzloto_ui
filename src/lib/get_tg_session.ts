@@ -1,12 +1,6 @@
 import { http } from "@/http";
 import { getTgWebApp } from "./get_tg_init_webapp";
 
-/**
- * Получает сессию Supabase через Telegram аутентификацию
- * Использует стандартную Supabase Auth (не кастомный JWT)
- * 
- * @returns Объект с access_token, refresh_token и user
- */
 export async function getTelegramSession() {
   const webApp = getTgWebApp();
   const initData = webApp?.initData;
@@ -25,10 +19,6 @@ export async function getTelegramSession() {
 
   if (error) {
     const errorMessage = error.message || 'Failed to get session';
-    console.error('Edge Function error:', {
-      message: errorMessage,
-      context: error.context,
-    });
     throw new Error(errorMessage);
   }
 

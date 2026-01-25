@@ -6,28 +6,23 @@ import { Link, Outlet, useLocation } from 'react-router';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 
 export const BasicLayout = () => {
-  // const location = useLocation();
-  // const [coins, setCoins] = useState(0);
   const { profile } = useSession();
   const coins = profile?.balance ?? 0;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col max-w-md mx-auto">
-      {/* Header with coins */}
       <header className="sticky top-0 z-50 bg-[#16161d]/80 backdrop-blur-md border-b border-[#00f0ff]/20 px-4 py-3">
         <div className="flex justify-between items-center">
-          <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#b829ff]">
+          <h1 className="text-transparent bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff]">
             Караоке Лото
           </h1>
           <Balance coins={coins} />
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto pb-20">\
+      <main className="flex-1 overflow-y-auto pb-20">
         <Outlet />
       </main>
-      {/* Bottom navigation */}
       <Navigation />
     </div>
   );
