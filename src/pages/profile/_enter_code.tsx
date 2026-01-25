@@ -1,15 +1,19 @@
 import { processEventCode } from "@/actions/process-event-code";
+import { processTransactionQR } from "@/actions/process-transaction-qr";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
+import { useTelegram } from "@/app/context/telegram";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Keyboard, QrCode } from "lucide-react";
 import { memo, useRef, useState } from "react";
+import type { TransactionQRData } from "@/entities/transaction";
 
 export const ProfileEnterCode = memo(() => {
 	const { user, refetchProfile } = useSession();
 	const { showToast } = useToast();
 	const { showCoinAnimation } = useCoinAnimation();
+	const { tg } = useTelegram();
 	const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
 	const [codeInputs, setCodeInputs] = useState<string[]>(Array(5).fill(''));
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -17,7 +21,52 @@ export const ProfileEnterCode = memo(() => {
 	const CODE_LENGTH = 5;
 
 	const handleScanQR = () => {
-		setIsCodeModalOpen(true);
+		if (tg?.showScanQrPopup) {
+			tg.showScanQrPopup(
+				{ text: 'Отсканируйте QR код мероприятия или транзакции' },
+				(text: string) => {
+					if (!text) {
+						return;
+					}
+
+					// Пытаемся распарсить как JSON (транзакция)
+					let parsedData: TransactionQRData | null = null;
+					try {
+						parsedData = JSON.parse(text);
+						if (parsedData && typeof parsedData === 'object' && 'token' in parsedData && 'type' in parsedData) {
+							// Это транзакция
+							processTransactionQR({
+								qrData: parsedData,
+								onSuccess: (data) => {
+									showToast(data.message, 'success');
+									if (data.type === 'add') {
+										showCoinAnimation(data.amount);
+									}
+									refetchProfile();
+								},
+								onError: (message) => {
+									showToast(message, 'error');
+								},
+							});
+							return;
+						}
+					} catch {
+						// Не JSON, возможно это код события
+					}
+
+					// Если не транзакция, обрабатываем как код события
+					if (text.length === CODE_LENGTH) {
+						handleProcessEventCode(text.toUpperCase());
+					} else {
+						showToast('Неверный формат QR кода', 'error');
+					}
+				}
+			);
+		} else {
+			// Если нативный сканер недоступен (например, на десктопе)
+			showToast('Сканер QR кодов доступен только на мобильных устройствах. Используйте ввод кода вручную.', 'info');
+			setIsCodeModalOpen(true);
+		}
 	};
 
 	const handleEnterCode = () => {
