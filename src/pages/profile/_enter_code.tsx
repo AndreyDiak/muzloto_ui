@@ -22,46 +22,61 @@ export const ProfileEnterCode = memo(() => {
 
 	const handleScanQR = () => {
 		if (tg?.showScanQrPopup) {
-			tg.showScanQrPopup(
-				{ text: 'Отсканируйте QR код мероприятия или транзакции' },
-				(text: string) => {
-					if (!text) {
-						return;
-					}
+			try {
+				tg.showScanQrPopup(
+					{ text: 'Отсканируйте QR код мероприятия или транзакции' },
+					(text: string) => {
+						try {
+							// Проверяем, что текст не пустой
+							if (!text || typeof text !== 'string' || text.trim() === '') {
+								showToast('QR код не распознан. Попробуйте еще раз.', 'error');
+								return;
+							}
 
-					// Пытаемся распарсить как JSON (транзакция)
-					let parsedData: TransactionQRData | null = null;
-					try {
-						parsedData = JSON.parse(text);
-						if (parsedData && typeof parsedData === 'object' && 'token' in parsedData && 'type' in parsedData) {
-							// Это транзакция
-							processTransactionQR({
-								qrData: parsedData,
-								onSuccess: (data) => {
-									showToast(data.message, 'success');
-									if (data.type === 'add') {
-										showCoinAnimation(data.amount);
-									}
-									refetchProfile();
-								},
-								onError: (message) => {
-									showToast(message, 'error');
-								},
-							});
-							return;
+							const trimmedText = text.trim();
+
+							// Закрываем сканер сразу после получения текста
+							tg?.closeScanQrPopup?.();
+
+							// Пытаемся распарсить как JSON (транзакция)
+							let parsedData: TransactionQRData | null = null;
+							try {
+								parsedData = JSON.parse(trimmedText);
+								if (parsedData && typeof parsedData === 'object' && 'token' in parsedData && 'type' in parsedData) {
+									// Это транзакция
+									processTransactionQR({
+										qrData: parsedData,
+										onSuccess: (data) => {
+											showToast(data.message, 'success');
+											if (data.type === 'add') {
+												showCoinAnimation(data.amount);
+											}
+											refetchProfile();
+										},
+										onError: (message) => {
+											showToast(message, 'error');
+										},
+									});
+									return;
+								}
+							} catch {
+								// Не JSON, возможно это код события
+							}
+
+							// Если не транзакция, обрабатываем как код события
+							if (trimmedText.length === CODE_LENGTH) {
+								handleProcessEventCode(trimmedText.toUpperCase());
+							} else {
+								showToast(`Неверный формат QR кода. Ожидается ${CODE_LENGTH} символов, получено ${trimmedText.length}`, 'error');
+							}
+						} catch (error) {
+							showToast('Ошибка при обработке QR кода', 'error');
 						}
-					} catch {
-						// Не JSON, возможно это код события
 					}
-
-					// Если не транзакция, обрабатываем как код события
-					if (text.length === CODE_LENGTH) {
-						handleProcessEventCode(text.toUpperCase());
-					} else {
-						showToast('Неверный формат QR кода', 'error');
-					}
-				}
-			);
+				);
+			} catch (error) {
+				showToast('Не удалось открыть сканер QR кода', 'error');
+			}
 		} else {
 			// Если нативный сканер недоступен (например, на десктопе)
 			showToast('Сканер QR кодов доступен только на мобильных устройствах. Используйте ввод кода вручную.', 'info');
@@ -100,8 +115,8 @@ export const ProfileEnterCode = memo(() => {
 
 					try {
 						await refetchProfile();
-					} catch (refetchError) {
-						console.error('Error refetching profile:', refetchError);
+					} catch {
+						// Игнорируем ошибки обновления профиля
 					}
 
 					setTimeout(() => {

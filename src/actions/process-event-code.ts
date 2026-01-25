@@ -81,7 +81,6 @@ export async function processEventCode({
       coinsEarned: responseData.coinsEarned
     });
   } catch (err: any) {
-    // Обрабатываем ошибки сети (CORS, недоступный сервер и т.д.)
     if (err instanceof TypeError && err.message === 'Failed to fetch') {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
       const errorMessage = `Не удалось подключиться к серверу. Проверьте, что backend доступен по адресу: ${backendUrl}`;
@@ -91,6 +90,5 @@ export async function processEventCode({
     
     const errorMessage = err?.message || err?.error?.message || 'Произошла ошибка при обработке кода';
     onError?.(errorMessage, 500);
-    throw err;
   }
 }
