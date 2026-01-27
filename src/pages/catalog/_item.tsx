@@ -4,10 +4,9 @@ import { useToast } from "@/app/context/toast";
 import { TicketQRModal } from "@/components/ticket-qr-modal";
 import type { SCatalogItem } from "@/entities/catalog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
+import { TICKET_USED_EVENT } from "@/lib/ticket-used-event";
 import { Coins } from "lucide-react";
 import { useEffect, useState } from "react";
-
-export const TICKET_USED_EVENT = "muzloto:ticket-used";
 
 interface Props {
 	item: SCatalogItem;
