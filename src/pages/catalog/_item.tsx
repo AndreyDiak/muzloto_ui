@@ -5,7 +5,9 @@ import { TicketQRModal } from "@/components/ticket-qr-modal";
 import type { SCatalogItem } from "@/entities/catalog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
 import { Coins } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+export const TICKET_USED_EVENT = "muzloto:ticket-used";
 
 interface Props {
 	item: SCatalogItem;
@@ -19,13 +21,24 @@ export const CatalogItem = ({ item, color }: Props) => {
 	const [isPurchasing, setIsPurchasing] = useState(false);
 	const [ticketResult, setTicketResult] = useState<PurchaseSuccessPayload | null>(null);
 
+	// Слушаем событие «билет активирован» (подписка в Catalog) — закрываем модалку, если это наш билет
+	useEffect(() => {
+		const handler = (e: CustomEvent<string>) => {
+			if (ticketResult?.ticket?.id === e.detail) {
+				setTicketResult(null);
+			}
+		};
+		window.addEventListener(TICKET_USED_EVENT, handler as EventListener);
+		return () => window.removeEventListener(TICKET_USED_EVENT, handler as EventListener);
+	}, [ticketResult?.ticket?.id]);
+
 	const handlePurchase = () => {
 		setIsPurchasing(true);
 		purchaseCatalogItem({
 			catalogItemId: item.id,
 			onSuccess: (data) => {
 				setTicketResult(data);
-				refetchProfile().catch(() => {});
+				refetchProfile().catch(() => { });
 				setIsPurchasing(false);
 				showToast("Покупка оформлена. Сохраните код билета.", "success");
 			},
