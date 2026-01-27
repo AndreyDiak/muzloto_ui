@@ -56,7 +56,9 @@ export async function scanTicket(params: {
 		const body = await res.json().catch(() => ({}));
 
 		if (!res.ok) {
-			params.onError((body as { error?: string }).error || "Ошибка при сканировании билета");
+			const err = body as { error?: string; details?: string };
+			const msg = err.error || "Ошибка при сканировании билета";
+			params.onError(err.details ? `${msg}: ${err.details}` : msg);
 			return;
 		}
 
