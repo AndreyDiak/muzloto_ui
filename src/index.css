@@ -120,4 +120,7 @@
   body {
     @apply bg-background text-foreground;
   }
+  .layout-header {
+   @apply text-2xl mb-4 text-transparent bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff]
+  }
 }

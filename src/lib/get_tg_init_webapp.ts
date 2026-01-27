@@ -1,11 +1,13 @@
 // import { tgMockData } from "@/_mock/tg_data";
 
+import { tgMockData } from "@/_mock/tg_data";
+
 export function getTgWebApp() {
   let webApp = window.Telegram?.WebApp;
   if(webApp?.initData === "") {
     webApp = {
       ...webApp,
-      // ...tgMockData
+      ...tgMockData
     }
   }
 	return webApp

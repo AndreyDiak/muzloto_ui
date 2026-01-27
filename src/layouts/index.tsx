@@ -1,9 +1,9 @@
 import { useSession } from '@/app/context/session';
 import { cn } from '@/lib/utils';
-import { Calendar, Coins, ShoppingBag, User } from 'lucide-react';
-import { memo, useState } from 'react';
+import { Calendar, Coins, QrCode, ShoppingBag, User } from 'lucide-react';
+import { memo } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
+import { ClickableTooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 
 export const BasicLayout = () => {
   const { profile } = useSession();
@@ -30,10 +30,12 @@ export const BasicLayout = () => {
 
 const Navigation = () => {
   const location = useLocation();
+  const { isRoot } = useSession();
   const navItems = [
     { path: '/', icon: User, label: 'Профиль' },
     { path: '/events', icon: Calendar, label: 'Афиша' },
-    { path: '/shop', icon: ShoppingBag, label: 'Магазин' },
+    { path: '/catalog', icon: ShoppingBag, label: 'Каталог' },
+    ...(isRoot ? [{ path: '/scanner', icon: QrCode, label: 'Сканер' }] : []),
   ];
   return (
     <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#16161d]/95 backdrop-blur-md border-t border-[#00f0ff]/20">
@@ -62,11 +64,9 @@ const Navigation = () => {
 };
 
 const Balance = memo(({ coins }: { coins: number; }) => {
-  const [open, setOpen] = useState(false);
   return (
-    <Tooltip open={open} onOpenChange={setOpen}>
+    <ClickableTooltip>
       <TooltipTrigger
-        onClick={() => setOpen(true)}
         className="flex items-center gap-2 bg-[#0a0a0f] px-3 py-2 rounded-full border border-[#00f0ff]/30 neon-glow"
       >
         <Coins className="w-5 h-5 text-[#ffd700]" />
@@ -78,6 +78,6 @@ const Balance = memo(({ coins }: { coins: number; }) => {
       }}>
         <p className="text-sm text-white">Ваш баланс <b>{coins}</b> монет</p>
       </TooltipContent>
-    </Tooltip>
+    </ClickableTooltip>
   );
-});;
+});

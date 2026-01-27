@@ -9,6 +9,7 @@ import { useTelegram } from './telegram';
 interface SessionContextType {
   user?: TUser;
   profile?: SProfile;
+  isRoot: boolean;
   initData: string;
   initDataUnsafe: TSession | undefined;
   parsedData: Record<string, string>;
@@ -28,6 +29,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
   const { tg } = useTelegram();
   const [user, setUser] = useState<TUser | undefined>(undefined);
   const [profile, setProfile] = useState<SProfile | undefined>(undefined);
+  const [isRoot, setIsRoot] = useState(false);
   const [initData, setInitData] = useState<string>('');
   const [initDataUnsafe, setInitDataUnsafe] = useState<TSession | undefined>(undefined);
   const [parsedData, setParsedData] = useState<Record<string, string>>({});
@@ -70,6 +72,8 @@ export function SessionProvider({ children }: SessionProviderProps) {
           if (supabaseUser && !userError) {
             setIsSupabaseSessionReady(true);
             await fetchProfile(user.id);
+            const { data: rootRow } = await http.from('root_user_tags').select('telegram_id').eq('telegram_id', user.id).maybeSingle();
+            setIsRoot(!!rootRow);
             return;
           }
         }
@@ -81,6 +85,8 @@ export function SessionProvider({ children }: SessionProviderProps) {
         });
         setIsSupabaseSessionReady(true);
         await fetchProfile(user.id);
+        const { data: rootRow } = await http.from('root_user_tags').select('telegram_id').eq('telegram_id', user.id).maybeSingle();
+        setIsRoot(!!rootRow);
       } catch (error) {
         setIsSupabaseSessionReady(false);
       }
@@ -140,6 +146,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
   const value: SessionContextType = {
     user,
     profile,
+    isRoot,
     initData,
     initDataUnsafe,
     parsedData,

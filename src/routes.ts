@@ -1,8 +1,9 @@
 import { createBrowserRouter } from "react-router";
 import { BasicLayout } from "./layouts";
+import { Catalog } from "./pages/catalog";
 import { Events } from "./pages/events";
 import { Profile } from "./pages/profile";
-import { Shop } from "./pages/shop";
+import { Scanner } from "./pages/scanner";
 
 export const router = createBrowserRouter([
 	{
@@ -18,9 +19,13 @@ export const router = createBrowserRouter([
 				Component: Events
 			},
 			{
-				path: "/shop",
-				Component: Shop
+				path: "/catalog",
+				Component: Catalog
+			},
+			{
+				path: "/scanner",
+				Component: Scanner
 			}
 		]
 	}
-])
+]);

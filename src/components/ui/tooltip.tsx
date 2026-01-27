@@ -1,7 +1,7 @@
-import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function TooltipProvider({
   delayDuration = 0,
@@ -13,7 +13,7 @@ function TooltipProvider({
       delayDuration={delayDuration}
       {...props}
     />
-  )
+  );
 }
 
 function Tooltip({
@@ -23,13 +23,13 @@ function Tooltip({
     <TooltipProvider>
       <TooltipPrimitive.Root data-slot="tooltip" {...props} />
     </TooltipProvider>
-  )
+  );
 }
 
 function TooltipTrigger({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 }
 
 function TooltipContent({
@@ -53,7 +53,75 @@ function TooltipContent({
         <TooltipPrimitive.Arrow className="bg-foreground fill-foreground z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]" />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
-  )
+  );
 }
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+/**
+ * Тултип, открывающийся только по клику (hover не открывает).
+ * Дети: TooltipTrigger и TooltipContent. Для Trigger с asChild — клик вешается на дочерний элемент.
+ */
+function ClickableTooltip({
+  children,
+  ...rootProps
+}: React.ComponentProps<typeof Tooltip>) {
+  const [open, setOpen] = React.useState(false);
+  const openedByClickRef = React.useRef(false);
+
+  const handleOpenChange = React.useCallback((next: boolean) => {
+    if (next && !openedByClickRef.current) {
+      return;
+    }
+    if (!next) {
+      openedByClickRef.current = false;
+    }
+    setOpen(next);
+  }, []);
+
+  const toggle = React.useCallback(() => {
+    setOpen((prev) => {
+      if (prev) {
+        openedByClickRef.current = false;
+        return false;
+      }
+      openedByClickRef.current = true;
+      return true;
+    });
+  }, []);
+
+  const mapped = React.Children.map(React.Children.toArray(children), (child) => {
+    if (!React.isValidElement(child) || child.type !== TooltipTrigger) return child;
+    const triggerProps = child.props as {
+      asChild?: boolean;
+      children?: React.ReactNode;
+      onClick?: React.MouseEventHandler;
+    };
+    const existingOnClick = triggerProps.onClick;
+    const mergedOnClick = (e: React.MouseEvent) => {
+      toggle();
+      existingOnClick?.(e);
+    };
+    if (triggerProps.asChild && React.isValidElement(triggerProps.children)) {
+      const inner = triggerProps.children as React.ReactElement<{ onClick?: React.MouseEventHandler; }>;
+      const innerOnClick = inner.props?.onClick;
+      const innerMerged = (e: React.MouseEvent) => {
+        toggle();
+        innerOnClick?.(e);
+      };
+      return React.cloneElement(child as React.ReactElement<typeof triggerProps>, {
+        children: React.cloneElement(inner, { onClick: innerMerged }),
+      });
+    }
+    return React.cloneElement(child as React.ReactElement<typeof triggerProps>, {
+      onClick: mergedOnClick,
+    });
+  });
+
+  return (
+    <Tooltip open={open} onOpenChange={handleOpenChange} {...rootProps}>
+      {mapped}
+    </Tooltip>
+  );
+}
+
+export { ClickableTooltip, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger };
+

@@ -36,7 +36,7 @@ export function Events() {
 
 	return (
 		<div className="p-4 space-y-6">
-			<h2 className="text-2xl mb-4 text-transparent bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff]">
+			<h2 className="layout-heaader">
 				Ближайшие события
 			</h2>
 

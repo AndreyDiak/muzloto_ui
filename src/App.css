@@ -12,6 +12,8 @@
   --accent-gold-darker: #ccab00;
   --accent-pink: #ff2e97;
   --accent-pink-darker: #cc2478;
+  --accent-blue: #3b82f6;
+  --accent-blue-darker: #2f6699;
   
   /* Text colors */
   --text-white: #ffffff;
@@ -24,4 +26,20 @@
   --border-cyan-medium: rgba(0, 240, 255, 0.2);
   --border-purple-light: rgba(184, 41, 255, 0.2);
   --border-gray-dark: #1f2937;
+
+  --neon-cyan: #00f0ff;
+  --neon-purple: #b829ff;
+  --neon-pink: #ff2e97;
+  --neon-blue: #3b82f6;
+  --dark-bg: #0a0a0f;
+  --dark-card: #16161d;
 }
+
+.neon-glow {
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3), 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+.neon-text {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+

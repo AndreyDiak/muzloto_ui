@@ -1,5 +1,5 @@
+import { useCssColor } from "@/hooks/use-css-color";
 import { getCSSVariable } from "@/lib/utils";
-import { useMemo } from "react";
 
 export function formatEventDate(dateString: string): { date: string; time: string; } {
 	const date = new Date(dateString);
@@ -22,9 +22,7 @@ const EVENT_COLOR_VARS = [
 ]
 
 export function useEventColors() {
-	return useMemo(() => {
-		const cyan = getCSSVariable('--accent-cyan');
-		const colors = EVENT_COLOR_VARS.map(varName => getCSSVariable(varName));
-		return { cyan, colors };
-	}, []);
+	const colors = useCssColor(EVENT_COLOR_VARS);
+	const cyan = getCSSVariable('--accent-cyan');
+	return { cyan, colors };
 }

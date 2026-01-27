@@ -1,5 +1,6 @@
-import { memo, useState } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
+import { BarChart3 } from "lucide-react";
+import { memo } from "react";
+import { ClickableTooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
 import type { IProfileStats } from './_types';
 
 interface Props {
@@ -7,20 +8,26 @@ interface Props {
 }
 
 export const ProfileStats = memo(({ stats }: Props) => {
-	return <div className="grid grid-cols-2 gap-3">
-		{stats.map((stat) => {
-			return <ProfileStat key={stat.label} stat={stat} />;
-		})}
-	</div>;
+	return (
+		<section className="space-y-2">
+			<h3 className="text-lg font-semibold text-white flex items-center gap-2">
+				<BarChart3 className="w-5 h-5 text-[#00f0ff]" />
+				Моя статистика
+			</h3>
+			<div className="grid grid-cols-2 gap-3">
+				{stats.map((stat) => {
+					return <ProfileStat key={stat.label} stat={stat} />;
+				})}
+			</div>
+		</section>
+	);
 });
 
 const ProfileStat = memo(({ stat }: { stat: IProfileStats; }) => {
 	const Icon = stat.icon;
-	const [open, setOpen] = useState(false);
 	return (
-		<Tooltip key={stat.label} open={open} onOpenChange={setOpen}>
+		<ClickableTooltip key={stat.label}>
 			<TooltipTrigger
-				onClick={() => setOpen(true)}
 				className={`rounded-xl w-full p-4 border border-[#00f0ff]/10 ${stat.bgColor}`}
 			>
 				<div className="flex justify-between items-center mb-2">
@@ -40,6 +47,6 @@ const ProfileStat = memo(({ stat }: { stat: IProfileStats; }) => {
 			>
 				<p className="text-sm text-white">{stat.description}</p>
 			</TooltipContent>
-		</Tooltip>
+		</ClickableTooltip>
 	);
 });
