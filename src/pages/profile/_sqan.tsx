@@ -1,11 +1,9 @@
 import { processEventCode } from "@/actions/process-event-code";
-import { processTransactionQR } from "@/actions/process-transaction-qr";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { TransactionQRData } from "@/entities/transaction";
 import { Keyboard, QrCode } from "lucide-react";
 import { memo, useRef, useState } from "react";
 
@@ -28,65 +26,31 @@ export const ProfileSqan = memo(() => {
 			
 			try {
 				tg.showScanQrPopup(
-					{ text: 'Отсканируйте QR код мероприятия или транзакции' },
+					{ text: 'Отсканируйте QR код мероприятия' },
 					(text: string) => {
-						// Защита от множественных вызовов
-						if (isProcessingQRRef.current) {
-							return true; // Закрываем попап, если уже обрабатываем
-						}
+						if (isProcessingQRRef.current) return true;
 
 						try {
-							// Проверяем, что текст не пустой
 							if (!text || typeof text !== 'string' || text.trim() === '') {
 								showToast('QR код не распознан. Попробуйте еще раз.', 'error');
-								return false; // Не закрываем попап, чтобы пользователь мог попробовать еще раз
+								return false;
 							}
 
-							// Устанавливаем флаг обработки
 							isProcessingQRRef.current = true;
-
 							const trimmedText = text.trim();
 
-							// Пытаемся распарсить как JSON (транзакция)
-							let parsedData: TransactionQRData | null = null;
-							try {
-								parsedData = JSON.parse(trimmedText);
-								if (parsedData && typeof parsedData === 'object' && 'token' in parsedData && 'type' in parsedData) {
-									// Это транзакция
-									processTransactionQR({
-										qrData: parsedData,
-										onSuccess: (data) => {
-											showToast(data.message, 'success');
-											if (data.type === 'add') {
-												showCoinAnimation(data.amount);
-											}
-											refetchProfile();
-											isProcessingQRRef.current = false;
-										},
-										onError: (message) => {
-											showToast(message, 'error');
-											isProcessingQRRef.current = false;
-										},
-									});
-									return true; // Закрываем попап после успешного распознавания
-								}
-							} catch {
-								// Не JSON, возможно это код события
-							}
-
-							// Если не транзакция, обрабатываем как код события
 							if (trimmedText.length === CODE_LENGTH) {
 								handleProcessEventCode(trimmedText.toUpperCase());
-								return true; // Закрываем попап после успешного распознавания
-							} else {
-								showToast(`Неверный формат QR кода. Ожидается ${CODE_LENGTH} символов, получено ${trimmedText.length}`, 'error');
-								isProcessingQRRef.current = false;
-								return false; // Не закрываем попап для неверного формата
+								return true;
 							}
-						} catch (error) {
+
+							showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов.`, 'error');
+							isProcessingQRRef.current = false;
+							return false;
+						} catch {
 							showToast('Ошибка при обработке QR кода', 'error');
 							isProcessingQRRef.current = false;
-							return false; // Не закрываем попап при ошибке
+							return false;
 						}
 					}
 				);

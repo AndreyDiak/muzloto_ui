@@ -72,6 +72,11 @@ export function SessionProvider({ children }: SessionProviderProps) {
           if (supabaseUser && !userError) {
             setIsSupabaseSessionReady(true);
             await fetchProfile(user.id);
+            const photoUrl = tg?.initDataUnsafe?.user?.photo_url;
+            if (photoUrl) {
+              await http.from('profiles').update({ avatar_url: photoUrl }).eq('telegram_id', user.id);
+              await fetchProfile(user.id);
+            }
             const { data: rootRow } = await http.from('root_user_tags').select('telegram_id').eq('telegram_id', user.id).maybeSingle();
             setIsRoot(!!rootRow);
             return;
@@ -85,6 +90,11 @@ export function SessionProvider({ children }: SessionProviderProps) {
         });
         setIsSupabaseSessionReady(true);
         await fetchProfile(user.id);
+        const photoUrl = tg?.initDataUnsafe?.user?.photo_url;
+        if (photoUrl) {
+          await http.from('profiles').update({ avatar_url: photoUrl }).eq('telegram_id', user.id);
+          await fetchProfile(user.id);
+        }
         const { data: rootRow } = await http.from('root_user_tags').select('telegram_id').eq('telegram_id', user.id).maybeSingle();
         setIsRoot(!!rootRow);
       } catch (error) {
@@ -93,7 +103,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
     };
 
     initSupabaseSessionAndProfile();
-  }, [initData, isLoading, user?.id, fetchProfile]);
+  }, [initData, isLoading, user?.id, fetchProfile, tg]);
 
   useEffect(() => {
     const {
