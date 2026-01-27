@@ -143,26 +143,7 @@ export function Scanner() {
 				<p className="text-gray-400 text-sm">
 					Отсканируйте QR на билете участника. После сканирования билет станет неактивен, на экране отобразятся данные участника и предмет к выдаче.
 				</p>
-				<svg viewBox="0 0 900 500">
-					<rect width="900" height="500" fill="#0B0B0F" />
-
-					{/* <!-- ячейка --> */}
-					<rect x="20" y="20" rx="12" ry="12"
-						width="80" height="60"
-						stroke="#FFB800"
-						fill="none"
-						stroke-width="2" />
-
-					<text x="60" y="60"
-						text-anchor="middle"
-						font-size="28"
-						fill="#FFB800"
-						font-family="Montserrat">
-						1
-					</text>
-				</svg>
-
-				<div className="bg-gradient-to-r from-[#00f0ff]/20 to-[#b829ff]/20 rounded-2xl p-0 border border-[#00f0ff]/30 flex items-stretch overflow-hidden">
+				<div className="bg-linear-to-r from-[#00f0ff]/20 to-[#b829ff]/20 rounded-2xl p-0 border border-[#00f0ff]/30 flex items-stretch overflow-hidden">
 					<button
 						type="button"
 						onClick={handleScanQR}

@@ -1,10 +1,13 @@
 import { TicketQRModal } from "@/components/ticket-qr-modal";
 import type { STicketWithItem } from "@/entities/ticket";
 import { TicketIcon } from "lucide-react";
-import { memo, useState } from "react";
+import { memo } from "react";
 
 interface Props {
 	ticket: STicketWithItem;
+	isModalOpen: boolean;
+	onOpenModal: () => void;
+	onCloseModal: () => void;
 }
 
 /** Полоска «отрывная часть» в стиле зебры как у кино-билетов */
@@ -12,8 +15,7 @@ const ZEBRA_STRIP_STYLE: React.CSSProperties = {
 	background: "repeating-linear-gradient(-45deg, #1e1e28 0px, #1e1e28 5px, #2a2a38 5px, #2a2a38 10px)",
 };
 
-export const ProfileTicketCard = memo(({ ticket }: Props) => {
-	const [qrOpen, setQrOpen] = useState(false);
+export const ProfileTicketCard = memo(({ ticket, isModalOpen, onOpenModal, onCloseModal }: Props) => {
 	const name = ticket.catalog?.name ?? "Билет";
 	const isUsed = !!ticket.used_at;
 
@@ -21,7 +23,7 @@ export const ProfileTicketCard = memo(({ ticket }: Props) => {
 		<>
 			<button
 				type="button"
-				onClick={() => setQrOpen(true)}
+				onClick={onOpenModal}
 				className={`w-full flex rounded-none text-left bg-[#16161d] border-y border-[#00f0ff]/15 overflow-hidden min-h-[72px] active:opacity-90 transition-opacity ${isUsed ? "opacity-70" : ""}`}
 			>
 				{/* Основная часть */}
@@ -46,8 +48,10 @@ export const ProfileTicketCard = memo(({ ticket }: Props) => {
 			</button>
 
 			<TicketQRModal
-				open={qrOpen}
-				onOpenChange={setQrOpen}
+				open={isModalOpen}
+				onOpenChange={(open) => {
+					if (!open) onCloseModal();
+				}}
 				code={ticket.code}
 				itemName={name}
 				showProfileHint={false}
