@@ -5,7 +5,7 @@ import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Keyboard, QrCode, User } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate } from "react-router";
 
 const CODE_LENGTH = 5;
@@ -126,13 +126,33 @@ export function Scanner() {
 		const next = [...codeInputs];
 		next[index] = char;
 		setCodeInputs(next);
+		if (char && index < CODE_LENGTH - 1) {
+			setTimeout(() => inputRefs.current[index + 1]?.focus(), 0);
+		}
 		if (char && index === CODE_LENGTH - 1) {
 			const full = next.join("");
 			if (full.length === CODE_LENGTH) handleManualSubmit(full);
 		}
 	};
 
+	const handleInputKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Backspace" && !codeInputs[index] && index > 0) {
+			const next = [...codeInputs];
+			next[index - 1] = "";
+			setCodeInputs(next);
+			setTimeout(() => inputRefs.current[index - 1]?.focus(), 0);
+		} else if (e.key === "ArrowLeft" && index > 0) {
+			inputRefs.current[index - 1]?.focus();
+		} else if (e.key === "ArrowRight" && index < CODE_LENGTH - 1) {
+			inputRefs.current[index + 1]?.focus();
+		}
+	};
+
 	const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+	useEffect(() => {
+		if (isManualOpen) setTimeout(() => inputRefs.current[0]?.focus(), 100);
+	}, [isManualOpen]);
 
 	return (
 		<>
@@ -168,7 +188,13 @@ export function Scanner() {
 				</div>
 			</div>
 
-			<Dialog open={isManualOpen} onOpenChange={setIsManualOpen}>
+			<Dialog
+				open={isManualOpen}
+				onOpenChange={(open) => {
+					setIsManualOpen(open);
+					if (!open) setCodeInputs(Array(CODE_LENGTH).fill(""));
+				}}
+			>
 				<DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
 					<DialogHeader>
 						<DialogTitle className="text-white text-center">Введите код билета</DialogTitle>
@@ -182,6 +208,7 @@ export function Scanner() {
 								inputMode="text"
 								value={codeInputs[i] || ""}
 								onChange={(e) => handleInputChange(i, e.target.value)}
+								onKeyDown={(e) => handleInputKeyDown(i, e)}
 								maxLength={1}
 								className="w-12 h-14 rounded-xl border-2 border-[#00f0ff]/30 bg-[#0a0a0f] text-center text-xl font-bold text-white focus:border-[#00f0ff] focus:outline-none"
 							/>
