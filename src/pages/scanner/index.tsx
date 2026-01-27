@@ -6,11 +6,12 @@ import { useToast } from "@/app/context/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { RecentScannedItem } from "@/hooks/use-recent-scanned";
 import { useRecentScanned } from "@/hooks/use-recent-scanned";
-import { Clock, Keyboard, QrCode, User } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Keyboard, QrCode, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Navigate } from "react-router";
 
 const CODE_LENGTH = 5;
+const VISIBLE_RECENT_COUNT = 10;
 
 function formatUsedAt(iso: string): string {
 	const d = new Date(iso);
@@ -85,7 +86,12 @@ export function Scanner() {
 	const { items: recentItems, isLoading: recentLoading, refetch: refetchRecent } = useRecentScanned(!!isRoot);
 	const [result, setResult] = useState<ScanTicketSuccess | null>(null);
 	const [selectedRecent, setSelectedRecent] = useState<RecentScannedItem | null>(null);
+	const [showAllRecent, setShowAllRecent] = useState(false);
 	const [isManualOpen, setIsManualOpen] = useState(false);
+
+	const visibleRecentItems = recentItems.slice(0, VISIBLE_RECENT_COUNT);
+	const restRecentItems = recentItems.slice(VISIBLE_RECENT_COUNT);
+	const hasMoreRecent = restRecentItems.length > 0;
 	const [codeInputs, setCodeInputs] = useState<string[]>(Array(CODE_LENGTH).fill(""));
 	const [isProcessing, setIsProcessing] = useState(false);
 	const isProcessingRef = useRef(false);
@@ -234,9 +240,43 @@ export function Scanner() {
 						<div className="text-sm text-gray-500 py-4 text-center">Пока нет отсканированных билетов</div>
 					) : (
 						<div className="space-y-2">
-							{recentItems.map((row) => (
+							{visibleRecentItems.map((row) => (
 								<RecentRow key={row.id} row={row} onClick={() => setSelectedRecent(row)} />
 							))}
+							{hasMoreRecent && (
+								<>
+									<div
+										className="overflow-hidden transition-[grid-template-rows] duration-200 ease-out"
+										style={{
+											display: "grid",
+											gridTemplateRows: showAllRecent ? "1fr" : "0fr",
+										}}
+									>
+										<div className="min-h-0 space-y-2">
+											{restRecentItems.map((row) => (
+												<RecentRow key={row.id} row={row} onClick={() => setSelectedRecent(row)} />
+											))}
+										</div>
+									</div>
+									<button
+										type="button"
+										onClick={() => setShowAllRecent((v) => !v)}
+										className="w-full py-3 text-center text-sm text-[#00f0ff] hover:text-[#00f0ff]/80 hover:underline focus:outline-none flex items-center justify-center gap-1.5"
+									>
+										{showAllRecent ? (
+											<>
+												Свернуть
+												<ChevronUp className="w-4 h-4" />
+											</>
+										) : (
+											<>
+												Показать все ({recentItems.length})
+												<ChevronDown className="w-4 h-4" />
+											</>
+										)}
+									</button>
+								</>
+							)}
 						</div>
 					)}
 				</section>
