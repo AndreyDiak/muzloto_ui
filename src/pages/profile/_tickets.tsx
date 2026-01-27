@@ -1,9 +1,9 @@
 import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
+import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
 import { useTickets } from "@/hooks/use-tickets";
-import { TICKET_USED_EVENT } from "@/lib/ticket-used-event";
 import { ChevronDown, ChevronUp, TicketIcon } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { memo, useState } from "react";
 import { ProfileTicketCard } from "./_ticket-card";
 
 const VISIBLE_COUNT = 3;
@@ -19,15 +19,11 @@ export const ProfileTickets = memo(() => {
 	const restTickets = tickets.slice(VISIBLE_COUNT);
 	const hasMore = restTickets.length > 0;
 
-	useEffect(() => {
-		const handler = () => {
-			showToast("Билет активирован", "success");
-			setOpenedTicketId(null);
-			void refetch();
-		};
-		window.addEventListener(TICKET_USED_EVENT, handler);
-		return () => window.removeEventListener(TICKET_USED_EVENT, handler);
-	}, [refetch, showToast]);
+	useOnTicketUsed(() => {
+		showToast("Билет активирован", "success");
+		setOpenedTicketId(null);
+		void refetch();
+	});
 
 	if (isLoading) {
 		return (

@@ -4,9 +4,9 @@ import { useToast } from "@/app/context/toast";
 import { TicketQRModal } from "@/components/ticket-qr-modal";
 import type { SCatalogItem } from "@/entities/catalog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
-import { TICKET_USED_EVENT } from "@/lib/ticket-used-event";
+import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
 import { Coins } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface Props {
 	item: SCatalogItem;
@@ -20,16 +20,12 @@ export const CatalogItem = ({ item, color }: Props) => {
 	const [isPurchasing, setIsPurchasing] = useState(false);
 	const [ticketResult, setTicketResult] = useState<PurchaseSuccessPayload | null>(null);
 
-	// Слушаем событие «билет активирован» (подписка в Catalog) — закрываем модалку, если это наш билет
-	useEffect(() => {
-		const handler = (e: CustomEvent<string>) => {
-			if (ticketResult?.ticket?.id === e.detail) {
-				setTicketResult(null);
-			}
-		};
-		window.addEventListener(TICKET_USED_EVENT, handler as EventListener);
-		return () => window.removeEventListener(TICKET_USED_EVENT, handler as EventListener);
-	}, [ticketResult?.ticket?.id]);
+	useOnTicketUsed((ticketId) => {
+		if (ticketResult?.ticket?.id === ticketId) {
+			showToast("Билет активирован", "success");
+			setTicketResult(null);
+		}
+	});
 
 	const handlePurchase = () => {
 		setIsPurchasing(true);

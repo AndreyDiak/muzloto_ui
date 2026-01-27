@@ -25,7 +25,10 @@ export function TicketUsedSubscription() {
 				},
 				(payload: { new: { id?: string; used_at?: string | null } }) => {
 					if (payload.new?.used_at && payload.new?.id) {
-						window.dispatchEvent(new CustomEvent(TICKET_USED_EVENT, { detail: payload.new.id }));
+						const ticketId = payload.new.id;
+						setTimeout(() => {
+							window.dispatchEvent(new CustomEvent(TICKET_USED_EVENT, { detail: ticketId }));
+						}, 0);
 					}
 				}
 			)
