@@ -6,15 +6,16 @@ import { useEffect } from "react";
 /**
  * Одна подписка на уровне приложения: при активации любого билета пользователя
  * диспатчит событие в window. Профиль и каталог подписаны на него и закрывают модалки.
+ * Подписка создаётся только после готовности Supabase-сессии, иначе Realtime идёт без JWT и RLS блокирует доставку.
  */
 export function TicketUsedSubscription() {
-	const { user } = useSession();
+	const { user, isSupabaseSessionReady } = useSession();
 
 	useEffect(() => {
-		if (user?.id == null) return;
+		if (user?.id == null || !isSupabaseSessionReady) return;
 
 		const channel = http
-			.channel("app-tickets-used")
+			.channel(`app-tickets-used-${user.id}`)
 			.on(
 				"postgres_changes",
 				{
@@ -23,11 +24,13 @@ export function TicketUsedSubscription() {
 					table: "tickets",
 					filter: `telegram_id=eq.${user.id}`,
 				},
-				(payload: { new: { id?: string; used_at?: string | null } }) => {
-					if (payload.new?.used_at && payload.new?.id) {
-						const ticketId = payload.new.id;
+				(payload: { new?: { id?: string; used_at?: string | null } }) => {
+					const rec = payload.new;
+					const id = rec?.id;
+					const usedAt = rec?.used_at;
+					if (id != null && usedAt) {
 						setTimeout(() => {
-							window.dispatchEvent(new CustomEvent(TICKET_USED_EVENT, { detail: ticketId }));
+							window.dispatchEvent(new CustomEvent(TICKET_USED_EVENT, { detail: String(id) }));
 						}, 0);
 					}
 				}
@@ -37,7 +40,7 @@ export function TicketUsedSubscription() {
 		return () => {
 			channel.unsubscribe();
 		};
-	}, [user?.id]);
+	}, [user?.id, isSupabaseSessionReady]);
 
 	return null;
 }
