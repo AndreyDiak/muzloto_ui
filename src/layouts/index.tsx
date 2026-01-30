@@ -7,8 +7,9 @@ import { Skeleton } from '../components/ui/skeleton';
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 
 export const BasicLayout = () => {
-  const { profile, isProfilePending } = useSession();
+  const { profile, isLoading: isSessionLoading, isProfilePending } = useSession();
   const coins = profile?.balance ?? 0;
+  const showBalanceSkeleton = isSessionLoading || isProfilePending;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col max-w-md mx-auto">
@@ -17,7 +18,7 @@ export const BasicLayout = () => {
           <h1 className="text-transparent bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff]">
             Караоке Лото
           </h1>
-          {isProfilePending ? <BalanceSkeleton /> : <Balance coins={coins} />}
+          {showBalanceSkeleton ? <BalanceSkeleton /> : <Balance coins={coins} />}
         </div>
       </header>
 

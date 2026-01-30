@@ -11,7 +11,7 @@ import { ProfileTicketCard } from "./_ticket-card";
 const VISIBLE_COUNT = 3;
 
 export const ProfileTickets = memo(() => {
-	const { user, isProfilePending } = useSession();
+	const { user, isLoading: isSessionLoading, isProfilePending } = useSession();
 	const { showToast } = useToast();
 	const queryClient = useQueryClient();
 	const { tickets, isLoading, error } = useTickets(user?.id);
@@ -21,7 +21,7 @@ export const ProfileTickets = memo(() => {
 	const visibleTickets = tickets.slice(0, VISIBLE_COUNT);
 	const restTickets = tickets.slice(VISIBLE_COUNT);
 	const hasMore = restTickets.length > 0;
-	const showLoader = isProfilePending || isLoading;
+	const showLoader = isSessionLoading || isProfilePending || isLoading;
 
 	useOnTicketUsed(() => {
 		showToast("Билет активирован", "success");
