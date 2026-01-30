@@ -1,9 +1,9 @@
 import { useSession } from "@/app/context/session";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { IProfileAchievement } from "./_types";
 import { Award } from "lucide-react";
 import { memo } from "react";
+import type { IProfileAchievement } from "./_types";
 
 /** Правая полоска: градиент по статусу (получено — золотой акцент, заблокировано — нейтральная) */
 const STRIP_STYLE_UNLOCKED: React.CSSProperties = {
@@ -18,8 +18,8 @@ interface Props {
 }
 
 export const ProfileAchievements = memo(({ achievements }: Props) => {
-	const { isLoading: isSessionLoading, isProfilePending } = useSession();
-	const showSkeletons = isSessionLoading || isProfilePending;
+	const { isLoading: isSessionLoading, isProfileLoading } = useSession();
+	const showSkeletons = isSessionLoading || isProfileLoading;
 
 	if (showSkeletons) {
 		return (

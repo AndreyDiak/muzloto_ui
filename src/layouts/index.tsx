@@ -7,9 +7,9 @@ import { Skeleton } from '../components/ui/skeleton';
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 
 export const BasicLayout = () => {
-  const { profile, isLoading: isSessionLoading, isProfilePending } = useSession();
+  const { profile, isLoading: isSessionLoading, isProfileLoading } = useSession();
   const coins = profile?.balance ?? 0;
-  const showBalanceSkeleton = isSessionLoading || isProfilePending;
+  const showBalanceSkeleton = isSessionLoading || isProfileLoading;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] flex flex-col max-w-md mx-auto">

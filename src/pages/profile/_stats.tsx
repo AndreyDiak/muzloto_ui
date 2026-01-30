@@ -10,8 +10,8 @@ interface Props {
 }
 
 export const ProfileStats = memo(({ stats }: Props) => {
-	const { isLoading: isSessionLoading, isProfilePending } = useSession();
-	const showSkeletons = isSessionLoading || isProfilePending;
+	const { isLoading: isSessionLoading, isProfileLoading } = useSession();
+	const showSkeletons = isSessionLoading || isProfileLoading;
 
 	if (showSkeletons) {
 		return (

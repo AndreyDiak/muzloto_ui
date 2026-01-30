@@ -15,8 +15,6 @@ interface SessionContextType {
   parsedData: Record<string, string>;
   isLoading: boolean;
   isProfileLoading: boolean;
-  /** Показывать лоадеры профиля: есть user, но profile ещё не загружен (убирает мерцание контент→скелетоны→контент) */
-  isProfilePending: boolean;
   isSupabaseSessionReady: boolean;
   refetchProfile: () => Promise<void>;
 }
@@ -155,8 +153,6 @@ export function SessionProvider({ children }: SessionProviderProps) {
     }
   }, [user?.id, fetchProfile]);
 
-  const isProfilePending = Boolean(user != null && profile === undefined);
-
   const value: SessionContextType = {
     user,
     profile,
@@ -166,7 +162,6 @@ export function SessionProvider({ children }: SessionProviderProps) {
     parsedData,
     isLoading,
     isProfileLoading,
-    isProfilePending,
     isSupabaseSessionReady,
     refetchProfile,
   };
