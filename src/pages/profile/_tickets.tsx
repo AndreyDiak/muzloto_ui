@@ -2,6 +2,7 @@ import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
 import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
 import { useTickets } from "@/hooks/use-tickets";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, ChevronUp, TicketIcon } from "lucide-react";
 import { memo, useState } from "react";
 import { ProfileTicketCard } from "./_ticket-card";
@@ -9,7 +10,7 @@ import { ProfileTicketCard } from "./_ticket-card";
 const VISIBLE_COUNT = 3;
 
 export const ProfileTickets = memo(() => {
-	const { user } = useSession();
+	const { user, isProfileLoading } = useSession();
 	const { showToast } = useToast();
 	const { tickets, isLoading, error, refetch } = useTickets(user?.id);
 	const [openedTicketId, setOpenedTicketId] = useState<string | null>(null);
@@ -18,6 +19,7 @@ export const ProfileTickets = memo(() => {
 	const visibleTickets = tickets.slice(0, VISIBLE_COUNT);
 	const restTickets = tickets.slice(VISIBLE_COUNT);
 	const hasMore = restTickets.length > 0;
+	const showLoader = isProfileLoading || isLoading;
 
 	useOnTicketUsed(() => {
 		showToast("Билет активирован", "success");
@@ -25,14 +27,18 @@ export const ProfileTickets = memo(() => {
 		void refetch();
 	});
 
-	if (isLoading) {
+	if (showLoader) {
 		return (
 			<section className="space-y-2">
 				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
 					<TicketIcon className="w-5 h-5 text-[#00f0ff]" />
 					Мои билеты
 				</h3>
-				<div className="text-sm text-gray-400 py-6 text-center">Загрузка…</div>
+				<div className="-mx-4 rounded-none overflow-hidden space-y-0">
+					{Array.from({ length: 3 }).map((_, i) => (
+						<Skeleton key={i} className="h-[72px] w-full rounded-none border-y border-[#00f0ff]/10" />
+					))}
+				</div>
 			</section>
 		);
 	}

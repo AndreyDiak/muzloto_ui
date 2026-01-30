@@ -1,3 +1,5 @@
+import { useSession } from "@/app/context/session";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3 } from "lucide-react";
 import { memo } from "react";
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
@@ -8,6 +10,24 @@ interface Props {
 }
 
 export const ProfileStats = memo(({ stats }: Props) => {
+	const { isProfileLoading } = useSession();
+
+	if (isProfileLoading) {
+		return (
+			<section className="space-y-2">
+				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
+					<BarChart3 className="w-5 h-5 text-[#00f0ff]" />
+					Моя статистика
+				</h3>
+				<div className="grid grid-cols-2 gap-3">
+					{Array.from({ length: 4 }).map((_, i) => (
+						<Skeleton key={i} className="h-[88px] w-full rounded-xl" />
+					))}
+				</div>
+			</section>
+		);
+	}
+
 	return (
 		<section className="space-y-2">
 			<h3 className="text-lg font-semibold text-white flex items-center gap-2">

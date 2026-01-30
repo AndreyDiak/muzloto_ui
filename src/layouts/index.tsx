@@ -3,10 +3,11 @@ import { cn } from '@/lib/utils';
 import { Calendar, Coins, QrCode, ShoppingBag, User } from 'lucide-react';
 import { memo } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
+import { Skeleton } from '../components/ui/skeleton';
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
 
 export const BasicLayout = () => {
-  const { profile } = useSession();
+  const { profile, isProfileLoading } = useSession();
   const coins = profile?.balance ?? 0;
 
   return (
@@ -16,7 +17,7 @@ export const BasicLayout = () => {
           <h1 className="text-transparent bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff]">
             Караоке Лото
           </h1>
-          <Balance coins={coins} />
+          {isProfileLoading ? <BalanceSkeleton /> : <Balance coins={coins} />}
         </div>
       </header>
 
@@ -62,6 +63,13 @@ const Navigation = () => {
     </nav>
   );
 };
+
+const BalanceSkeleton = memo(() => (
+  <div className="flex items-center gap-2 bg-[#0a0a0f] px-3 py-2 rounded-full border border-[#00f0ff]/15">
+    <Skeleton className="h-5 w-5 shrink-0 rounded" />
+    <Skeleton className="h-5 w-12 rounded" />
+  </div>
+));
 
 const Balance = memo(({ coins }: { coins: number; }) => {
   return (

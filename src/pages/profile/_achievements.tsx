@@ -1,3 +1,5 @@
+import { useSession } from "@/app/context/session";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { IProfileAchievement } from "./_types";
 import { Award } from "lucide-react";
@@ -16,6 +18,24 @@ interface Props {
 }
 
 export const ProfileAchievements = memo(({ achievements }: Props) => {
+	const { isProfileLoading } = useSession();
+
+	if (isProfileLoading) {
+		return (
+			<section className="space-y-2">
+				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
+					<Award className="w-5 h-5 text-[#00f0ff]" />
+					Достижения
+				</h3>
+				<div className="-mx-4 rounded-none overflow-hidden space-y-0">
+					{Array.from({ length: 4 }).map((_, i) => (
+						<Skeleton key={i} className="h-[72px] w-full rounded-none border-y border-[#00f0ff]/10" />
+					))}
+				</div>
+			</section>
+		);
+	}
+
 	return (
 		<section className="space-y-2">
 			<h3 className="text-lg font-semibold text-white flex items-center gap-2">

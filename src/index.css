@@ -113,6 +113,29 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Скелетон: мерцание (shimmer) — волна света по блоку */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #2a2a35 0%,
+    #2a2a35 35%,
+    #3d3d4a 50%,
+    #2a2a35 65%,
+    #2a2a35 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
