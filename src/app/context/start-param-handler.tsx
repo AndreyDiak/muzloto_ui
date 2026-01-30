@@ -4,7 +4,7 @@ import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { parseStartPayload } from "@/lib/event-deep-link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "muzloto_start_param_processed";
 
@@ -32,8 +32,8 @@ function getRawPayload(tg: { initDataUnsafe?: { start_param?: string } } | undef
 
 /**
  * Обрабатывает payload при заходе по ссылке по типу:
- * - registration (reg:CODE или 5 символов) → регистрация на мероприятие, начисление монет.
- * - prize (prize:TOKEN / p:TOKEN) → получение приза (в будущем).
+ * - registration (reg-CODE или 5 символов) → регистрация на мероприятие, начисление монет.
+ * - prize (prize-TOKEN / p-TOKEN) → получение приза (в будущем).
  */
 export function StartParamHandler() {
 	const { tg } = useTelegram();
@@ -41,49 +41,62 @@ export function StartParamHandler() {
 	const { showToast } = useToast();
 	const { showCoinAnimation } = useCoinAnimation();
 	const processedRef = useRef(false);
+	const [retryAt, setRetryAt] = useState(0);
 
 	useEffect(() => {
-		const raw = getRawPayload(tg);
-		const payload = raw ? parseStartPayload(raw) : null;
+		const payload = (() => {
+			const raw = getRawPayload(tg);
+			return raw ? parseStartPayload(raw) : null;
+		})();
 		if (!payload || !user?.id || !isSupabaseSessionReady) return;
 
 		const storageKey = `${payload.type}:${payload.value}`;
-		const stored = sessionStorage.getItem(STORAGE_KEY);
-		if (stored === storageKey) return;
+		if (sessionStorage.getItem(STORAGE_KEY) === storageKey) return;
 		if (processedRef.current) return;
 		processedRef.current = true;
-		sessionStorage.setItem(STORAGE_KEY, storageKey);
 
 		if (payload.type === "registration") {
-			processEventCode({
-				code: payload.value,
-				telegramId: user.id,
-				onSuccess: (data) => {
-					refetchProfile();
-					showCoinAnimation?.(data.coinsEarned ?? 10);
-					showToast(
-						`Успешно! Вы зарегистрированы на мероприятие «${data.event.title}». +${data.coinsEarned} монет`,
-						"success"
-					);
-				},
-				onError: (message) => {
-					showToast(message || "Не удалось обработать код", "error");
-				},
-			});
-			return;
+			// Небольшая задержка, чтобы Toaster и анимация монет успели смонтироваться
+			const timeoutId = setTimeout(() => {
+				processEventCode({
+					code: payload.value,
+					telegramId: user.id,
+					onSuccess: (data) => {
+						sessionStorage.setItem(STORAGE_KEY, storageKey);
+						refetchProfile();
+						showCoinAnimation(data.coinsEarned ?? 10);
+						showToast(
+							`Успешно! Вы зарегистрированы на мероприятие «${data.event.title}». +${data.coinsEarned} монет`,
+							"success"
+						);
+					},
+					onError: (message) => {
+						processedRef.current = false;
+						showToast(message || "Не удалось обработать код", "error");
+					},
+				});
+			}, 150);
+			return () => clearTimeout(timeoutId);
 		}
 
 		if (payload.type === "prize") {
 			handlePrizePayload(payload.value, user.id, { showToast, refetchProfile });
 		}
-	}, [tg?.initDataUnsafe?.start_param, user?.id, isSupabaseSessionReady, showToast, refetchProfile, showCoinAnimation]);
+	}, [tg?.initDataUnsafe?.start_param, user?.id, isSupabaseSessionReady, retryAt, showToast, refetchProfile, showCoinAnimation]);
+
+	// start_param иногда приходит с задержкой — перепроверяем через 0.8 с
+	useEffect(() => {
+		if (!user?.id || !isSupabaseSessionReady) return;
+		const t = setTimeout(() => setRetryAt((n) => n + 1), 800);
+		return () => clearTimeout(t);
+	}, [user?.id, isSupabaseSessionReady]);
 
 	return null;
 }
 
 /**
- * Обработка payload «получение приза». Сейчас — заглушка, в будущем — запрос на бэкенд и выдача приза.
- * Ссылка: t.me/bot/app?startapp=prize:TOKEN или startapp=p:TOKEN
+ * Обработка payload «получение приза». Сейчас — заглушка.
+ * Ссылка: t.me/bot/app?startapp=prize-TOKEN или startapp=p-TOKEN
  */
 function handlePrizePayload(
 	_token: string,
