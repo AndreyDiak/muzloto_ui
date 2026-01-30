@@ -4,6 +4,7 @@ import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { extractEventCodeFromInput } from "@/lib/event-deep-link";
 import { Keyboard, QrCode } from "lucide-react";
 import { memo, useRef, useState } from "react";
 
@@ -38,13 +39,17 @@ export const ProfileSqan = memo(() => {
 
 							isProcessingQRRef.current = true;
 							const trimmedText = text.trim();
+							// Поддержка ссылки t.me/...?startapp=CODE — извлекаем код из URL или используем как есть
+							const code =
+								extractEventCodeFromInput(trimmedText) ??
+								(trimmedText.length === CODE_LENGTH ? trimmedText.toUpperCase() : null);
 
-							if (trimmedText.length === CODE_LENGTH) {
-								handleProcessEventCode(trimmedText.toUpperCase());
+							if (code) {
+								handleProcessEventCode(code);
 								return true;
 							}
 
-							showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов.`, 'error');
+							showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов или ссылка на бота.`, 'error');
 							isProcessingQRRef.current = false;
 							return false;
 						} catch {

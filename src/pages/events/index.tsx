@@ -1,10 +1,16 @@
-import { useEvents } from '@/hooks/use-events';
-import { EventsList } from './_list';
-import { UpcomingEvent } from './_upcoming';
-
+import { useSession } from "@/app/context/session";
+import { TicketQRModal } from "@/components/ticket-qr-modal";
+import type { SEvent } from "@/entities/event";
+import { useEvents } from "@/hooks/use-events";
+import { getEventCodeBotStartLink, getEventCodeDeepLink } from "@/lib/event-deep-link";
+import { useState } from "react";
+import { EventsList } from "./_list";
+import { UpcomingEvent } from "./_upcoming";
 
 export function Events() {
+	const { isRoot } = useSession();
 	const { events, isLoading, error } = useEvents();
+	const [eventForCode, setEventForCode] = useState<SEvent | null>(null);
 
 	if (isLoading) {
 		return (
@@ -41,10 +47,31 @@ export function Events() {
 			</h2>
 
 			{/* Featured Event - Ближайшее */}
-			<UpcomingEvent event={firstEvent} />
+			<UpcomingEvent
+				event={firstEvent}
+				isRoot={isRoot}
+				onShowEventCode={isRoot ? setEventForCode : undefined}
+			/>
 
 			{/* Other Events - Compact List */}
-			<EventsList events={displayedEvents} />
+			<EventsList
+				events={displayedEvents}
+				isRoot={isRoot}
+				onShowEventCode={isRoot ? setEventForCode : undefined}
+			/>
+
+			{/* Модалка с QR и кодом мероприятия (только для мастер-аккаунта) */}
+			{eventForCode && (
+				<TicketQRModal
+					open={!!eventForCode}
+					onOpenChange={(open) => !open && setEventForCode(null)}
+					code={eventForCode.code}
+					itemName={eventForCode.title}
+					showProfileHint={false}
+					dialogTitle="Код мероприятия"
+					qrData={getEventCodeDeepLink(eventForCode.code) || getEventCodeBotStartLink(eventForCode.code) || undefined}
+				/>
+			)}
 
 			{/* Remaining events count */}
 			{remainingCount > 0 && (

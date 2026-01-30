@@ -5,17 +5,43 @@ import { formatEventDate, useEventColors } from "./_utils";
 
 interface Props {
 	event: SEvent;
+	/** Мастер-аккаунт: при клике на блок показывать модалку с кодом мероприятия */
+	isRoot?: boolean;
+	onShowEventCode?: (event: SEvent) => void;
 }
 
-export const UpcomingEvent = memo(({ event }: Props) => {
-
+export const UpcomingEvent = memo(({ event, isRoot, onShowEventCode }: Props) => {
 	const eventColors = useEventColors();
 	const cyanColor = eventColors.cyan;
-
 	const eventDate = formatEventDate(event.event_date);
+	const isClickable = isRoot && !!onShowEventCode;
+
+	const handleBlockClick = (e: React.MouseEvent) => {
+		if (isClickable) {
+			e.preventDefault();
+			onShowEventCode?.(event);
+		}
+	};
 
 	return (
-		<div className="bg-[#16161d] rounded-2xl overflow-hidden border border-[#00f0ff]/20 neon-glow">
+		<div
+			role={isClickable ? "button" : undefined}
+			tabIndex={isClickable ? 0 : undefined}
+			onClick={isClickable ? handleBlockClick : undefined}
+			onKeyDown={
+				isClickable
+					? (e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								onShowEventCode?.(event);
+							}
+						}
+					: undefined
+			}
+			className={`bg-[#16161d] rounded-2xl overflow-hidden border border-[#00f0ff]/20 neon-glow ${
+				isClickable ? "cursor-pointer" : ""
+			}`}
+		>
 			<div
 				className="h-48 bg-linear-to-br opacity-30"
 				style={{
@@ -53,6 +79,7 @@ export const UpcomingEvent = memo(({ event }: Props) => {
 						background: `linear-gradient(135deg, ${cyanColor} 0%, ${cyanColor}99 100%)`,
 						boxShadow: `0 0 15px ${cyanColor}40`,
 					}}
+					onClick={(e) => e.stopPropagation()}
 				>
 					Зарегистрироваться
 				</button>

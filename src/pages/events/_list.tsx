@@ -5,6 +5,9 @@ import { formatEventDate, useEventColors } from "./_utils";
 
 interface Props {
 	events: SEvent[];
+	/** Мастер-аккаунт: при клике на блок показывать модалку с кодом мероприятия */
+	isRoot?: boolean;
+	onShowEventCode?: (event: SEvent) => void;
 }
 
 function getEventColor(index: number, colors: { cyan: string; colors: string[]; }): string {
@@ -14,8 +17,15 @@ function getEventColor(index: number, colors: { cyan: string; colors: string[]; 
 	return colors.colors[(index - 1) % colors.colors.length];
 }
 
-export const EventsList = memo(({ events }: Props) => {
+export const EventsList = memo(({ events, isRoot, onShowEventCode }: Props) => {
 	const eventColors = useEventColors();
+	const handleBlockClick = (e: React.MouseEvent, event: SEvent) => {
+		if (isRoot && onShowEventCode) {
+			e.preventDefault();
+			e.stopPropagation();
+			onShowEventCode(event);
+		}
+	};
 
 	if (events.length === 0) {
 		return null;
@@ -28,11 +38,27 @@ export const EventsList = memo(({ events }: Props) => {
 				{events.map((event, index) => {
 					const eventDate = formatEventDate(event.event_date);
 					const eventColor = getEventColor(index + 1, eventColors);
+					const isClickable = isRoot && !!onShowEventCode;
 
 					return (
 						<div
 							key={event.id}
-							className="bg-[#16161d] rounded-xl p-4 border border-[#00f0ff]/10 hover:border-[#00f0ff]/20 transition-all"
+							role={isClickable ? "button" : undefined}
+							tabIndex={isClickable ? 0 : undefined}
+							onClick={isClickable ? (e) => handleBlockClick(e, event) : undefined}
+							onKeyDown={
+								isClickable
+									? (e) => {
+											if (e.key === "Enter" || e.key === " ") {
+												e.preventDefault();
+												onShowEventCode?.(event);
+											}
+										}
+									: undefined
+							}
+							className={`bg-[#16161d] rounded-xl p-4 border border-[#00f0ff]/10 transition-all ${
+								isClickable ? "hover:border-[#00f0ff]/30 cursor-pointer" : "hover:border-[#00f0ff]/20"
+							}`}
 						>
 							<div className="flex items-center justify-between gap-3">
 								<div className="flex-1">
@@ -55,6 +81,7 @@ export const EventsList = memo(({ events }: Props) => {
 										color: eventColor,
 										border: `1px solid ${eventColor}50`,
 									}}
+									onClick={(e) => e.stopPropagation()}
 								>
 									Регистрация
 								</button>

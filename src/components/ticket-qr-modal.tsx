@@ -38,6 +38,10 @@ export interface TicketQRModalProps {
 	itemName: string;
 	/** Показывать подпись «Билет сохранится у вас в разделе «Профиль»». По умолчанию true */
 	showProfileHint?: boolean;
+	/** Заголовок модального окна. По умолчанию «Ваш билет» */
+	dialogTitle?: string;
+	/** Данные для QR (например ссылка t.me/...?startapp=CODE). Если не задано — в QR кодируется code */
+	qrData?: string;
 }
 
 export function TicketQRModal({
@@ -46,23 +50,27 @@ export function TicketQRModal({
 	code,
 	itemName,
 	showProfileHint = true,
+	dialogTitle = "Ваш билет",
+	qrData,
 }: TicketQRModalProps) {
 	const { showToast } = useToast();
 	const qrInstanceRef = useRef<InstanceType<typeof QRCodeStyling> | null>(null);
+	const dataForQr = (qrData ?? code).trim() || code;
 
 	const setQrContainer = useCallback(
 		(node: HTMLDivElement | null) => {
-			if (!node || !code) {
+			if (!node || !dataForQr) {
 				qrInstanceRef.current = null;
 				return;
 			}
 			node.replaceChildren();
 			const qr = new QRCodeStyling({
-				width: 200,
-				height: 200,
+				width: 240,
+				height: 240,
 				type: "svg",
-				data: code,
+				data: dataForQr,
 				qrOptions: { errorCorrectionLevel: "H" },
+				// rounded — лёгкое закругление (extra-rounded даёт слишком большой радиус)
 				dotsOptions: {
 					color: NEON_CYAN,
 					type: "rounded",
@@ -77,12 +85,13 @@ export function TicketQRModal({
 				},
 				cornersSquareOptions: {
 					color: NEON_PURPLE,
-					type: "extra-rounded",
+					type: "rounded",
 				},
-				cornersDotOptions: { color: NEON_CYAN, type: "dot" },
+				cornersDotOptions: { color: NEON_CYAN, type: "rounded" },
 				backgroundOptions: { color: "#16161d" },
 				image: LOGO_URL,
-				imageOptions: { crossOrigin: "anonymous", margin: 6, imageSize: 0.4 },
+				// До 30% площади при Level H — иначе часть сканеров не читает. 0.25 даёт запас
+				imageOptions: { crossOrigin: "anonymous", margin: 4, imageSize: 0.25 },
 			});
 			qr.append(node);
 			qrInstanceRef.current = qr;
@@ -92,7 +101,7 @@ export function TicketQRModal({
 				setTimeout(() => makeQrLogoRound(node), 80);
 			});
 		},
-		[code],
+		[dataForQr],
 	);
 
 	const handleCopyCode = useCallback(() => {
@@ -104,7 +113,7 @@ export function TicketQRModal({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
 				<DialogHeader>
-					<DialogTitle className="text-white text-center">Ваш билет</DialogTitle>
+					<DialogTitle className="text-white text-center">{dialogTitle}</DialogTitle>
 				</DialogHeader>
 				<div className="flex flex-col items-center gap-4">
 					<p className="text-sm text-center text-transparent bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff] font-semibold">
@@ -112,8 +121,8 @@ export function TicketQRModal({
 					</p>
 					<div
 						ref={setQrContainer}
-						className="rounded-lg overflow-hidden [&>svg]:max-w-[200px] [&>svg]:max-h-[200px] [&>svg]:w-full [&>svg]:h-auto"
-						style={{ width: 200, height: 200 }}
+						className="rounded-lg overflow-hidden [&>svg]:max-w-[240px] [&>svg]:max-h-[240px] [&>svg]:w-full [&>svg]:h-auto"
+						style={{ width: 240, height: 240 }}
 						aria-hidden
 					/>
 					<div className="text-center w-full">
