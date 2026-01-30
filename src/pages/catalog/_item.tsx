@@ -5,6 +5,7 @@ import { TicketQRModal } from "@/components/ticket-qr-modal";
 import type { SCatalogItem } from "@/entities/catalog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
 import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
+import { useQueryClient } from "@tanstack/react-query";
 import { Coins } from "lucide-react";
 import { useState } from "react";
 
@@ -16,6 +17,7 @@ interface Props {
 export const CatalogItem = ({ item, color }: Props) => {
 	const { profile, refetchProfile } = useSession();
 	const { showToast } = useToast();
+	const queryClient = useQueryClient();
 	const coins = profile?.balance ?? 0;
 	const [isPurchasing, setIsPurchasing] = useState(false);
 	const [ticketResult, setTicketResult] = useState<PurchaseSuccessPayload | null>(null);
@@ -31,9 +33,10 @@ export const CatalogItem = ({ item, color }: Props) => {
 		setIsPurchasing(true);
 		purchaseCatalogItem({
 			catalogItemId: item.id,
-			onSuccess: (data) => {
+			onSuccess: async (data) => {
 				setTicketResult(data);
-				refetchProfile().catch(() => { });
+				queryClient.invalidateQueries({ queryKey: ["tickets"] });
+				await refetchProfile().catch(() => {});
 				setIsPurchasing(false);
 				showToast("Покупка оформлена. Сохраните код билета.", "success");
 			},

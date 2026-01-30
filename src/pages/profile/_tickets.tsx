@@ -2,6 +2,7 @@ import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
 import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
 import { useTickets } from "@/hooks/use-tickets";
+import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, ChevronUp, TicketIcon } from "lucide-react";
 import { memo, useState } from "react";
@@ -12,7 +13,8 @@ const VISIBLE_COUNT = 3;
 export const ProfileTickets = memo(() => {
 	const { user, isProfileLoading } = useSession();
 	const { showToast } = useToast();
-	const { tickets, isLoading, error, refetch } = useTickets(user?.id);
+	const queryClient = useQueryClient();
+	const { tickets, isLoading, error } = useTickets(user?.id);
 	const [openedTicketId, setOpenedTicketId] = useState<string | null>(null);
 	const [showAll, setShowAll] = useState(false);
 
@@ -24,7 +26,7 @@ export const ProfileTickets = memo(() => {
 	useOnTicketUsed(() => {
 		showToast("Билет активирован", "success");
 		setOpenedTicketId(null);
-		void refetch();
+		void queryClient.invalidateQueries({ queryKey: ["tickets"] });
 	});
 
 	if (showLoader) {

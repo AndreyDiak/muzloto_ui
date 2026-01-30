@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { SCatalogItem } from '../entities/catalog';
-import { http } from '../http';
+import { useQuery } from "@tanstack/react-query";
+import type { SCatalogItem } from "../entities/catalog";
+import { http } from "../http";
+import { queryKeys, STALE_TIME_MS } from "../lib/query-client";
 
 interface UseCatalogReturn {
   items: SCatalogItem[];
@@ -9,43 +10,31 @@ interface UseCatalogReturn {
   refetch: () => Promise<void>;
 }
 
+async function fetchCatalog(): Promise<SCatalogItem[]> {
+  const { data, error } = await http
+    .from("catalog")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return (data as SCatalogItem[]) ?? [];
+}
+
 export function useCatalog(): UseCatalogReturn {
-  const [items, setItems] = useState<SCatalogItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchCatalog = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { data, error: fetchError } = await http
-        .from('catalog')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (fetchError) {
-        throw new Error(fetchError.message);
-      }
-
-      setItems((data as SCatalogItem[]) || []);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Не удалось загрузить каталог';
-      setError(new Error(errorMessage));
-      setItems([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCatalog();
-  }, [fetchCatalog]);
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.catalog,
+    queryFn: fetchCatalog,
+    staleTime: STALE_TIME_MS,
+  });
 
   return {
-    items,
+    items: data ?? [],
     isLoading,
-    error,
-    refetch: fetchCatalog,
+    error: error ? (error instanceof Error ? error : new Error(String(error))) : null,
+    refetch: async () => {
+      await refetch();
+    },
   };
 }
