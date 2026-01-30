@@ -18,9 +18,9 @@ interface Props {
 }
 
 export const ProfileAchievements = memo(({ achievements }: Props) => {
-	const { isProfileLoading } = useSession();
+	const { isProfilePending } = useSession();
 
-	if (isProfileLoading) {
+	if (isProfilePending) {
 		return (
 			<section className="space-y-2">
 				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
