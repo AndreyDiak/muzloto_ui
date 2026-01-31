@@ -1,16 +1,20 @@
+import { processBingoCode } from "@/actions/process-bingo-code";
 import { processEventCode } from "@/actions/process-event-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { extractEventCodeFromInput } from "@/lib/event-deep-link";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-client";
+import { extractEventCodeFromInput, isBingoCodeLike, parseStartPayload } from "@/lib/event-deep-link";
 import { Keyboard, QrCode } from "lucide-react";
 import { memo, useRef, useState } from "react";
 
 export const ProfileSqan = memo(() => {
 	const { user, refetchProfile } = useSession();
 	const { showToast } = useToast();
+	const queryClient = useQueryClient();
 	const { showCoinAnimation } = useCoinAnimation();
 	const { tg } = useTelegram();
 	const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
@@ -39,17 +43,33 @@ export const ProfileSqan = memo(() => {
 
 							isProcessingQRRef.current = true;
 							const trimmedText = text.trim();
-							// Поддержка ссылки t.me/...?startapp=CODE — извлекаем код из URL или используем как есть
-							const code =
-								extractEventCodeFromInput(trimmedText) ??
-								(trimmedText.length === CODE_LENGTH ? trimmedText.toUpperCase() : null);
-
-							if (code) {
-								handleProcessEventCode(code);
+							const parsed = parseStartPayload(trimmedText);
+							const code5 = trimmedText.length === CODE_LENGTH ? trimmedText.toUpperCase() : null;
+							if (parsed) {
+								if (parsed.type === "bingo") {
+									handleProcessBingoCode(parsed.value);
+									return true;
+								}
+								if (parsed.type === "registration") {
+									handleProcessEventCode(parsed.value);
+									return true;
+								}
+							}
+							if (code5) {
+								if (isBingoCodeLike(code5)) {
+									handleProcessBingoCode(code5);
+									return true;
+								}
+								handleProcessEventCode(code5);
+								return true;
+							}
+							const regCode = extractEventCodeFromInput(trimmedText);
+							if (regCode) {
+								handleProcessEventCode(regCode);
 								return true;
 							}
 
-							showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов или ссылка на бота.`, 'error');
+							showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов (регистрация или бинго) или ссылка.`, 'error');
 							isProcessingQRRef.current = false;
 							return false;
 						} catch {
@@ -74,6 +94,38 @@ export const ProfileSqan = memo(() => {
 		setIsCodeModalOpen(true);
 	};
 
+	const handleProcessBingoCode = async (code: string) => {
+		if (isProcessing || !user?.id) {
+			if (!user?.id) showToast('Ошибка: не удалось определить пользователя.', 'error');
+			return;
+		}
+		setIsProcessing(true);
+		try {
+			await processBingoCode({
+				code,
+				telegramId: user.id,
+				onSuccess: (data) => {
+					setCodeInputs(Array(5).fill(''));
+					setIsCodeModalOpen(false);
+					showCoinAnimation(data.coinsEarned);
+					refetchProfile().catch(() => {});
+					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+					showToast(`Победа в бинго! +${data.coinsEarned} монет.`, 'success');
+					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
+						setTimeout(() => showToast(`${a.badge} Достижение: ${a.name}. ${a.label}`, 'success'), 600 + i * 400);
+					});
+					isProcessingQRRef.current = false;
+				},
+				onError: (err) => {
+					showToast(err ?? 'Не удалось засчитать победу.', 'error');
+					isProcessingQRRef.current = false;
+				},
+			});
+		} finally {
+			setIsProcessing(false);
+		}
+	};
+
 	const handleProcessEventCode = async (code: string) => {
 		if (isProcessing) {
 			return;
@@ -81,6 +133,11 @@ export const ProfileSqan = memo(() => {
 
 		if (!user?.id) {
 			showToast('Ошибка: не удалось определить пользователя. Пожалуйста, перезагрузите страницу.', 'error');
+			return;
+		}
+
+		if (isBingoCodeLike(code)) {
+			handleProcessBingoCode(code);
 			return;
 		}
 
@@ -93,6 +150,7 @@ export const ProfileSqan = memo(() => {
 				onSuccess: async (data) => {
 					const eventTitle = data.event.title;
 					const coinsEarned = data.coinsEarned;
+					const newlyUnlocked = data.newlyUnlockedAchievements ?? [];
 
 					setCodeInputs(Array(5).fill(''));
 					setIsCodeModalOpen(false);
@@ -105,8 +163,16 @@ export const ProfileSqan = memo(() => {
 						// Игнорируем ошибки обновления профиля
 					}
 
+					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+
 					setTimeout(() => {
 						showToast(`Успешно! Вы зарегистрированы на мероприятие "${eventTitle}".`, 'success');
+					newlyUnlocked.forEach((a) => {
+						setTimeout(() => {
+							const rewardText = a.coinReward ? ` +${a.coinReward} монет` : '';
+							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}${rewardText}`, 'success');
+							}, 600 + newlyUnlocked.indexOf(a) * 400);
+						});
 					}, 500);
 
 					isProcessingQRRef.current = false;
@@ -136,11 +202,13 @@ export const ProfileSqan = memo(() => {
 	};
 
 	const handleSubmitCode = async (codeOverride?: string) => {
-		const code = codeOverride || codeInputs.join('');
-		if (code.length !== CODE_LENGTH) {
-			return;
+		const code = (codeOverride || codeInputs.join('')).toUpperCase();
+		if (code.length !== CODE_LENGTH) return;
+		if (isBingoCodeLike(code)) {
+			await handleProcessBingoCode(code);
+		} else {
+			await handleProcessEventCode(code);
 		}
-		await handleProcessEventCode(code);
 	};
 
 	const handleSubmitButtonClick = () => {

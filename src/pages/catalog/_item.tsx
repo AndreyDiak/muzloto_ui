@@ -5,6 +5,7 @@ import { TicketQRModal } from "@/components/ticket-qr-modal";
 import type { SCatalogItem } from "@/entities/catalog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
 import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
+import { queryKeys } from "@/lib/query-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Coins } from "lucide-react";
 import { useState } from "react";
@@ -36,9 +37,16 @@ export const CatalogItem = ({ item, color }: Props) => {
 			onSuccess: async (data) => {
 				setTicketResult(data);
 				queryClient.invalidateQueries({ queryKey: ["tickets"] });
+				void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
 				await refetchProfile().catch(() => {});
 				setIsPurchasing(false);
 				showToast("Покупка оформлена. Сохраните код билета.", "success");
+				(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
+					setTimeout(() => {
+						const rewardText = a.coinReward ? ` +${a.coinReward} монет` : "";
+						showToast(`${a.badge} Достижение: ${a.name}. ${a.label}${rewardText}`, "success");
+					}, 600 + i * 400);
+				});
 			},
 			onError: (msg) => {
 				showToast(msg, "error");

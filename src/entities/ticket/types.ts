@@ -19,6 +19,8 @@ export interface STicketWithItem {
   } | null;
 }
 
+import type { NewlyUnlockedAchievement } from '@/entities/achievement';
+
 export interface PurchaseSuccessPayload {
   ticket: STicket;
   item: {
@@ -29,4 +31,5 @@ export interface PurchaseSuccessPayload {
     photo: string | null;
   };
   newBalance: number;
+  newlyUnlockedAchievements?: NewlyUnlockedAchievement[];
 }

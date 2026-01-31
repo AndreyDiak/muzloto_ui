@@ -1,1 +1,1 @@
-export type { SProfile } from './types';
+export type { IProfileStats, SProfile } from "./types";

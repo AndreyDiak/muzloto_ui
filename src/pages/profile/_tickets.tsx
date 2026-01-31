@@ -4,19 +4,43 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
 import { useTickets } from "@/hooks/use-tickets";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronUp, TicketIcon } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, TicketIcon } from "lucide-react";
 import { memo, useState } from "react";
 import { ProfileTicketCard } from "./_ticket-card";
 
 const VISIBLE_COUNT = 3;
+const TICKETS_PAGE_SIZE = 3;
 
-export const ProfileTickets = memo(() => {
+interface ProfileTicketsProps {
+	/** На странице «Мои билеты» показывать все билеты сразу */
+	defaultExpanded?: boolean;
+	/** Разбить список на «Активные» и «Использованные» (для страницы билетов) */
+	groupByUsed?: boolean;
+}
+
+export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = false }: ProfileTicketsProps) => {
 	const { user, isLoading: isSessionLoading, isProfileLoading } = useSession();
 	const { showToast } = useToast();
 	const queryClient = useQueryClient();
 	const { tickets, isLoading, error } = useTickets(user?.id);
 	const [openedTicketId, setOpenedTicketId] = useState<string | null>(null);
-	const [showAll, setShowAll] = useState(false);
+	const [showAll, setShowAll] = useState(defaultExpanded);
+	const [activePage, setActivePage] = useState(0);
+	const [usedPage, setUsedPage] = useState(0);
+
+	const activeTickets = tickets.filter((t) => !t.used_at);
+	const usedTickets = tickets.filter((t) => t.used_at);
+
+	const activeTotalPages = Math.max(1, Math.ceil(activeTickets.length / TICKETS_PAGE_SIZE));
+	const usedTotalPages = Math.max(1, Math.ceil(usedTickets.length / TICKETS_PAGE_SIZE));
+	const activeTicketsPage = activeTickets.slice(
+		activePage * TICKETS_PAGE_SIZE,
+		(activePage + 1) * TICKETS_PAGE_SIZE,
+	);
+	const usedTicketsPage = usedTickets.slice(
+		usedPage * TICKETS_PAGE_SIZE,
+		(usedPage + 1) * TICKETS_PAGE_SIZE,
+	);
 
 	const visibleTickets = tickets.slice(0, VISIBLE_COUNT);
 	const restTickets = tickets.slice(VISIBLE_COUNT);
@@ -80,6 +104,95 @@ export const ProfileTickets = memo(() => {
 			onCloseModal={() => setOpenedTicketId(null)}
 		/>
 	);
+
+	if (groupByUsed) {
+		const paginationControls = (
+			currentPage: number,
+			totalPages: number,
+			onPrev: () => void,
+			onNext: () => void,
+		) =>
+			totalPages > 1 ? (
+				<div className="flex items-center justify-center gap-3 py-3">
+					<button
+						type="button"
+						onClick={onPrev}
+						disabled={currentPage === 0}
+						className="p-2 rounded-lg text-[#00f0ff] hover:bg-[#00f0ff]/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+						aria-label="Предыдущая страница"
+					>
+						<ChevronLeft className="w-5 h-5" />
+					</button>
+					<span className="text-sm text-gray-400 tabular-nums">
+						{currentPage + 1} / {totalPages}
+					</span>
+					<button
+						type="button"
+						onClick={onNext}
+						disabled={currentPage >= totalPages - 1}
+						className="p-2 rounded-lg text-[#00f0ff] hover:bg-[#00f0ff]/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+						aria-label="Следующая страница"
+					>
+						<ChevronRight className="w-5 h-5" />
+					</button>
+				</div>
+			) : null;
+
+		return (
+			<section className="space-y-6">
+				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
+					<TicketIcon className="w-5 h-5 text-[#00f0ff]" />
+					Мои билеты
+				</h3>
+				<div className="space-y-6">
+					<div>
+						<h4 className="text-sm font-medium text-gray-400 mb-2 px-0">
+							Активные {activeTickets.length > 0 && `(${activeTickets.length})`}
+						</h4>
+						<div className="-mx-4 rounded-none overflow-hidden border-y border-[#00f0ff]/15">
+							{activeTickets.length === 0 ? (
+								<p className="text-sm text-gray-500 py-4 px-4 text-center">
+									Нет активных билетов
+								</p>
+							) : (
+								<>
+									{activeTicketsPage.map(renderCard)}
+									{paginationControls(
+										activePage,
+										activeTotalPages,
+										() => setActivePage((p) => Math.max(0, p - 1)),
+										() => setActivePage((p) => Math.min(activeTotalPages - 1, p + 1)),
+									)}
+								</>
+							)}
+						</div>
+					</div>
+					<div>
+						<h4 className="text-sm font-medium text-gray-400 mb-2 px-0">
+							Использованные {usedTickets.length > 0 && `(${usedTickets.length})`}
+						</h4>
+						<div className="-mx-4 rounded-none overflow-hidden border-y border-[#00f0ff]/15">
+							{usedTickets.length === 0 ? (
+								<p className="text-sm text-gray-500 py-4 px-4 text-center">
+									Нет использованных билетов
+								</p>
+							) : (
+								<>
+									{usedTicketsPage.map(renderCard)}
+									{paginationControls(
+										usedPage,
+										usedTotalPages,
+										() => setUsedPage((p) => Math.max(0, p - 1)),
+										() => setUsedPage((p) => Math.min(usedTotalPages - 1, p + 1)),
+									)}
+								</>
+							)}
+						</div>
+					</div>
+				</div>
+			</section>
+		);
+	}
 
 	return (
 		<section className="space-y-2">

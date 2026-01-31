@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 
 /** Ключи запросов для инвалидации кеша */
 export const queryKeys = {
+	achievements: ["achievements"] as const,
 	events: ["events"] as const,
 	catalog: ["catalog"] as const,
 	tickets: (telegramId: number) => ["tickets", telegramId] as const,

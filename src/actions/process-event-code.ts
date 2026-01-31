@@ -1,9 +1,15 @@
+import type { NewlyUnlockedAchievement } from '@/entities/achievement';
 import { http } from '../http';
 
 interface ProcessEventCodeParams {
   code: string;
   telegramId: number;
-  onSuccess?: (data: { event: { title: string }; newBalance: number, coinsEarned: number }) => void;
+  onSuccess?: (data: {
+    event: { title: string };
+    newBalance: number;
+    coinsEarned: number;
+    newlyUnlockedAchievements?: NewlyUnlockedAchievement[];
+  }) => void;
   onError?: (error: string, statusCode?: number) => void;
 }
 
@@ -78,7 +84,8 @@ export async function processEventCode({
     onSuccess?.({
       event: responseData.event || { title: 'событие' },
       newBalance: responseData.newBalance,
-      coinsEarned: responseData.coinsEarned
+      coinsEarned: responseData.coinsEarned,
+      newlyUnlockedAchievements: responseData.newlyUnlockedAchievements,
     });
   } catch (err: any) {
     if (err instanceof TypeError && err.message === 'Failed to fetch') {

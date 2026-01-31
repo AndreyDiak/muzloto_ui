@@ -1,5 +1,5 @@
-import type { PurchaseSuccessPayload } from '../entities/ticket';
-import { http } from '../http';
+import type { PurchaseSuccessPayload } from "../entities/ticket";
+import { http } from "../http";
 
 interface PurchaseCatalogItemParams {
   catalogItemId: string;
@@ -54,7 +54,13 @@ export async function purchaseCatalogItem({
       return;
     }
 
-    const data = body as unknown as { success?: boolean; ticket?: unknown; item?: unknown; newBalance?: number };
+    const data = body as unknown as {
+      success?: boolean;
+      ticket?: unknown;
+      item?: unknown;
+      newBalance?: number;
+      newlyUnlockedAchievements?: PurchaseSuccessPayload['newlyUnlockedAchievements'];
+    };
     if (!data.success || !data.ticket || !data.item || typeof data.newBalance !== 'number') {
       onError?.('Неверный ответ сервера.');
       return;
@@ -64,6 +70,7 @@ export async function purchaseCatalogItem({
       ticket: data.ticket as PurchaseSuccessPayload['ticket'],
       item: data.item as PurchaseSuccessPayload['item'],
       newBalance: data.newBalance,
+      newlyUnlockedAchievements: data.newlyUnlockedAchievements,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Ошибка при покупке';

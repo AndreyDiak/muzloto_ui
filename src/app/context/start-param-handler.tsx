@@ -1,8 +1,11 @@
+import { processBingoCode } from "@/actions/process-bingo-code";
 import { processEventCode } from "@/actions/process-event-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-client";
 import { parseStartPayload } from "@/lib/event-deep-link";
 import { useEffect, useRef, useState } from "react";
 
@@ -40,6 +43,7 @@ export function StartParamHandler() {
 	const { user, refetchProfile, isSupabaseSessionReady } = useSession();
 	const { showToast } = useToast();
 	const { showCoinAnimation } = useCoinAnimation();
+	const queryClient = useQueryClient();
 	const processedRef = useRef(false);
 	const [retryAt, setRetryAt] = useState(0);
 
@@ -56,7 +60,6 @@ export function StartParamHandler() {
 		processedRef.current = true;
 
 		if (payload.type === "registration") {
-			// Небольшая задержка, чтобы Toaster и анимация монет успели смонтироваться
 			const timeoutId = setTimeout(() => {
 				processEventCode({
 					code: payload.value,
@@ -65,10 +68,17 @@ export function StartParamHandler() {
 						sessionStorage.setItem(STORAGE_KEY, storageKey);
 						refetchProfile();
 						showCoinAnimation(data.coinsEarned ?? 10);
+						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
 						showToast(
 							`Успешно! Вы зарегистрированы на мероприятие «${data.event.title}». +${data.coinsEarned} монет`,
 							"success"
 						);
+						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
+							setTimeout(() => {
+								const rewardText = a.coinReward ? ` +${a.coinReward} монет` : "";
+								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}${rewardText}`, "success");
+							}, 600 + i * 400);
+						});
 					},
 					onError: (message) => {
 						processedRef.current = false;
@@ -79,10 +89,37 @@ export function StartParamHandler() {
 			return () => clearTimeout(timeoutId);
 		}
 
+		if (payload.type === "bingo") {
+			const timeoutId = setTimeout(() => {
+				processBingoCode({
+					code: payload.value,
+					telegramId: user.id,
+					onSuccess: (data) => {
+						sessionStorage.setItem(STORAGE_KEY, storageKey);
+						refetchProfile();
+						showCoinAnimation(data.coinsEarned ?? 10);
+						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+						showToast(`Победа в бинго! +${data.coinsEarned} монет.`, "success");
+						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
+							setTimeout(() => {
+								const rewardText = a.coinReward ? ` +${a.coinReward} монет` : "";
+								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}${rewardText}`, "success");
+							}, 600 + i * 400);
+						});
+					},
+					onError: (message) => {
+						processedRef.current = false;
+						showToast(message || "Не удалось засчитать победу.", "error");
+					},
+				});
+			}, 150);
+			return () => clearTimeout(timeoutId);
+		}
+
 		if (payload.type === "prize") {
 			handlePrizePayload(payload.value, user.id, { showToast, refetchProfile });
 		}
-	}, [tg?.initDataUnsafe?.start_param, user?.id, isSupabaseSessionReady, retryAt, showToast, refetchProfile, showCoinAnimation]);
+	}, [tg?.initDataUnsafe?.start_param, user?.id, isSupabaseSessionReady, retryAt, showToast, refetchProfile, showCoinAnimation, queryClient]);
 
 	// start_param иногда приходит с задержкой — перепроверяем через 0.8 с
 	useEffect(() => {

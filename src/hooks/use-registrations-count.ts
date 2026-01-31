@@ -1,0 +1,35 @@
+import { useQuery } from "@tanstack/react-query";
+import { http } from "@/http";
+import { queryKeys, STALE_TIME_MS } from "@/lib/query-client";
+
+async function fetchRegistrationsCount(telegramId: number): Promise<number> {
+  const { count, error } = await http
+    .from("registrations")
+    .select("id", { count: "exact", head: true })
+    .eq("telegram_id", telegramId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return count ?? 0;
+}
+
+export function useRegistrationsCount(telegramId: number | undefined): {
+  count: number;
+  isLoading: boolean;
+  error: Error | null;
+} {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["registrations-count", telegramId ?? 0],
+    queryFn: () => fetchRegistrationsCount(telegramId!),
+    enabled: telegramId != null,
+    staleTime: STALE_TIME_MS,
+  });
+
+  return {
+    count: data ?? 0,
+    isLoading: telegramId != null ? isLoading : false,
+    error: error ? (error instanceof Error ? error : new Error(String(error))) : null,
+  };
+}
