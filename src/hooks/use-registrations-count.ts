@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { http } from "@/http";
-import { queryKeys, STALE_TIME_MS } from "@/lib/query-client";
+import { STALE_TIME_MS } from "@/lib/query-client";
+import { useQuery } from "@tanstack/react-query";
 
 async function fetchRegistrationsCount(telegramId: number): Promise<number> {
   const { count, error } = await http
