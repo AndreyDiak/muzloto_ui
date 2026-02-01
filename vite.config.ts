@@ -13,6 +13,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ["react", "react-dom"],
   },
   server: {
     allowedHosts: true
@@ -22,9 +23,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) {
-              return 'vendor-react';
-            }
+            // React не выносим в отдельный чанк — иначе возможна ошибка useLayoutEffect (разные чанки грузятся в разном порядке)
             if (id.includes('react-router')) {
               return 'vendor-router';
             }
@@ -46,7 +45,7 @@ export default defineConfig({
             if (id.includes('sonner')) {
               return 'vendor-sonner';
             }
-            return 'vendor-misc';
+            // Остальные node_modules не выносим в vendor-misc — иначе чанк может грузиться до React и давать useLayoutEffect undefined
           }
         },
       },
