@@ -1,4 +1,4 @@
-import { TicketQRModal } from "@/components/ticket-qr-modal";
+import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { STicketWithItem } from "@/entities/ticket";
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TicketIcon } from "lucide-react";
@@ -68,7 +68,7 @@ export const ProfileTicketCard = memo(({ ticket, isModalOpen, onOpenModal, onClo
 			>
 				{cardContent(name, ticket, false)}
 			</button>
-			<TicketQRModal
+			<TicketQRModalLazy
 				open={isModalOpen}
 				onOpenChange={(open) => {
 					if (!open) onCloseModal();

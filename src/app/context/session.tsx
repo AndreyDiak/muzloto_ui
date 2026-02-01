@@ -16,7 +16,7 @@ interface SessionContextType {
   isLoading: boolean;
   isProfileLoading: boolean;
   isSupabaseSessionReady: boolean;
-  refetchProfile: () => Promise<void>;
+  refetchProfile: (options?: { silent?: boolean }) => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -37,8 +37,10 @@ export function SessionProvider({ children }: SessionProviderProps) {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isSupabaseSessionReady, setIsSupabaseSessionReady] = useState(false);
 
-  const fetchProfile = useCallback(async (telegramId: number) => {
-    setIsProfileLoading(true);
+  const fetchProfile = useCallback(async (telegramId: number, options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setIsProfileLoading(true);
+    }
     try {
       const { data, error } = await http
         .from('profiles')
@@ -54,7 +56,9 @@ export function SessionProvider({ children }: SessionProviderProps) {
     } catch (error) {
       setProfile(undefined);
     } finally {
-      setIsProfileLoading(false);
+      if (!options?.silent) {
+        setIsProfileLoading(false);
+      }
     }
   }, []);
 
@@ -147,9 +151,9 @@ export function SessionProvider({ children }: SessionProviderProps) {
     setIsLoading(false);
   }, [tg]);
 
-  const refetchProfile = useCallback(async () => {
+  const refetchProfile = useCallback(async (options?: { silent?: boolean }) => {
     if (user?.id) {
-      await fetchProfile(user.id);
+      await fetchProfile(user.id, options);
     }
   }, [user?.id, fetchProfile]);
 
