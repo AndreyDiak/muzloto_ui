@@ -61,8 +61,8 @@ const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAc
     { path: '/', icon: User, label: 'Профиль' },
     { path: '/events', icon: Calendar, label: 'Афиша' },
     { path: '/catalog', icon: ShoppingBag, label: 'Каталог' },
-    { path: '/achievements', icon: Award, label: 'Достижения', hasUnclaimed: hasUnclaimedAchievementRewards },
     { path: '/tickets', icon: TicketIcon, label: 'Билеты' },
+    { path: '/achievements', icon: Award, label: 'Достижения', hasUnclaimed: hasUnclaimedAchievementRewards },
   ];
   return (
     <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#16161d]/95 backdrop-blur-md border-t border-[#00f0ff]/20">
