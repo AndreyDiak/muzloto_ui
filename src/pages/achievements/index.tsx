@@ -21,7 +21,7 @@ const VISIT_GROUP: AchievementStatKey = "games_visited";
 const TICKETS_GROUP: AchievementStatKey = "tickets_purchased";
 const BINGO_GROUP: AchievementStatKey = "bingo_collected";
 
-export function Achievements() {
+export default function Achievements() {
   const { isSupabaseSessionReady } = useSession();
   const { achievements: list, isLoading, error } = useAchievements(isSupabaseSessionReady);
 

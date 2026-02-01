@@ -79,7 +79,7 @@ function RecentRow({ row, onClick }: { row: RecentScannedItem; onClick: () => vo
 	);
 }
 
-export function Scanner() {
+export default function Scanner() {
 	const { isRoot } = useSession();
 	const { showToast } = useToast();
 	const { tg } = useTelegram();

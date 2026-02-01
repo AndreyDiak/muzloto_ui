@@ -10,7 +10,7 @@ const colorVars = [
 	"--accent-blue",
 ];
 
-export function Catalog() {
+export default function Catalog() {
 	const colors = useCssColor(colorVars);
 	const { error, isLoading, items } = useCatalog();
 

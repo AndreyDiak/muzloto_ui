@@ -7,7 +7,7 @@ import { useState } from "react";
 import { EventsList } from "./_list";
 import { UpcomingEvent } from "./_upcoming";
 
-export function Events() {
+export default function Events() {
 	const { isRoot } = useSession();
 	const { events, isLoading, error } = useEvents();
 	const [eventForCode, setEventForCode] = useState<SEvent | null>(null);
