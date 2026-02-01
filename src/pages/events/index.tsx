@@ -1,5 +1,5 @@
 import { useSession } from "@/app/context/session";
-import { TicketQRModal } from "@/components/ticket-qr-modal";
+import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { SEvent } from "@/entities/event";
 import { useEvents } from "@/hooks/use-events";
 import { getEventCodeBotStartLink, getEventCodeDeepLink } from "@/lib/event-deep-link";
@@ -62,7 +62,7 @@ export default function Events() {
 
 			{/* Модалка с QR и кодом мероприятия (только для мастер-аккаунта) */}
 			{eventForCode && (
-				<TicketQRModal
+				<TicketQRModalLazy
 					open={!!eventForCode}
 					onOpenChange={(open) => !open && setEventForCode(null)}
 					code={eventForCode.code}

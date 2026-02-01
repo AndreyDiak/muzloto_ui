@@ -75,8 +75,8 @@ export function StartParamHandler() {
 						);
 						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 							setTimeout(() => {
-								const rewardText = a.coinReward ? ` +${a.coinReward} монет` : "";
-								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}${rewardText}`, "success");
+								const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
+								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
 							}, 600 + i * 400);
 						});
 					},
@@ -102,8 +102,8 @@ export function StartParamHandler() {
 						showToast(`Победа в бинго! +${data.coinsEarned} монет.`, "success");
 						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 							setTimeout(() => {
-								const rewardText = a.coinReward ? ` +${a.coinReward} монет` : "";
-								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}${rewardText}`, "success");
+								const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
+								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
 							}, 600 + i * 400);
 						});
 					},

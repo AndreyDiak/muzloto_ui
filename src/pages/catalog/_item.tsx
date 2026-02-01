@@ -1,7 +1,7 @@
 import { purchaseCatalogItem } from "@/actions/purchase-catalog-item";
 import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
-import { TicketQRModal } from "@/components/ticket-qr-modal";
+import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { SCatalogItem } from "@/entities/catalog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
 import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
@@ -43,8 +43,8 @@ export const CatalogItem = ({ item, color }: Props) => {
 				showToast("Покупка оформлена. Сохраните код билета.", "success");
 				(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 					setTimeout(() => {
-						const rewardText = a.coinReward ? ` +${a.coinReward} монет` : "";
-						showToast(`${a.badge} Достижение: ${a.name}. ${a.label}${rewardText}`, "success");
+						const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
+						showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
 					}, 600 + i * 400);
 				});
 			},
@@ -62,11 +62,12 @@ export const CatalogItem = ({ item, color }: Props) => {
 				className="bg-[#16161d] rounded-xl p-4 border border-[#00f0ff]/10 flex flex-col"
 			>
 				<h3 className="text-white text-lg font-bold mb-2 flex-1">{item.name}</h3>
-				{item.photo && (
+				{/* TODO: return in future */}
+				{/* {item.photo && (
 					<div className="w-full h-full rounded-lg overflow-hidden">
 						<img src={item.photo} alt={item.name} />
 					</div>
-				)}
+				)} */}
 				<p className="text-xs text-gray-400 mb-3">{item.description ?? ""}</p>
 
 				<div className="flex items-center gap-1 mb-3">
@@ -90,7 +91,7 @@ export const CatalogItem = ({ item, color }: Props) => {
 				</button>
 			</div>
 
-			<TicketQRModal
+			<TicketQRModalLazy
 				open={!!ticketResult}
 				onOpenChange={(open) => !open && setTicketResult(null)}
 				code={ticketResult?.ticket.code ?? ""}

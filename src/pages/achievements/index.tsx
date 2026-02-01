@@ -14,6 +14,7 @@ function mapToAchievement(a: AchievementItem): Achievement {
     threshold: a.threshold,
     current_value: a.current_value,
     coin_reward: a.coin_reward,
+    reward_claimed_at: a.reward_claimed_at ?? undefined,
   };
 }
 

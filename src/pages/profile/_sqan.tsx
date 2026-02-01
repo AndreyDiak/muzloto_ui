@@ -112,7 +112,10 @@ export const ProfileSqan = memo(() => {
 					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
 					showToast(`Победа в бинго! +${data.coinsEarned} монет.`, 'success');
 					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
-						setTimeout(() => showToast(`${a.badge} Достижение: ${a.name}. ${a.label}`, 'success'), 600 + i * 400);
+						setTimeout(() => {
+							const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
+							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
+						}, 600 + i * 400);
 					});
 					isProcessingQRRef.current = false;
 				},
@@ -169,10 +172,10 @@ export const ProfileSqan = memo(() => {
 						showToast(`Успешно! Вы зарегистрированы на мероприятие "${eventTitle}".`, 'success');
 					newlyUnlocked.forEach((a) => {
 						setTimeout(() => {
-							const rewardText = a.coinReward ? ` +${a.coinReward} монет` : '';
-							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}${rewardText}`, 'success');
-							}, 600 + newlyUnlocked.indexOf(a) * 400);
-						});
+							const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
+							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
+						}, 600 + newlyUnlocked.indexOf(a) * 400);
+					});
 					}, 500);
 
 					isProcessingQRRef.current = false;
