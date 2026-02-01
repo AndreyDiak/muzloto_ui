@@ -16,5 +16,40 @@ export default defineConfig({
   },
   server: {
     allowedHosts: true
-  }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) {
+              return 'vendor-react';
+            }
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
+            if (id.includes('@tanstack/react-query')) {
+              return 'vendor-query';
+            }
+            if (id.includes('@supabase/supabase-js')) {
+              return 'vendor-supabase';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'vendor-radix';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-lucide';
+            }
+            if (id.includes('qr-code-styling')) {
+              return 'vendor-qr';
+            }
+            if (id.includes('sonner')) {
+              return 'vendor-sonner';
+            }
+            return 'vendor-misc';
+          }
+        },
+      },
+    },
+  },
 })
