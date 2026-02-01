@@ -2,7 +2,7 @@
   /* Background colors */
   --bg-card: #16161d;
   --bg-dark: #0a0a0f;
-  
+
   /* Accent colors */
   --accent-cyan: #00f0ff;
   --accent-cyan-darker: #00b8cc;
@@ -14,13 +14,13 @@
   --accent-pink-darker: #cc2478;
   --accent-blue: #3b82f6;
   --accent-blue-darker: #2f6699;
-  
+
   /* Text colors */
   --text-white: #ffffff;
   --text-gray-400: #9ca3af;
   --text-gray-600: #4b5563;
   --text-gray-800: #1f2937;
-  
+
   /* Border colors */
   --border-cyan-light: rgba(0, 240, 255, 0.1);
   --border-cyan-medium: rgba(0, 240, 255, 0.2);
@@ -43,3 +43,74 @@
   text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
 }
 
+@keyframes kl-draw {
+  0% {
+    stroke-dashoffset: 240;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes kl-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+.kl-breathe {
+  transform-origin: 50% 50%;
+  animation: kl-breathe 900ms ease-in-out infinite;
+}
+
+.kl-draw {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: kl-draw 900ms ease-out infinite;
+}
+
+@keyframes kl-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+.animate-kl-bounce {
+  animation: kl-bounce 900ms ease-in-out infinite;
+}
+
+/* Fallback: лёгкий отскок + пульс прозрачности */
+@keyframes kl-fallback {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  45% {
+    transform: translateY(-6px) scale(1.02);
+    opacity: 0.85;
+  }
+  55% {
+    transform: translateY(2px) scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+.animate-kl-fallback {
+  animation: kl-fallback 1.2s ease-in-out infinite;
+}

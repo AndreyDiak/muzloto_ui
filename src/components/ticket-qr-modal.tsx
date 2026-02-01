@@ -1,8 +1,9 @@
 import { useToast } from "@/app/context/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Copy } from "lucide-react";
 import QRCodeStyling from "qr-code-styling";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const NEON_CYAN = "#00f0ff";
 const NEON_PURPLE = "#b829ff";
@@ -56,6 +57,11 @@ export function TicketQRModal({
 	const { showToast } = useToast();
 	const qrInstanceRef = useRef<InstanceType<typeof QRCodeStyling> | null>(null);
 	const dataForQr = (qrData ?? code).trim() || code;
+	const [isQrReady, setIsQrReady] = useState(false);
+
+	useEffect(() => {
+		if (open) setIsQrReady(false);
+	}, [open]);
 
 	const setQrContainer = useCallback(
 		(node: HTMLDivElement | null) => {
@@ -63,6 +69,7 @@ export function TicketQRModal({
 				qrInstanceRef.current = null;
 				return;
 			}
+			setIsQrReady(false);
 			node.replaceChildren();
 			const qr = new QRCodeStyling({
 				width: 240,
@@ -100,6 +107,7 @@ export function TicketQRModal({
 				makeQrLogoRound(node);
 				setTimeout(() => makeQrLogoRound(node), 80);
 			});
+			setTimeout(() => setIsQrReady(true), 350);
 		},
 		[dataForQr],
 	);
@@ -119,12 +127,22 @@ export function TicketQRModal({
 					<p className="text-sm text-center text-transparent bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff] font-semibold">
 						{itemName}
 					</p>
-					<div
-						ref={setQrContainer}
-						className="rounded-lg overflow-hidden [&>svg]:max-w-[240px] [&>svg]:max-h-[240px] [&>svg]:w-full [&>svg]:h-auto"
-						style={{ width: 240, height: 240 }}
-						aria-hidden
-					/>
+					<div className="relative" style={{ width: 240, height: 240 }}>
+						<div
+							ref={setQrContainer}
+							className="rounded-lg overflow-hidden [&>svg]:max-w-[240px] [&>svg]:max-h-[240px] [&>svg]:w-full [&>svg]:h-auto size-full"
+							aria-hidden
+						/>
+						{!isQrReady && (
+							<div
+								className="absolute inset-0 flex items-center justify-center rounded-lg bg-[#16161d]"
+								aria-hidden
+							>
+								<Skeleton className="size-[200px] rounded-lg shrink-0" />
+								<span className="sr-only">Генерация QR-кода…</span>
+							</div>
+						)}
+					</div>
 					<div className="text-center w-full">
 						<p className="text-gray-400 text-xs mb-1">Код для ручного ввода</p>
 						<div className="flex items-center justify-center gap-2">
