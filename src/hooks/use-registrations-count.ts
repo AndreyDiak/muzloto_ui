@@ -20,7 +20,7 @@ export function useRegistrationsCount(telegramId: number | undefined): {
   isLoading: boolean;
   error: Error | null;
 } {
-  const { data, isLoading, error } = useQuery({
+  const { data, isPending, error } = useQuery({
     queryKey: ["registrations-count", telegramId ?? 0],
     queryFn: () => fetchRegistrationsCount(telegramId!),
     enabled: telegramId != null,
@@ -29,7 +29,7 @@ export function useRegistrationsCount(telegramId: number | undefined): {
 
   return {
     count: data ?? 0,
-    isLoading: telegramId != null ? isLoading : false,
+    isLoading: telegramId != null && isPending,
     error: error ? (error instanceof Error ? error : new Error(String(error))) : null,
   };
 }

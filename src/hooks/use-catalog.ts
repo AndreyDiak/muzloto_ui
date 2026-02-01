@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import type { SCatalogItem } from "../entities/catalog";
-import { http } from "../http";
 import { queryKeys, STALE_TIME_MS } from "../lib/query-client";
 
 interface UseCatalogReturn {
@@ -11,19 +10,17 @@ interface UseCatalogReturn {
 }
 
 async function fetchCatalog(): Promise<SCatalogItem[]> {
-  const { data, error } = await http
-    .from("catalog")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw new Error(error.message);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+  const res = await fetch(`${backendUrl}/api/catalog`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || res.statusText);
   }
-  return (data as SCatalogItem[]) ?? [];
+  return (data.items as SCatalogItem[]) ?? [];
 }
 
 export function useCatalog(): UseCatalogReturn {
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: queryKeys.catalog,
     queryFn: fetchCatalog,
     staleTime: STALE_TIME_MS,
@@ -31,7 +28,7 @@ export function useCatalog(): UseCatalogReturn {
 
   return {
     items: data ?? [],
-    isLoading,
+    isLoading: isPending,
     error: error ? (error instanceof Error ? error : new Error(String(error))) : null,
     refetch: async () => {
       await refetch();

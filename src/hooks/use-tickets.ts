@@ -35,7 +35,7 @@ async function fetchTickets(telegramId: number): Promise<STicketWithItem[]> {
 }
 
 export function useTickets(telegramId: number | undefined): UseTicketsReturn {
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: queryKeys.tickets(telegramId ?? 0),
     queryFn: () => (telegramId != null ? fetchTickets(telegramId) : Promise.resolve([])),
     enabled: telegramId != null,
@@ -44,7 +44,7 @@ export function useTickets(telegramId: number | undefined): UseTicketsReturn {
 
   return {
     tickets: data ?? [],
-    isLoading: telegramId != null ? isLoading : false,
+    isLoading: telegramId != null && isPending,
     error: error ? (error instanceof Error ? error : new Error(String(error))) : null,
     refetch: async () => {
       await refetch();

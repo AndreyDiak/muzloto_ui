@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import type { AchievementItem } from "@/entities/achievement";
 import { http } from "@/http";
 import { queryKeys, STALE_TIME_MS } from "@/lib/query-client";
+import { useQuery } from "@tanstack/react-query";
 
 interface ApiResponse {
   achievements: AchievementItem[];
@@ -35,7 +35,7 @@ export function useAchievements(enabled: boolean): {
   error: Error | null;
   refetch: () => Promise<void>;
 } {
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: queryKeys.achievements,
     queryFn: fetchAchievements,
     enabled,
@@ -44,7 +44,7 @@ export function useAchievements(enabled: boolean): {
 
   return {
     achievements: data ?? [],
-    isLoading,
+    isLoading: enabled && isPending,
     error: error ? (error instanceof Error ? error : new Error(String(error))) : null,
     refetch: async () => {
       await refetch();
