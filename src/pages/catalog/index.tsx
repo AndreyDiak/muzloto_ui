@@ -40,9 +40,9 @@ export default function Catalog() {
 
 	return (
 		<div className="p-4 space-y-6">
-			<h2 className="layout-header">
+			{/* <h2 className="layout-header">
 				Каталог
-			</h2>
+			</h2> */}
 
 			{items.map((item, index) => (
 				<CatalogItem key={item.id} item={item} color={colors[index % colors.length]} />
