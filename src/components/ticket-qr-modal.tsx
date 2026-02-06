@@ -117,6 +117,23 @@ export function TicketQRModal({
 		showToast("Код скопирован", "success");
 	}, [code, showToast]);
 
+	const handleDownloadQr = useCallback(() => {
+		const qr = qrInstanceRef.current;
+		if (!qr) {
+			showToast("QR-код ещё генерируется", "info");
+			return;
+		}
+		try {
+			qr.download({
+				name: `event-${code}`,
+				extension: "png",
+			});
+		} catch (error) {
+			console.error(error);
+			showToast("Не удалось сохранить QR-код", "error");
+		}
+	}, [code, showToast]);
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
@@ -165,6 +182,14 @@ export function TicketQRModal({
 							Билет сохранится у вас в разделе «Профиль»
 						</p>
 					)}
+					<button
+						type="button"
+						onClick={handleDownloadQr}
+						disabled={!isQrReady}
+						className="w-full py-2.5 rounded-xl bg-[#00f0ff] text-black font-medium border border-[#00f0ff]/80 hover:bg-[#00f0ff]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Скачать QR
+					</button>
 					<button
 						type="button"
 						onClick={() => onOpenChange(false)}

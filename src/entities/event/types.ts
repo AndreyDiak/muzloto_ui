@@ -4,6 +4,7 @@ export interface SEvent {
   description?: string;
   event_date: string;
   location: string;
+  location_href: string;
   price: number;
   max_participants?: number;
   code: string;

@@ -42,7 +42,7 @@ export default function Events() {
 
 	return (
 		<div className="p-4 space-y-6">
-			<h2 className="layout-heaader">
+			<h2 className="layout-header">
 				Ближайшие события
 			</h2>
 
