@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { SCatalogItem } from "../entities/catalog";
 import { queryKeys, STALE_TIME_MS } from "../lib/query-client";
+import { type ApiCatalogResponse, type ApiError, parseJson } from "@/types/api";
 
 interface UseCatalogReturn {
   items: SCatalogItem[];
@@ -12,11 +13,12 @@ interface UseCatalogReturn {
 async function fetchCatalog(): Promise<SCatalogItem[]> {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
   const res = await fetch(`${backendUrl}/api/catalog`);
-  const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.error || res.statusText);
+    const err = await parseJson<ApiError>(res).catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || res.statusText);
   }
-  return (data.items as SCatalogItem[]) ?? [];
+  const data = await parseJson<ApiCatalogResponse>(res);
+  return data.items ?? [];
 }
 
 export function useCatalog(): UseCatalogReturn {

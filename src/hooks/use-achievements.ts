@@ -1,11 +1,8 @@
 import type { AchievementItem } from "@/entities/achievement";
 import { http } from "@/http";
 import { queryKeys, STALE_TIME_MS } from "@/lib/query-client";
+import { type ApiAchievementsResponse, type ApiError, parseJson } from "@/types/api";
 import { useQuery } from "@tanstack/react-query";
-
-interface ApiResponse {
-  achievements: AchievementItem[];
-}
 
 async function fetchAchievements(): Promise<AchievementItem[]> {
   const { data: { session } } = await http.auth.getSession();
@@ -21,11 +18,11 @@ async function fetchAchievements(): Promise<AchievementItem[]> {
   });
 
   if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
+    const err = await parseJson<ApiError>(response).catch(() => ({ error: `HTTP ${response.status}` }));
     throw new Error(err.error || `HTTP ${response.status}`);
   }
 
-  const data: ApiResponse = await response.json();
+  const data = await parseJson<ApiAchievementsResponse>(response);
   return data.achievements ?? [];
 }
 

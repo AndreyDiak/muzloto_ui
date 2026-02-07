@@ -1,5 +1,6 @@
 import type { NewlyUnlockedAchievement } from "@/entities/achievement";
 import { http } from "../http";
+import { type ApiBingoClaimResponse, type ApiError, parseJson } from "@/types/api";
 
 interface ProcessBingoCodeParams {
   code: string;
@@ -52,15 +53,15 @@ export async function processBingoCode({
       body: JSON.stringify({ code: code.toUpperCase() }),
     });
 
-    const responseData = await response.json().catch(() => ({}));
+    const responseData = await parseJson<ApiBingoClaimResponse | ApiError>(response).catch(() => ({ error: "Ошибка сервера" }) as ApiError);
 
     if (!response.ok) {
-      onError?.(responseData.error ?? `Ошибка ${response.status}`, response.status);
+      onError?.("error" in responseData ? responseData.error : `Ошибка ${response.status}`, response.status);
       return;
     }
 
-    if (!responseData.success) {
-      onError?.(responseData.error ?? "Не удалось засчитать победу.");
+    if (!("success" in responseData) || !responseData.success) {
+      onError?.("error" in responseData ? responseData.error : "Не удалось засчитать победу.");
       return;
     }
 

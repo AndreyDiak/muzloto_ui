@@ -1,23 +1,12 @@
 import { http } from "@/http";
+import { type ApiScanTicketResponse, type ApiError, parseJson } from "@/types/api";
 
-export interface ScanTicketParticipant {
-	telegram_id: number;
-	username: string | null;
-	first_name: string | null;
-	avatar_url: string | null;
-}
-
-export interface ScanTicketItem {
-	id: string;
-	name: string;
-	description: string | null;
-	price: number;
-	photo: string | null;
-}
+export type { ApiScanTicketParticipant as ScanTicketParticipant } from "@/types/api";
+export type { ApiCatalogItem as ScanTicketItem } from "@/types/api";
 
 export interface ScanTicketSuccess {
-	participant: ScanTicketParticipant;
-	item: ScanTicketItem;
+	participant: ApiScanTicketResponse["participant"];
+	item: ApiScanTicketResponse["item"];
 }
 
 export async function scanTicket(params: {
@@ -53,23 +42,22 @@ export async function scanTicket(params: {
 			body: JSON.stringify({ code: params.code.trim().toUpperCase() }),
 		});
 
-		const body = await res.json().catch(() => ({}));
+		const body = await parseJson<ApiScanTicketResponse | ApiError>(res).catch(() => ({ error: "Ошибка сервера" }) as ApiError);
 
 		if (!res.ok) {
-			const err = body as { error?: string; details?: string };
-			const msg = err.error || "Ошибка при сканировании билета";
-			params.onError(err.details ? `${msg}: ${err.details}` : msg);
+			const msg = "error" in body ? body.error : "Ошибка при сканировании билета";
+			params.onError(msg);
 			return;
 		}
 
-		if (!(body as { success?: boolean }).success || !(body as { participant?: unknown }).participant || !(body as { item?: unknown }).item) {
+		if (!("success" in body) || !body.success || !body.participant || !body.item) {
 			params.onError("Неверный ответ сервера");
 			return;
 		}
 
 		params.onSuccess({
-			participant: (body as ScanTicketSuccess).participant,
-			item: (body as ScanTicketSuccess).item,
+			participant: body.participant,
+			item: body.item,
 		});
 	} catch (e) {
 		params.onError(e instanceof Error ? e.message : "Ошибка при сканировании билета");

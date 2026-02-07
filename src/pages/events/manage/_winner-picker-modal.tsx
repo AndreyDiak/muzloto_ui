@@ -38,7 +38,7 @@ interface WinnerPickerModalProps {
 export function WinnerPickerModal({
   pickerSlot,
   registrations,
-  personalWinners,
+  // personalWinners,
   teamWinners,
   pickerPage,
   awardingWinner,

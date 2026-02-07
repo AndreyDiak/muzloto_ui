@@ -56,6 +56,17 @@ export interface ApiPutBingoWinnersResponse {
 	success: true;
 }
 
+// ——— Shared: newly unlocked achievement (matches server NewlyUnlockedAchievement) ———
+
+export interface ApiNewlyUnlockedAchievement {
+	slug: string;
+	badge: string;
+	name: string;
+	description: string;
+	label: string;
+	coinReward?: number;
+}
+
 // ——— Bingo API ———
 
 export interface ApiBingoClaimResponse {
@@ -63,22 +74,29 @@ export interface ApiBingoClaimResponse {
 	message: string;
 	newBalance: number;
 	coinsEarned: number;
-	newlyUnlockedAchievements: Array<{ slug: string; title: string }>;
+	newlyUnlockedAchievements: ApiNewlyUnlockedAchievement[];
 }
 
 // ——— Achievements API ———
 
-export interface ApiAchievement {
+/** Элемент списка достижений, совпадает с AchievementWithUnlocked на бэкенде */
+export interface ApiAchievementItem {
 	slug: string;
-	title: string;
+	badge: string;
+	name: string;
 	description: string;
-	unlockedAt: string | null;
-	coinReward: number | null;
-	rewardClaimedAt: string | null;
+	label: string;
+	stat_key: "games_visited" | "tickets_purchased" | "bingo_collected";
+	unlocked: boolean;
+	unlocked_at: string | null;
+	reward_claimed_at: string | null;
+	threshold: number;
+	current_value: number;
+	coin_reward: number | null;
 }
 
 export interface ApiAchievementsResponse {
-	achievements: ApiAchievement[];
+	achievements: ApiAchievementItem[];
 }
 
 export interface ApiClaimAchievementResponse {
@@ -95,6 +113,8 @@ export interface ApiCatalogItem {
 	description: string | null;
 	price: number;
 	photo: string | null;
+	created_at: string;
+	updated_at: string;
 }
 
 export interface ApiCatalogResponse {
@@ -107,7 +127,7 @@ export interface ApiPurchaseResponse {
 	ticket: { id: string; code: string; created_at: string };
 	item: ApiCatalogItem;
 	newBalance: number;
-	newlyUnlockedAchievements?: Array<{ slug: string }>;
+	newlyUnlockedAchievements?: ApiNewlyUnlockedAchievement[];
 }
 
 // ——— Event code (process-event-code) ———
@@ -118,7 +138,34 @@ export interface ApiProcessEventCodeResponse {
 	event: { id: string; title: string };
 	newBalance: number;
 	coinsEarned: number;
-	newlyUnlockedAchievements?: Array<{ slug: string }>;
+	newlyUnlockedAchievements?: ApiNewlyUnlockedAchievement[];
+}
+
+// ——— Scanner API ———
+
+export interface ApiScanTicketParticipant {
+	telegram_id: number;
+	username: string | null;
+	first_name: string | null;
+	avatar_url: string | null;
+}
+
+export interface ApiScanTicketResponse {
+	success: true;
+	participant: ApiScanTicketParticipant;
+	item: ApiCatalogItem;
+}
+
+export interface ApiRecentScannedItem {
+	id: string;
+	used_at: string;
+	code: string;
+	participant: ApiScanTicketParticipant | null;
+	item: ApiCatalogItem | null;
+}
+
+export interface ApiRecentScannedResponse {
+	items: ApiRecentScannedItem[];
 }
 
 // ——— Personal Bingo Slots ———

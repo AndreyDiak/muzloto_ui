@@ -1,5 +1,6 @@
 import type { NewlyUnlockedAchievement } from '@/entities/achievement';
 import { http } from '../http';
+import { type ApiProcessEventCodeResponse, type ApiError, parseJson } from '@/types/api';
 
 interface ProcessEventCodeParams {
   code: string;
@@ -57,28 +58,20 @@ export async function processEventCode({
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { error: errorText || `HTTP ${response.status}` };
-      }
-      
-      const errorMessage = errorData.error || `Request failed with status ${response.status}`;
-      onError?.(errorMessage, response.status);
+      const errorData = await parseJson<ApiError>(response).catch(() => ({ error: `HTTP ${response.status}` }));
+      onError?.(errorData.error || `Request failed with status ${response.status}`, response.status);
       return;
     }
 
-    const responseData = await response.json();
+    const responseData = await parseJson<ApiProcessEventCodeResponse | ApiError>(response);
 
-    if (responseData?.error) {
+    if ('error' in responseData) {
       onError?.(responseData.error, 400);
       return;
     }
 
-    if (!responseData?.success) {
-      throw new Error(responseData?.error || 'Неизвестная ошибка при обработке кода');
+    if (!responseData.success) {
+      throw new Error('Неизвестная ошибка при обработке кода');
     }
 
     onSuccess?.({
@@ -87,7 +80,7 @@ export async function processEventCode({
       coinsEarned: responseData.coinsEarned,
       newlyUnlockedAchievements: responseData.newlyUnlockedAchievements,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (err instanceof TypeError && err.message === 'Failed to fetch') {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
       const errorMessage = `Не удалось подключиться к серверу. Проверьте, что backend доступен по адресу: ${backendUrl}`;
@@ -95,7 +88,7 @@ export async function processEventCode({
       return;
     }
     
-    const errorMessage = err?.message || err?.error?.message || 'Произошла ошибка при обработке кода';
+    const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при обработке кода';
     onError?.(errorMessage, 500);
   }
 }

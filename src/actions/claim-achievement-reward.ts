@@ -1,10 +1,7 @@
 import { http } from "@/http";
+import { type ApiClaimAchievementResponse, type ApiError, parseJson } from "@/types/api";
 
-export interface ClaimAchievementResult {
-  success: true;
-  coinsAdded: number;
-  newBalance: number;
-}
+export type ClaimAchievementResult = ApiClaimAchievementResponse;
 
 export async function claimAchievementReward(achievementSlug: string): Promise<ClaimAchievementResult> {
   const { data: { session } } = await http.auth.getSession();
@@ -22,10 +19,10 @@ export async function claimAchievementReward(achievementSlug: string): Promise<C
     body: JSON.stringify({ achievement_slug: achievementSlug }),
   });
 
-  const data = await res.json().catch(() => ({}));
+  const data = await parseJson<ApiClaimAchievementResponse | ApiError>(res).catch(() => ({ error: `Ошибка ${res.status}` }) as ApiError);
   if (!res.ok) {
-    throw new Error(data.error || `Ошибка ${res.status}`);
+    throw new Error("error" in data ? data.error : `Ошибка ${res.status}`);
   }
 
-  return data as ClaimAchievementResult;
+  return data as ApiClaimAchievementResponse;
 }

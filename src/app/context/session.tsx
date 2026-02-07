@@ -129,7 +129,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
     const channel = http
       .channel(`session-profile-${user.id}`)
-      .on(
+      .on<SProfile>(
         'postgres_changes',
         {
           event: 'UPDATE',
@@ -137,10 +137,9 @@ export function SessionProvider({ children }: SessionProviderProps) {
           table: 'profiles',
           filter: `telegram_id=eq.${user.id}`,
         },
-        (payload: { new?: Record<string, unknown> }) => {
-          const row = payload.new;
-          if (row) {
-            setProfile(row as SProfile);
+        (payload) => {
+          if (payload.new) {
+            setProfile(payload.new);
           }
         }
       )

@@ -1,17 +1,11 @@
-import type { ScanTicketItem, ScanTicketParticipant } from "@/actions/scan-ticket";
 import { http } from "@/http";
+import { type ApiRecentScannedResponse, type ApiError, parseJson } from "@/types/api";
 import { useCallback, useEffect, useState } from "react";
 
-export interface RecentScannedItem {
-	id: string;
-	used_at: string;
-	code: string;
-	participant: ScanTicketParticipant | null;
-	item: ScanTicketItem | null;
-}
+export type { ApiRecentScannedItem as RecentScannedItem } from "@/types/api";
 
 export function useRecentScanned(enabled: boolean) {
-	const [items, setItems] = useState<RecentScannedItem[]>([]);
+	const [items, setItems] = useState<ApiRecentScannedResponse["items"]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
 
@@ -31,10 +25,11 @@ export function useRecentScanned(enabled: boolean) {
 			const res = await fetch(url, {
 				headers: { Authorization: `Bearer ${session.access_token}` },
 			});
-			const body = (await res.json().catch(() => ({}))) as { items?: RecentScannedItem[]; error?: string };
 			if (!res.ok) {
-				throw new Error(body.error ?? "Не удалось загрузить список");
+				const err = await parseJson<ApiError>(res).catch(() => ({ error: "Не удалось загрузить список" }));
+				throw new Error(err.error ?? "Не удалось загрузить список");
 			}
+			const body = await parseJson<ApiRecentScannedResponse>(res);
 			setItems(body.items ?? []);
 		} catch (e) {
 			setError(e instanceof Error ? e : new Error("Ошибка загрузки"));

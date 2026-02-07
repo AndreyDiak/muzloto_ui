@@ -1,22 +1,21 @@
-import type { ApiPersonalWinnerSlot } from "@/types/api";
-import { PERSONAL_BINGO_SLOTS } from "@/types/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import type { ApiPersonalWinnerSlot } from "@/types/api";
+import { PERSONAL_BINGO_SLOTS } from "@/types/api";
+import type { LucideIcon } from "lucide-react";
 import {
   Award,
   Coins,
+  LayoutGrid,
+  MoveHorizontal,
+  MoveUpRight,
+  MoveVertical,
   Plus,
   QrCode,
   User,
   Users,
-  MoveHorizontal,
-  MoveVertical,
-  MoveUpRight,
-  LayoutGrid,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
-const TEAM_COUNT = 3;
 
 const SLOT_ICONS: Record<string, LucideIcon> = {
   MoveHorizontal,
@@ -161,7 +160,7 @@ function PersonalSlotCard({
   label,
   coins,
   winner,
-  disabled,
+  // disabled,
   locked,
   highlighted,
   onClick,

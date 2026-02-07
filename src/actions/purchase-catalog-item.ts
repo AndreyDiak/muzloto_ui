@@ -1,5 +1,6 @@
 import type { PurchaseSuccessPayload } from "../entities/ticket";
 import { http } from "../http";
+import { type ApiPurchaseResponse, type ApiError, parseJson } from "@/types/api";
 
 interface PurchaseCatalogItemParams {
   catalogItemId: string;
@@ -41,34 +42,21 @@ export async function purchaseCatalogItem({
       body: JSON.stringify({ catalog_item_id: catalogItemId }),
     });
 
-    const text = await res.text();
-    let body: { error?: string } = {};
-    try {
-      body = JSON.parse(text);
-    } catch {
-      body = { error: text || `Ошибка ${res.status}` };
-    }
+    const data = await parseJson<ApiPurchaseResponse | ApiError>(res).catch(() => ({ error: `Ошибка ${res.status}` }) as ApiError);
 
     if (!res.ok) {
-      onError?.(body.error ?? `Ошибка ${res.status}`, res.status);
+      onError?.("error" in data ? data.error : `Ошибка ${res.status}`, res.status);
       return;
     }
 
-    const data = body as unknown as {
-      success?: boolean;
-      ticket?: unknown;
-      item?: unknown;
-      newBalance?: number;
-      newlyUnlockedAchievements?: PurchaseSuccessPayload['newlyUnlockedAchievements'];
-    };
-    if (!data.success || !data.ticket || !data.item || typeof data.newBalance !== 'number') {
+    if (!("success" in data) || !data.success || !data.ticket || !data.item || typeof data.newBalance !== 'number') {
       onError?.('Неверный ответ сервера.');
       return;
     }
 
     onSuccess?.({
-      ticket: data.ticket as PurchaseSuccessPayload['ticket'],
-      item: data.item as PurchaseSuccessPayload['item'],
+      ticket: data.ticket,
+      item: data.item,
       newBalance: data.newBalance,
       newlyUnlockedAchievements: data.newlyUnlockedAchievements,
     });
