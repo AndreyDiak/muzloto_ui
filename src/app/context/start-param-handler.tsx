@@ -36,7 +36,7 @@ function getRawPayload(tg: { initDataUnsafe?: { start_param?: string } } | undef
 /**
  * Обрабатывает payload при заходе по ссылке по типу:
  * - registration (reg-CODE или 5 символов) → регистрация на мероприятие, начисление монет.
- * - prize (prize-TOKEN / p-TOKEN) → получение приза (в будущем).
+ * - prize (prize-TOKEN / p-TOKEN или Bxxxx) → получение приза.
  */
 export function StartParamHandler() {
 	const { tg } = useTelegram();
@@ -89,7 +89,7 @@ export function StartParamHandler() {
 			return () => clearTimeout(timeoutId);
 		}
 
-		if (payload.type === "bingo") {
+		if (payload.type === "prize") {
 			const timeoutId = setTimeout(() => {
 				processBingoCode({
 					code: payload.value,
@@ -99,7 +99,7 @@ export function StartParamHandler() {
 						refetchProfile();
 						showCoinAnimation(data.coinsEarned ?? 10);
 						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-						showToast(`Победа в бинго! +${data.coinsEarned} монет.`, "success");
+						showToast(`Приз получен! +${data.coinsEarned} монет.`, "success");
 						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 							setTimeout(() => {
 								const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
@@ -109,15 +109,11 @@ export function StartParamHandler() {
 					},
 					onError: (message) => {
 						processedRef.current = false;
-						showToast(message || "Не удалось засчитать победу.", "error");
+						showToast(message || "Не удалось получить приз.", "error");
 					},
 				});
 			}, 150);
 			return () => clearTimeout(timeoutId);
-		}
-
-		if (payload.type === "prize") {
-			handlePrizePayload(payload.value, user.id, { showToast, refetchProfile });
 		}
 	}, [tg?.initDataUnsafe?.start_param, user?.id, isSupabaseSessionReady, retryAt, showToast, refetchProfile, showCoinAnimation, queryClient]);
 
@@ -131,15 +127,3 @@ export function StartParamHandler() {
 	return null;
 }
 
-/**
- * Обработка payload «получение приза». Сейчас — заглушка.
- * Ссылка: t.me/bot/app?startapp=prize-TOKEN или startapp=p-TOKEN
- */
-function handlePrizePayload(
-	_token: string,
-	_telegramId: number,
-	_ctx: { showToast: (msg: string, type: "success" | "error" | "info") => void; refetchProfile: () => Promise<void> }
-) {
-	// TODO: вызов API получения приза, обновление профиля, тост
-	_ctx.showToast("Получение приза по ссылке будет доступно скоро.", "info");
-}

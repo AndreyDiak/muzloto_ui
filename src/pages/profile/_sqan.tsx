@@ -46,7 +46,7 @@ export const ProfileSqan = memo(() => {
 							const parsed = parseStartPayload(trimmedText);
 							const code5 = trimmedText.length === CODE_LENGTH ? trimmedText.toUpperCase() : null;
 							if (parsed) {
-								if (parsed.type === "bingo") {
+								if (parsed.type === "prize") {
 									handleProcessBingoCode(parsed.value);
 									return true;
 								}
@@ -69,7 +69,7 @@ export const ProfileSqan = memo(() => {
 								return true;
 							}
 
-							showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов (регистрация или бинго) или ссылка.`, 'error');
+							showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов или ссылка.`, 'error');
 							isProcessingQRRef.current = false;
 							return false;
 						} catch {

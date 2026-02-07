@@ -123,6 +123,34 @@ export function SessionProvider({ children }: SessionProviderProps) {
     };
   }, []);
 
+  // Realtime: обновление баланса и профиля при изменении строки в БД (начисление монет, бинго и т.д.)
+  useEffect(() => {
+    if (user?.id == null || !isSupabaseSessionReady) return;
+
+    const channel = http
+      .channel(`session-profile-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `telegram_id=eq.${user.id}`,
+        },
+        (payload: { new?: Record<string, unknown> }) => {
+          const row = payload.new;
+          if (row) {
+            setProfile(row as SProfile);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [user?.id, isSupabaseSessionReady]);
+
   useEffect(() => {
     if (!tg) {
       setIsLoading(false);

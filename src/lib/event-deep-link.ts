@@ -65,9 +65,9 @@ export function isBingoCodeLike(value: string): boolean {
 }
 
 /**
- * Тип действия в payload: 'registration' | 'prize' | 'bingo'.
+ * Тип действия в payload: 'registration' | 'prize'.
  */
-export type StartPayloadType = "registration" | "prize" | "bingo";
+export type StartPayloadType = "registration" | "prize";
 
 export interface ParsedStartPayload {
 	type: StartPayloadType;
@@ -79,12 +79,11 @@ const REG_PREFIX = "registration-";
 const REG_PREFIX_SHORT = "reg-";
 const PRIZE_PREFIX = "prize-";
 const PRIZE_PREFIX_SHORT = "p-";
-const BINGO_PREFIX = "bingo-";
 
 /**
  * Разбирает сырой payload: тип и значение через дефис (допустимо в Telegram startapp).
- * "reg-CODE" | "registration-CODE" → registration, "prize-TOKEN" | "p-TOKEN" → prize, "bingo-CODE" → bingo.
- * Обратная совместимость: голые 5 букв/цифр → registration; код вида Bxxxx → bingo.
+ * "reg-CODE" | "registration-CODE" → registration, "prize-TOKEN" | "p-TOKEN" → prize.
+ * Обратная совместимость: голые 5 букв/цифр → registration; код вида Bxxxx → prize.
  */
 export function parseStartPayload(raw: string | undefined): ParsedStartPayload | null {
 	if (!raw || typeof raw !== "string") return null;
@@ -103,12 +102,7 @@ export function parseStartPayload(raw: string | undefined): ParsedStartPayload |
 		if (value) return { type: "prize", value };
 		return null;
 	}
-	if (lower.startsWith(BINGO_PREFIX)) {
-		const value = trimmed.slice(trimmed.indexOf(SEP) + 1).trim().toUpperCase();
-		if (value && isBingoCodeLike(value)) return { type: "bingo", value };
-		return null;
-	}
-	if (isBingoCodeLike(trimmed)) return { type: "bingo", value: trimmed.toUpperCase() };
+	if (isBingoCodeLike(trimmed)) return { type: "prize", value: trimmed.toUpperCase() };
 	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.toUpperCase() };
 	return null;
 }

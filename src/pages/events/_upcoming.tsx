@@ -1,48 +1,22 @@
 import type { SEvent } from "@/entities/event";
-import { Banknote, Calendar, Clock, MapPin } from "lucide-react";
+import { Banknote, Calendar, Clock, MapPin, Settings } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 import { formatEventDate, useEventColors } from "./_utils";
 
 interface Props {
   event: SEvent;
-  /** Мастер-аккаунт: при клике на блок показывать модалку с кодом мероприятия */
   isRoot?: boolean;
-  onShowEventCode?: (event: SEvent) => void;
 }
 
 export const UpcomingEvent = memo(
-  ({ event, isRoot, onShowEventCode }: Props) => {
+  ({ event, isRoot }: Props) => {
     const eventColors = useEventColors();
     const cyanColor = eventColors.cyan;
     const eventDate = formatEventDate(event.event_date);
-    const isClickable = isRoot && !!onShowEventCode;
-
-    const handleBlockClick = (e: React.MouseEvent) => {
-      if (isClickable) {
-        e.preventDefault();
-        onShowEventCode?.(event);
-      }
-    };
 
     return (
-      <div
-        role={isClickable ? "button" : undefined}
-        tabIndex={isClickable ? 0 : undefined}
-        onClick={isClickable ? handleBlockClick : undefined}
-        onKeyDown={
-          isClickable
-            ? (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onShowEventCode?.(event);
-                }
-              }
-            : undefined
-        }
-        className={`bg-[#16161d] rounded-2xl overflow-hidden border border-[#00f0ff]/20 neon-glow ${
-          isClickable ? "cursor-pointer" : ""
-        }`}
-      >
+      <div className="bg-[#16161d] rounded-2xl overflow-hidden border border-[#00f0ff]/20 neon-glow">
         {event.location_href ? (
           <div className="aspect-[1.75/1] w-full overflow-hidden relative">
             <img
@@ -102,16 +76,17 @@ export const UpcomingEvent = memo(
             )}
           </div>
 
-          {/* <button
-            className="w-full px-6 py-2.5 rounded-lg font-medium transition-all text-white"
-            style={{
-              background: `linear-gradient(135deg, ${cyanColor} 0%, ${cyanColor}99 100%)`,
-              boxShadow: `0 0 15px ${cyanColor}40`,
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            Зарегистрироваться
-          </button> */}
+          {isRoot && (
+            <div className="px-5 pb-5">
+              <Link
+                to={`/events/${event.id}/manage`}
+                className="flex items-center justify-center gap-2 w-full px-6 py-2.5 rounded-lg font-medium transition-all text-white border border-[#00f0ff]/40 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20"
+              >
+                <Settings className="w-4 h-4" />
+                Управление
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     );

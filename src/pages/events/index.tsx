@@ -1,16 +1,11 @@
 import { useSession } from "@/app/context/session";
-import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
-import type { SEvent } from "@/entities/event";
 import { useEvents } from "@/hooks/use-events";
-import { getEventCodeBotStartLink, getEventCodeDeepLink } from "@/lib/event-deep-link";
-import { useState } from "react";
 import { EventsList } from "./_list";
 import { UpcomingEvent } from "./_upcoming";
 
 export default function Events() {
 	const { isRoot } = useSession();
 	const { events, isLoading, error } = useEvents();
-	const [eventForCode, setEventForCode] = useState<SEvent | null>(null);
 
 	if (isLoading) {
 		return (
@@ -47,31 +42,10 @@ export default function Events() {
 			</h2> */}
 
 			{/* Featured Event - Ближайшее */}
-			<UpcomingEvent
-				event={firstEvent}
-				isRoot={isRoot}
-				onShowEventCode={isRoot ? setEventForCode : undefined}
-			/>
+			<UpcomingEvent event={firstEvent} isRoot={isRoot} />
 
 			{/* Other Events - Compact List */}
-			<EventsList
-				events={displayedEvents}
-				isRoot={isRoot}
-				onShowEventCode={isRoot ? setEventForCode : undefined}
-			/>
-
-			{/* Модалка с QR и кодом мероприятия (только для мастер-аккаунта) */}
-			{eventForCode && (
-				<TicketQRModalLazy
-					open={!!eventForCode}
-					onOpenChange={(open) => !open && setEventForCode(null)}
-					code={eventForCode.code}
-					itemName={eventForCode.title}
-					showProfileHint={false}
-					dialogTitle="Код мероприятия"
-					qrData={getEventCodeDeepLink(eventForCode.code) || getEventCodeBotStartLink(eventForCode.code) || undefined}
-				/>
-			)}
+			<EventsList events={displayedEvents} isRoot={isRoot} />
 
 			{/* Remaining events count */}
 			{remainingCount > 0 && (
