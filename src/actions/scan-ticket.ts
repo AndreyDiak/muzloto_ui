@@ -1,4 +1,4 @@
-import { http } from "@/http";
+import { authFetch } from "@/lib/auth-fetch";
 import { type ApiScanTicketResponse, type ApiError, parseJson } from "@/types/api";
 
 export type { ApiScanTicketParticipant as ScanTicketParticipant } from "@/types/api";
@@ -9,36 +9,17 @@ export interface ScanTicketSuccess {
 	item: ApiScanTicketResponse["item"];
 }
 
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001").replace(/\/$/, "");
+
 export async function scanTicket(params: {
 	code: string;
 	onSuccess: (data: ScanTicketSuccess) => void;
 	onError: (message: string) => void;
 }): Promise<void> {
 	try {
-		let {
-			data: { session },
-		} = await http.auth.getSession();
-		if (!session) {
-			const { data: { session: refreshed }, error } = await http.auth.refreshSession();
-			if (error || !refreshed) {
-				params.onError("Нет активной сессии. Обновите страницу.");
-				return;
-			}
-			session = refreshed;
-		}
-		const token = session?.access_token;
-		if (!token) {
-			params.onError("Нет токена доступа. Обновите страницу.");
-			return;
-		}
-
-		const backendUrl = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001").replace(/\/$/, "");
-		const res = await fetch(`${backendUrl}/api/scanner/scan`, {
+		const res = await authFetch(`${BACKEND_URL}/api/scanner/scan`, {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${token}`,
-			},
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ code: params.code.trim().toUpperCase() }),
 		});
 

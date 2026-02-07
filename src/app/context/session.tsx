@@ -44,7 +44,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
     try {
       const { data, error } = await http
         .from('profiles')
-        .select('*')
+        .select('telegram_id, username, first_name, avatar_url, balance, created_at, updated_at')
         .eq('telegram_id', telegramId)
         .single();
 
@@ -82,24 +82,28 @@ export function SessionProvider({ children }: SessionProviderProps) {
           });
         }
         setIsSupabaseSessionReady(true);
-
-        // 2. Параллельно: загружаем профиль, проверяем root и обновляем аватар (если нужно)
-        const [, rootResult] = await Promise.all([
-          fetchProfile(telegramId),
-          http.from('root_user_tags').select('telegram_id').eq('telegram_id', telegramId).maybeSingle(),
-          photoUrl
-            ? http.from('profiles').update({ avatar_url: photoUrl }).eq('telegram_id', telegramId)
-            : Promise.resolve(),
-        ]);
-
-        setIsRoot(!!rootResult.data);
-
-        // 3. Если обновили аватар, мержим его локально без повторного запроса
-        if (photoUrl) {
-          setProfile((prev) => (prev ? { ...prev, avatar_url: photoUrl } : prev));
-        }
       } catch {
         setIsSupabaseSessionReady(false);
+        return; // без сессии дальше нет смысла
+      }
+
+      // 2. Параллельно: загружаем профиль, проверяем root и обновляем аватар
+      //    Каждый запрос изолирован — ошибка одного не блокирует остальные
+      const [, rootResult] = await Promise.allSettled([
+        fetchProfile(telegramId),
+        http.from('root_user_tags').select('telegram_id').eq('telegram_id', telegramId).maybeSingle(),
+        photoUrl
+          ? http.from('profiles').update({ avatar_url: photoUrl }).eq('telegram_id', telegramId)
+          : Promise.resolve(),
+      ]);
+
+      if (rootResult.status === 'fulfilled' && rootResult.value && 'data' in rootResult.value) {
+        setIsRoot(!!rootResult.value.data);
+      }
+
+      // 3. Если обновили аватар, мержим его локально без повторного запроса
+      if (photoUrl) {
+        setProfile((prev) => (prev ? { ...prev, avatar_url: photoUrl } : prev));
       }
     };
 

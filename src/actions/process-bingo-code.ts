@@ -1,5 +1,5 @@
 import type { NewlyUnlockedAchievement } from "@/entities/achievement";
-import { http } from "../http";
+import { authFetch } from "@/lib/auth-fetch";
 import { type ApiBingoClaimResponse, type ApiError, parseJson } from "@/types/api";
 
 interface ProcessBingoCodeParams {
@@ -14,6 +14,7 @@ interface ProcessBingoCodeParams {
 }
 
 const CODE_LENGTH = 5;
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001").replace(/\/$/, "");
 
 export async function processBingoCode({
   code,
@@ -27,29 +28,9 @@ export async function processBingoCode({
   }
 
   try {
-    let { data: { session } } = await http.auth.getSession();
-
-    if (!session) {
-      const { data: { session: refreshed }, error } = await http.auth.refreshSession();
-      if (error || !refreshed) {
-        onError?.("Нет активной сессии. Обновите страницу.");
-        return;
-      }
-      session = refreshed;
-    }
-
-    if (!session?.access_token) {
-      onError?.("Нет токена доступа. Обновите страницу.");
-      return;
-    }
-
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
-    const response = await fetch(`${backendUrl}/api/bingo/claim`, {
+    const response = await authFetch(`${BACKEND_URL}/api/bingo/claim`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code: code.toUpperCase() }),
     });
 

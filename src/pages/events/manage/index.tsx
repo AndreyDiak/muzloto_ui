@@ -126,15 +126,14 @@ export default function EventManage() {
   }, [eventId]);
 
   useEffect(() => {
+    if (!eventId) return;
+    // Запускаем все 3 запроса параллельно — они независимы друг от друга
     fetchEvent();
-  }, [fetchEvent]);
-
-  useEffect(() => {
-    if (eventId && isRoot) {
+    if (isRoot) {
       fetchRegistrations();
       fetchBingoWinners();
     }
-  }, [eventId, isRoot, fetchRegistrations, fetchBingoWinners]);
+  }, [eventId, isRoot, fetchEvent, fetchRegistrations, fetchBingoWinners]);
 
   useEffect(() => {
     setPickerParticipantsPage(1);

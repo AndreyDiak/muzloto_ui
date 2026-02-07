@@ -1,21 +1,13 @@
 import type { AchievementItem } from "@/entities/achievement";
-import { http } from "@/http";
+import { authFetch } from "@/lib/auth-fetch";
 import { queryKeys, STALE_TIME_MS } from "@/lib/query-client";
 import { type ApiAchievementsResponse, type ApiError, parseJson } from "@/types/api";
 import { useQuery } from "@tanstack/react-query";
 
-async function fetchAchievements(): Promise<AchievementItem[]> {
-  const { data: { session } } = await http.auth.getSession();
-  if (!session?.access_token) {
-    throw new Error("No session");
-  }
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001").replace(/\/$/, "");
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
-  const response = await fetch(`${backendUrl}/api/achievements`, {
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-  });
+async function fetchAchievements(): Promise<AchievementItem[]> {
+  const response = await authFetch(`${BACKEND_URL}/api/achievements`);
 
   if (!response.ok) {
     const err = await parseJson<ApiError>(response).catch(() => ({ error: `HTTP ${response.status}` }));

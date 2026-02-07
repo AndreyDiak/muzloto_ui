@@ -5,7 +5,9 @@ export const queryKeys = {
 	achievements: ["achievements"] as const,
 	events: ["events"] as const,
 	catalog: ["catalog"] as const,
-	tickets: (telegramId: number) => ["tickets", telegramId] as const,
+	recentScanned: ["recent-scanned"] as const,
+	tickets: (telegramId: number) =>
+		["tickets", telegramId] as const,
 };
 
 const STALE_TIME_MS = 60 * 1000; // 1 мин — данные считаются свежими

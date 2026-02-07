@@ -1,5 +1,5 @@
 import type { PurchaseSuccessPayload } from "../entities/ticket";
-import { http } from "../http";
+import { authFetch } from "@/lib/auth-fetch";
 import { type ApiPurchaseResponse, type ApiError, parseJson } from "@/types/api";
 
 interface PurchaseCatalogItemParams {
@@ -8,37 +8,17 @@ interface PurchaseCatalogItemParams {
   onError?: (message: string, statusCode?: number) => void;
 }
 
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '');
+
 export async function purchaseCatalogItem({
   catalogItemId,
   onSuccess,
   onError,
 }: PurchaseCatalogItemParams): Promise<void> {
   try {
-    let {
-      data: { session },
-    } = await http.auth.getSession();
-
-    if (!session) {
-      const { data: { session: refreshed }, error } = await http.auth.refreshSession();
-      if (error || !refreshed) {
-        onError?.('Нет активной сессии. Обновите страницу.');
-        return;
-      }
-      session = refreshed;
-    }
-
-    if (!session?.access_token) {
-      onError?.('Нет токена доступа. Обновите страницу.');
-      return;
-    }
-
-    const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '');
-    const res = await fetch(`${backendUrl}/api/catalog/purchase`, {
+    const res = await authFetch(`${BACKEND_URL}/api/catalog/purchase`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ catalog_item_id: catalogItemId }),
     });
 
