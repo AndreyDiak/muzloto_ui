@@ -44,8 +44,19 @@ export interface ApiPersonalWinner {
 	status: string;
 }
 
-/** Слот персонального победителя: пользователь или код (если не успел зарегистрироваться) */
-export type ApiPersonalWinnerSlot = ApiPersonalWinner | { code: string } | null;
+/** Информация о погашении кода */
+export interface ApiPrizeCodeRedeemer {
+	telegram_id: number;
+	first_name: string | null;
+	username: string | null;
+	avatar_url: string | null;
+}
+
+/** Слот персонального победителя: пользователь, код (с опциональной инфой о погашении), или null */
+export type ApiPersonalWinnerSlot =
+	| ApiPersonalWinner
+	| { code: string; redeemed: boolean; redeemed_at: string | null; redeemed_by: ApiPrizeCodeRedeemer | null }
+	| null;
 
 export interface ApiBingoWinnersResponse {
 	personal: ApiPersonalWinnerSlot[];

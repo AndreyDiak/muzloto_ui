@@ -120,25 +120,35 @@ export function getPrizeDeepLink(token: string): string {
 }
 
 /**
- * Извлекает код мероприятия из ввода (для сканера / ручного ввода).
- * Поддерживает: "ABC12", "reg-ABC12", URL с startapp=reg-ABC12 или startapp=ABC12.
+ * Извлекает payload из произвольного ввода: raw payload, URL с startapp=..., или 5-символьный код.
+ * Возвращает ParsedStartPayload (registration | prize) или null.
  */
-export function extractEventCodeFromInput(input: string): string | null {
+export function extractPayloadFromInput(input: string): ParsedStartPayload | null {
 	if (!input || typeof input !== "string") return null;
 	const trimmed = input.trim();
 	const parsed = parseStartPayload(trimmed);
-	if (parsed && parsed.type === "registration") return parsed.value;
-	if (isEventCodeLike(trimmed)) return trimmed.toUpperCase();
+	if (parsed) return parsed;
+	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.toUpperCase() };
 	try {
 		const url = trimmed.startsWith("http") ? new URL(trimmed) : new URL(trimmed, "https://t.me");
 		const startapp = url.searchParams.get("startapp");
 		if (startapp) {
 			const p = parseStartPayload(startapp);
-			if (p && p.type === "registration") return p.value;
-			if (isEventCodeLike(startapp)) return startapp.toUpperCase();
+			if (p) return p;
+			if (isEventCodeLike(startapp)) return { type: "registration", value: startapp.toUpperCase() };
 		}
 	} catch {
 		// не URL
 	}
+	return null;
+}
+
+/**
+ * Извлекает код мероприятия из ввода (для сканера / ручного ввода).
+ * Поддерживает: "ABC12", "reg-ABC12", URL с startapp=reg-ABC12 или startapp=ABC12.
+ */
+export function extractEventCodeFromInput(input: string): string | null {
+	const payload = extractPayloadFromInput(input);
+	if (payload && payload.type === "registration") return payload.value;
 	return null;
 }

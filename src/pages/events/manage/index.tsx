@@ -231,7 +231,7 @@ export default function EventManage() {
         const payload = data as ApiPrizeCodesResponse;
         if (payload.code) {
           const newPersonal = [...personalWinners];
-          newPersonal[slotIndex] = { code: payload.code };
+          newPersonal[slotIndex] = { code: payload.code, redeemed: false, redeemed_at: null, redeemed_by: null };
           setPersonalWinners(newPersonal);
           setPickerSlot(null);
           showToast("Код создан", "success");

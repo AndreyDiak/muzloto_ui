@@ -7,7 +7,7 @@ import { useToast } from "@/app/context/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-client";
-import { extractEventCodeFromInput, isBingoCodeLike, parseStartPayload } from "@/lib/event-deep-link";
+import { extractPayloadFromInput, isBingoCodeLike } from "@/lib/event-deep-link";
 import { Keyboard, QrCode } from "lucide-react";
 import { memo, useRef, useState } from "react";
 
@@ -41,37 +41,25 @@ export const ProfileSqan = memo(() => {
 								return false;
 							}
 
-							isProcessingQRRef.current = true;
-							const trimmedText = text.trim();
-							const parsed = parseStartPayload(trimmedText);
-							const code5 = trimmedText.length === CODE_LENGTH ? trimmedText.toUpperCase() : null;
-							if (parsed) {
-								if (parsed.type === "prize") {
-									handleProcessBingoCode(parsed.value);
-									return true;
-								}
-								if (parsed.type === "registration") {
-									handleProcessEventCode(parsed.value);
-									return true;
-								}
-							}
-							if (code5) {
-								if (isBingoCodeLike(code5)) {
-									handleProcessBingoCode(code5);
-									return true;
-								}
-								handleProcessEventCode(code5);
-								return true;
-							}
-							const regCode = extractEventCodeFromInput(trimmedText);
-							if (regCode) {
-								handleProcessEventCode(regCode);
-								return true;
-							}
+						isProcessingQRRef.current = true;
+						const trimmedText = text.trim();
 
-							showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов или ссылка.`, 'error');
-							isProcessingQRRef.current = false;
-							return false;
+						// Пробуем распарсить как raw payload, URL с startapp, или 5-символьный код
+						const parsed = extractPayloadFromInput(trimmedText);
+						if (parsed) {
+							if (parsed.type === "prize") {
+								handleProcessBingoCode(parsed.value);
+								return true;
+							}
+							if (parsed.type === "registration") {
+								handleProcessEventCode(parsed.value);
+								return true;
+							}
+						}
+
+						showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов или ссылка.`, 'error');
+						isProcessingQRRef.current = false;
+						return false;
 						} catch {
 							showToast('Ошибка при обработке QR кода', 'error');
 							isProcessingQRRef.current = false;

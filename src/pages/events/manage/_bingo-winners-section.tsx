@@ -5,6 +5,7 @@ import { PERSONAL_BINGO_SLOTS } from "@/types/api";
 import type { LucideIcon } from "lucide-react";
 import {
   Award,
+  Check,
   Coins,
   LayoutGrid,
   MoveHorizontal,
@@ -221,9 +222,37 @@ function PersonalSlotCard({
             </p>
           </div>
         ) : hasCode ? (
-          <p className="text-sm font-mono font-bold text-[#b829ff] tracking-wider mt-0.5 truncate">
-            {winner.code}
-          </p>
+          <div className="mt-0.5">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-mono font-bold text-[#b829ff] tracking-wider truncate">
+                {winner.code}
+              </p>
+              {winner.redeemed && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-green-500/15 text-[10px] font-medium text-green-400 shrink-0">
+                  <Check className="w-2.5 h-2.5" />
+                  Активирован
+                </span>
+              )}
+            </div>
+            {winner.redeemed && winner.redeemed_by && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 overflow-hidden">
+                  {winner.redeemed_by.avatar_url ? (
+                    <img
+                      src={winner.redeemed_by.avatar_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-2.5 h-2.5 text-green-400" />
+                  )}
+                </div>
+                <p className="text-xs text-gray-400 truncate">
+                  {winner.redeemed_by.first_name || (winner.redeemed_by.username ? `@${winner.redeemed_by.username}` : "—")}
+                </p>
+              </div>
+            )}
+          </div>
         ) : locked ? (
           <span className="text-xs text-gray-600 mt-0.5 block">
             Заполните предыдущие слоты

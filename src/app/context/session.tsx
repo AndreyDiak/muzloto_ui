@@ -67,41 +67,38 @@ export function SessionProvider({ children }: SessionProviderProps) {
       return;
     }
 
+    const telegramId = user.id;
+    const photoUrl = tg?.initDataUnsafe?.user?.photo_url;
+
     const initSupabaseSessionAndProfile = async () => {
       try {
+        // 1. Убеждаемся, что Supabase-сессия активна
         const { data: { session: existingSession } } = await http.auth.getSession();
-        if (existingSession) {
-          const { data: { user: supabaseUser }, error: userError } = await http.auth.getUser();
-
-          if (supabaseUser && !userError) {
-            setIsSupabaseSessionReady(true);
-            await fetchProfile(user.id);
-            const photoUrl = tg?.initDataUnsafe?.user?.photo_url;
-            if (photoUrl) {
-              await http.from('profiles').update({ avatar_url: photoUrl }).eq('telegram_id', user.id);
-              await fetchProfile(user.id);
-            }
-            const { data: rootRow } = await http.from('root_user_tags').select('telegram_id').eq('telegram_id', user.id).maybeSingle();
-            setIsRoot(!!rootRow);
-            return;
-          }
+        if (!existingSession) {
+          const session = await getTelegramSession();
+          await http.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          });
         }
-
-        const session = await getTelegramSession();
-        await http.auth.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-        });
         setIsSupabaseSessionReady(true);
-        await fetchProfile(user.id);
-        const photoUrl = tg?.initDataUnsafe?.user?.photo_url;
+
+        // 2. Параллельно: загружаем профиль, проверяем root и обновляем аватар (если нужно)
+        const [, rootResult] = await Promise.all([
+          fetchProfile(telegramId),
+          http.from('root_user_tags').select('telegram_id').eq('telegram_id', telegramId).maybeSingle(),
+          photoUrl
+            ? http.from('profiles').update({ avatar_url: photoUrl }).eq('telegram_id', telegramId)
+            : Promise.resolve(),
+        ]);
+
+        setIsRoot(!!rootResult.data);
+
+        // 3. Если обновили аватар, мержим его локально без повторного запроса
         if (photoUrl) {
-          await http.from('profiles').update({ avatar_url: photoUrl }).eq('telegram_id', user.id);
-          await fetchProfile(user.id);
+          setProfile((prev) => (prev ? { ...prev, avatar_url: photoUrl } : prev));
         }
-        const { data: rootRow } = await http.from('root_user_tags').select('telegram_id').eq('telegram_id', user.id).maybeSingle();
-        setIsRoot(!!rootRow);
-      } catch (error) {
+      } catch {
         setIsSupabaseSessionReady(false);
       }
     };
