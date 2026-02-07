@@ -271,7 +271,7 @@ function PersonalSlotCard({
 
       {/* Right: coins badge or QR action */}
       <div className="shrink-0 flex items-center gap-1.5">
-        {hasCode && onShowQR ? (
+        {hasCode && !winner.redeemed && onShowQR ? (
           <button
             type="button"
             onClick={() => onShowQR(winner.code)}
