@@ -6,7 +6,7 @@ export const ProfileInfo = memo(() => {
   const { user, profile } = useSession();
 
   // Telegram initDataUnsafe → primary, profile из БД → fallback
-  const photoUrl = user?.photo_url || profile?.avatar_url;
+  const photoUrl = user?.photo_url || profile?.avatar_url || undefined;
   const firstName = user?.first_name || profile?.first_name || "";
   const lastName = user?.last_name || "";
   const username = user?.username || profile?.username;
