@@ -8,8 +8,8 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, TicketIcon } from "l
 import { memo, useState } from "react";
 import { ProfileTicketCard } from "./_ticket-card";
 
-const VISIBLE_COUNT = 3;
-const TICKETS_PAGE_SIZE = 3;
+/** На профиле: сколько билетов показывать до «Показать все». На странице билетов: размер страницы пагинации. */
+const TICKETS_CHUNK_SIZE = 7;
 
 interface ProfileTicketsProps {
 	/** На странице «Мои билеты» показывать все билеты сразу */
@@ -26,24 +26,16 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 	const [openedTicketId, setOpenedTicketId] = useState<string | null>(null);
 	const [showAll, setShowAll] = useState(defaultExpanded);
 	const [activePage, setActivePage] = useState(0);
-	const [usedPage, setUsedPage] = useState(0);
 
 	const activeTickets = tickets.filter((t) => !t.used_at);
-	const usedTickets = tickets.filter((t) => t.used_at);
-
-	const activeTotalPages = Math.max(1, Math.ceil(activeTickets.length / TICKETS_PAGE_SIZE));
-	const usedTotalPages = Math.max(1, Math.ceil(usedTickets.length / TICKETS_PAGE_SIZE));
+	const activeTotalPages = Math.max(1, Math.ceil(activeTickets.length / TICKETS_CHUNK_SIZE));
 	const activeTicketsPage = activeTickets.slice(
-		activePage * TICKETS_PAGE_SIZE,
-		(activePage + 1) * TICKETS_PAGE_SIZE,
-	);
-	const usedTicketsPage = usedTickets.slice(
-		usedPage * TICKETS_PAGE_SIZE,
-		(usedPage + 1) * TICKETS_PAGE_SIZE,
+		activePage * TICKETS_CHUNK_SIZE,
+		(activePage + 1) * TICKETS_CHUNK_SIZE,
 	);
 
-	const visibleTickets = tickets.slice(0, VISIBLE_COUNT);
-	const restTickets = tickets.slice(VISIBLE_COUNT);
+	const visibleTickets = tickets.slice(0, TICKETS_CHUNK_SIZE);
+	const restTickets = tickets.slice(TICKETS_CHUNK_SIZE);
 	const hasMore = restTickets.length > 0;
 	const showLoader = isSessionLoading || isProfileLoading || isLoading;
 
@@ -60,8 +52,8 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 					<TicketIcon className="w-5 h-5 text-neon-cyan" />
 					Мои билеты
 				</h3>
-				<div className="px-4 space-y-3">
-					{Array.from({ length: 3 }).map((_, i) => (
+				<div className="space-y-3">
+					{Array.from({ length: 5 }).map((_, i) => (
 						<Skeleton key={i} className="h-[64px] w-full rounded-xl" />
 					))}
 				</div>
@@ -139,56 +131,27 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 			) : null;
 
 		return (
-			<section className="space-y-6">
+			<section className="space-y-2">
 				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
 					<TicketIcon className="w-5 h-5 text-neon-cyan" />
 					Мои билеты
 				</h3>
-				<div className="space-y-6">
-					<div>
-						<h4 className="text-sm font-medium text-gray-400 mb-2 px-0">
-							Активные {activeTickets.length > 0 && `(${activeTickets.length})`}
-						</h4>
-						<div className="px-4 space-y-3">
-							{activeTickets.length === 0 ? (
-								<p className="text-sm text-gray-500 py-4 px-4 text-center">
-									Нет активных билетов
-								</p>
-							) : (
-								<>
-									{activeTicketsPage.map(renderCard)}
-									{paginationControls(
-										activePage,
-										activeTotalPages,
-										() => setActivePage((p) => Math.max(0, p - 1)),
-										() => setActivePage((p) => Math.min(activeTotalPages - 1, p + 1)),
-									)}
-								</>
+				<div className="space-y-3">
+					{activeTickets.length === 0 ? (
+						<p className="text-sm text-gray-500 py-4 px-4 text-center">
+							Нет активных билетов
+						</p>
+					) : (
+						<>
+							{activeTicketsPage.map(renderCard)}
+							{paginationControls(
+								activePage,
+								activeTotalPages,
+								() => setActivePage((p) => Math.max(0, p - 1)),
+								() => setActivePage((p) => Math.min(activeTotalPages - 1, p + 1)),
 							)}
-						</div>
-					</div>
-					<div>
-						<h4 className="text-sm font-medium text-gray-400 mb-2 px-0">
-							Использованные {usedTickets.length > 0 && `(${usedTickets.length})`}
-						</h4>
-						<div className="px-4 space-y-3">
-							{usedTickets.length === 0 ? (
-								<p className="text-sm text-gray-500 py-4 px-4 text-center">
-									Нет использованных билетов
-								</p>
-							) : (
-								<>
-									{usedTicketsPage.map(renderCard)}
-									{paginationControls(
-										usedPage,
-										usedTotalPages,
-										() => setUsedPage((p) => Math.max(0, p - 1)),
-										() => setUsedPage((p) => Math.min(usedTotalPages - 1, p + 1)),
-									)}
-								</>
-							)}
-						</div>
-					</div>
+						</>
+					)}
 				</div>
 			</section>
 		);
@@ -200,7 +163,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 				<TicketIcon className="w-5 h-5 text-neon-cyan" />
 				Мои билеты
 			</h3>
-			<div className="px-4 space-y-3">
+			<div className="space-y-3">
 				{visibleTickets.map(renderCard)}
 				{hasMore && (
 					<>

@@ -116,7 +116,7 @@ const Balance = memo(({ coins }: { coins: number; }) => {
   return (
     <ClickableTooltip>
       <TooltipTrigger
-        className="flex h-9 items-center gap-2 bg-surface-dark px-3 rounded-full border border-neon-cyan/30 neon-glow"
+        className="flex h-9 items-center gap-2 bg-surface-dark px-3 rounded-full border border-neon-gold/30 gold-glow"
       >
         <Coins className="w-5 h-5 text-neon-gold" />
         <span className="font-semibold text-neon-gold">{coins}</span>
