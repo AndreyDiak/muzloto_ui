@@ -480,7 +480,7 @@ export default function EventManage() {
       <div className="flex items-center gap-3">
         <Link
           to="/events"
-          className="flex items-center justify-center w-10 h-10 rounded-lg border border-neon-cyan/30 bg-surface-dark text-white hover:bg-neon-cyan/10"
+          className="flex items-center justify-center w-10 h-10 rounded-lg border-2 border-neon-cyan/60 bg-neon-cyan/20 text-white hover:bg-neon-cyan/30 hover:border-neon-cyan transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
         </Link>
