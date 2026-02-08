@@ -47,7 +47,7 @@ export function RegistrationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
+      <DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-white text-center">
             Регистрация на мероприятие
@@ -59,10 +59,10 @@ export function RegistrationModal({
           <p className="text-center text-sm text-gray-400">{eventTitle}</p>
 
           {/* User info */}
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#00f0ff]/15">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-cyan/15">
             <Avatar className="w-12 h-12">
               <AvatarImage src={photoUrl} />
-              <AvatarFallback className="bg-[#00f0ff]/10 text-[#00f0ff]">
+              <AvatarFallback className="bg-neon-cyan/10 text-neon-cyan">
                 {firstName.charAt(0) || "?"}
               </AvatarFallback>
             </Avatar>
@@ -84,7 +84,7 @@ export function RegistrationModal({
                 <select
                   value={selectedTeamId}
                   onChange={(e) => setSelectedTeamId(e.target.value)}
-                  className="w-full appearance-none px-4 py-3 pr-10 rounded-xl bg-[#0a0a0f] border border-[#00f0ff]/30 text-white focus:border-[#00f0ff] focus:outline-none focus:ring-1 focus:ring-[#00f0ff]/30 transition-colors"
+                  className="w-full appearance-none px-4 py-3 pr-10 rounded-xl bg-surface-dark border border-neon-cyan/30 text-white focus:border-neon-cyan focus:outline-none focus:ring-1 focus:ring-neon-cyan/30 transition-colors"
                 >
                   <option value="" disabled>
                     Команда...
@@ -101,9 +101,9 @@ export function RegistrationModal({
           )}
 
           {/* Coins reward hint */}
-          <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-[#ffd700]/5 border border-[#ffd700]/15">
-            <Coins className="w-4 h-4 text-[#ffd700] shrink-0" />
-            <span className="text-sm text-[#ffd700]">
+          <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-neon-gold/5 border border-neon-gold/15">
+            <Coins className="w-4 h-4 text-neon-gold shrink-0" />
+            <span className="text-sm text-neon-gold">
               За регистрацию вы получите{" "}
               <span className="font-semibold">{coinsReward}</span> монет
             </span>
@@ -114,7 +114,7 @@ export function RegistrationModal({
             type="button"
             disabled={!canConfirm || isRegistering}
             onClick={() => onConfirm(hasTeams ? selectedTeamId : undefined)}
-            className="w-full py-3 rounded-xl bg-linear-to-r from-[#00f0ff] to-[#b829ff] text-white font-semibold hover:shadow-lg hover:shadow-[#00f0ff]/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl bg-linear-to-r from-neon-cyan to-neon-purple text-white font-semibold hover:shadow-lg hover:shadow-neon-cyan/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isRegistering ? (
               <Loader2 className="w-5 h-5 animate-spin mx-auto" />

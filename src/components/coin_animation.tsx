@@ -60,11 +60,11 @@ export function CoinAnimation({ coins, duration = 2500, onComplete }: CoinAnimat
             animation: coinsVisible ? 'coinBounce 0.6s ease-out' : 'none',
           }}
         >
-          <div className="w-24 h-24 rounded-full bg-linear-to-br from-[#ffd700] to-[#ffed4e] flex items-center justify-center shadow-2xl shadow-[#ffd700]/50">
-            <Coins className="w-12 h-12 text-[#8b6914]" fill="currentColor" />
+          <div className="w-24 h-24 rounded-full bg-linear-to-br from-neon-gold to-neon-gold-light flex items-center justify-center shadow-2xl shadow-neon-gold/50">
+            <Coins className="w-12 h-12 text-neon-gold-dark" fill="currentColor" />
           </div>
           <div
-            className="absolute inset-0 rounded-full bg-[#ffd700] opacity-30 blur-xl"
+            className="absolute inset-0 rounded-full bg-neon-gold opacity-30 blur-xl"
             style={{
               animation: coinsVisible ? 'pulse 1s ease-in-out infinite' : 'none',
             }}
@@ -78,7 +78,7 @@ export function CoinAnimation({ coins, duration = 2500, onComplete }: CoinAnimat
               animation: 'fadeInUp 0.5s ease-out 0.3s both',
             }}
           >
-            <div className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-[#ffd700] to-[#ffed4e] mb-2">
+            <div className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-neon-gold to-neon-gold-light mb-2">
               +{coins}
             </div>
             <div className="text-lg text-white/90 font-semibold">

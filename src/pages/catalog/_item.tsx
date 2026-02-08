@@ -59,7 +59,7 @@ export const CatalogItem = ({ item, color }: Props) => {
 		<>
 			<div
 				key={item.id}
-				className="bg-[#16161d] rounded-xl p-4 border border-[#00f0ff]/10 flex flex-col"
+				className="bg-surface-card rounded-xl p-4 border border-neon-cyan/10 flex flex-col"
 			>
 				<h3 className="text-white text-lg font-bold mb-2 flex-1">{item.name}</h3>
 				{/* TODO: return in future */}
@@ -71,8 +71,8 @@ export const CatalogItem = ({ item, color }: Props) => {
 				<p className="text-xs text-gray-400 mb-3">{item.description ?? ""}</p>
 
 				<div className="flex items-center gap-1 mb-3">
-					<Coins className="w-4 h-4 text-[#ffd700]" />
-					<span className="text-[#ffd700] font-semibold text-sm">{item.price}</span>
+					<Coins className="w-4 h-4 text-neon-gold" />
+					<span className="text-neon-gold font-semibold text-sm">{item.price}</span>
 				</div>
 
 				<button

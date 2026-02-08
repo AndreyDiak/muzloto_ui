@@ -22,20 +22,20 @@ export const BasicLayout = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col max-w-md mx-auto">
-      <header className="sticky top-0 z-50 bg-[#16161d]/80 backdrop-blur-md border-b border-[#00f0ff]/20 px-4 py-3">
+    <div className="min-h-screen bg-surface-dark flex flex-col max-w-md mx-auto">
+      <header className="sticky top-0 z-50 bg-surface-card/80 backdrop-blur-md border-b border-neon-cyan/20 px-4 py-3">
         <div className="flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             {isRoot && (
               <Link
                 to="/scanner"
-                className="flex shrink-0 items-center justify-center w-10 h-10 rounded-lg border border-[#00f0ff]/30 bg-[#0a0a0f] text-white hover:bg-[#00f0ff]/10 hover:border-[#00f0ff]/50 transition-colors"
+                className="flex shrink-0 items-center justify-center w-10 h-10 rounded-lg border border-neon-cyan/30 bg-surface-dark text-white hover:bg-neon-cyan/10 hover:border-neon-cyan/50 transition-colors"
                 aria-label="Сканер"
               >
                 <QrCode className="w-6 h-6" />
               </Link>
             )}
-            <h1 className="text-transparent text-xl bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff] truncate min-w-0">
+            <h1 className="text-transparent text-xl bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple truncate min-w-0">
               Караоке Лото
             </h1>
           </div>
@@ -65,7 +65,7 @@ const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAc
     { path: '/achievements', icon: Award, label: 'Достижения', hasUnclaimed: hasUnclaimedAchievementRewards },
   ];
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#16161d]/95 backdrop-blur-md border-t border-[#00f0ff]/20">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-surface-card/95 backdrop-blur-md border-t border-neon-cyan/20">
       <div className="flex items-center py-2">
         {navItems.map(({ path, icon: Icon, label, hasUnclaimed }) => {
           const isActive = location.pathname === path;
@@ -77,7 +77,7 @@ const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAc
               className={
                 cn(
                   'flex flex-1 min-w-0 flex-col items-center gap-0.5 px-1 py-2 rounded-lg transition-all relative',
-                  isActive ? 'text-[#00f0ff]' : highlight ? 'text-[#ffd700] hover:text-[#ffd700]/90' : 'text-gray-400 hover:text-gray-200',
+                  isActive ? 'text-neon-cyan' : highlight ? 'text-neon-gold hover:text-neon-gold/90' : 'text-gray-400 hover:text-gray-200',
                 )
               }
               aria-label={hasUnclaimed ? `${label} — есть неполученные награды` : label}
@@ -92,7 +92,7 @@ const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAc
                 />
                 {hasUnclaimed && (
                   <span
-                    className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-[#ffd700] ring-2 ring-[#16161d]"
+                    className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-neon-gold ring-2 ring-surface-card"
                     aria-hidden
                   />
                 )}
@@ -107,7 +107,7 @@ const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAc
 };
 
 const BalanceSkeleton = memo(() => (
-  <div className="flex h-9 items-center gap-2 bg-[#0a0a0f] px-3 rounded-full border border-[#00f0ff]/15">
+  <div className="flex h-9 items-center gap-2 bg-surface-dark px-3 rounded-full border border-neon-cyan/15">
     <Skeleton className="h-5 w-5 shrink-0 rounded" />
     <Skeleton className="h-5 w-12 shrink-0 rounded" />
   </div>
@@ -117,10 +117,10 @@ const Balance = memo(({ coins }: { coins: number; }) => {
   return (
     <ClickableTooltip>
       <TooltipTrigger
-        className="flex h-9 items-center gap-2 bg-[#0a0a0f] px-3 rounded-full border border-[#00f0ff]/30 neon-glow"
+        className="flex h-9 items-center gap-2 bg-surface-dark px-3 rounded-full border border-neon-cyan/30 neon-glow"
       >
-        <Coins className="w-5 h-5 text-[#ffd700]" />
-        <span className="font-semibold text-[#ffd700]">{coins}</span>
+        <Coins className="w-5 h-5 text-neon-gold" />
+        <span className="font-semibold text-neon-gold">{coins}</span>
       </TooltipTrigger>
       <TooltipContent side="bottom" style={{
         // @ts-ignore

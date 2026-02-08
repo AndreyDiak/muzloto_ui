@@ -41,10 +41,10 @@ export function TeamsSection({ teams, registrations, loading }: TeamsSectionProp
         return (
           <li
             key={team.id}
-            className="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#b829ff]/10"
+            className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-purple/10"
           >
-            <div className="w-9 h-9 rounded-lg bg-[#b829ff]/10 flex items-center justify-center shrink-0">
-              <Users className="w-4 h-4 text-[#b829ff]" />
+            <div className="w-9 h-9 rounded-lg bg-neon-purple/10 flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4 text-neon-purple" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-white font-medium truncate text-sm">{team.name}</p>

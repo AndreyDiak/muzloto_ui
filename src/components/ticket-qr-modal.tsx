@@ -136,12 +136,12 @@ export function TicketQRModal({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
+			<DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
 				<DialogHeader>
 					<DialogTitle className="text-white text-center">{dialogTitle}</DialogTitle>
 				</DialogHeader>
 				<div className="flex flex-col items-center gap-4">
-					<p className="text-sm text-center text-transparent bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff] font-semibold">
+					<p className="text-sm text-center text-transparent bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple font-semibold">
 						{itemName}
 					</p>
 					<div className="relative" style={{ width: 240, height: 240 }}>
@@ -152,7 +152,7 @@ export function TicketQRModal({
 						/>
 						{!isQrReady && (
 							<div
-								className="absolute inset-0 flex items-center justify-center rounded-lg bg-[#16161d]"
+								className="absolute inset-0 flex items-center justify-center rounded-lg bg-surface-card"
 								aria-hidden
 							>
 								<Skeleton className="size-[200px] rounded-lg shrink-0" />
@@ -163,13 +163,13 @@ export function TicketQRModal({
 					<div className="text-center w-full">
 						<p className="text-gray-400 text-xs mb-1">Код для ручного ввода</p>
 						<div className="flex items-center justify-center gap-2">
-							<p className="text-2xl font-mono font-bold tracking-widest text-[#00f0ff]">
+							<p className="text-2xl font-mono font-bold tracking-widest text-neon-cyan">
 								{code}
 							</p>
 							<button
 								type="button"
 								onClick={handleCopyCode}
-								className="p-2 rounded-lg bg-[#00f0ff]/10 text-[#00f0ff] hover:bg-[#00f0ff]/20 transition-colors"
+								className="p-2 rounded-lg bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20 transition-colors"
 								title="Скопировать код"
 								aria-label="Скопировать код"
 							>
@@ -186,14 +186,14 @@ export function TicketQRModal({
 						type="button"
 						onClick={handleDownloadQr}
 						disabled={!isQrReady}
-						className="w-full py-2.5 rounded-xl bg-[#00f0ff] text-black font-medium border border-[#00f0ff]/80 hover:bg-[#00f0ff]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						className="w-full py-2.5 rounded-xl bg-neon-cyan text-black font-medium border border-neon-cyan/80 hover:bg-neon-cyan/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						Скачать QR
 					</button>
 					<button
 						type="button"
 						onClick={() => onOpenChange(false)}
-						className="w-full py-2.5 rounded-xl bg-[#00f0ff]/20 text-white font-medium border border-[#00f0ff]/50"
+						className="w-full py-2.5 rounded-xl bg-neon-cyan/20 text-white font-medium border border-neon-cyan/50"
 					>
 						Закрыть
 					</button>

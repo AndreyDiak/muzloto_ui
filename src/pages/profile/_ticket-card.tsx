@@ -22,9 +22,9 @@ const cardContent = (
 	isUsed: boolean,
 ) => (
 	<>
-		<div className="flex-1 flex items-center gap-3 py-3 pl-4 pr-3 border-r border-dashed border-[#00f0ff]/20">
-			<div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${isUsed ? "bg-gray-600/20" : "bg-[#00f0ff]/10"}`}>
-				<TicketIcon className={`w-5 h-5 ${isUsed ? "text-gray-500" : "text-[#00f0ff]"}`} />
+		<div className="flex-1 flex items-center gap-3 py-3 pl-4 pr-3 border-r border-dashed border-neon-cyan/20">
+			<div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${isUsed ? "bg-gray-600/20" : "bg-neon-cyan/10"}`}>
+				<TicketIcon className={`w-5 h-5 ${isUsed ? "text-gray-500" : "text-neon-cyan"}`} />
 			</div>
 			<div className="min-w-0 flex-1">
 				<p className={`font-medium truncate ${isUsed ? "text-gray-400" : "text-white"}`}>{name}</p>
@@ -42,7 +42,7 @@ export const ProfileTicketCard = memo(({ ticket, isModalOpen, onOpenModal, onClo
 	const name = ticket.catalog?.name ?? "Билет";
 	const isUsed = !!ticket.used_at;
 
-	const buttonClassName = `w-full flex rounded-none text-left bg-[#16161d] border-y border-[#00f0ff]/15 overflow-hidden min-h-[72px] active:opacity-90 transition-opacity ${isUsed ? "opacity-70" : ""}`;
+	const buttonClassName = `w-full flex rounded-none text-left bg-surface-card border-y border-neon-cyan/15 overflow-hidden min-h-[72px] active:opacity-90 transition-opacity ${isUsed ? "opacity-70" : ""}`;
 
 	if (isUsed) {
 		return (

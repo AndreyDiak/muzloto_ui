@@ -34,7 +34,7 @@ export const EventsList = memo(({ events, isRoot }: Props) => {
 					return (
 						<div
 							key={event.id}
-							className="bg-[#16161d] rounded-xl p-4 border border-[#00f0ff]/10 transition-all hover:border-[#00f0ff]/20"
+							className="bg-surface-card rounded-xl p-4 border border-neon-cyan/10 transition-all hover:border-neon-cyan/20"
 						>
 							<div className="flex items-center justify-between gap-3">
 								<div className="flex-1 min-w-0">
@@ -53,7 +53,7 @@ export const EventsList = memo(({ events, isRoot }: Props) => {
 							{isRoot && (
 								<Link
 									to={`/events/${event.id}/manage`}
-									className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap border border-[#00f0ff]/40 bg-[#00f0ff]/10 text-[#00f0ff] hover:bg-[#00f0ff]/20"
+									className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap border border-neon-cyan/40 bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20"
 								>
 									<Settings className="w-3.5 h-3.5" />
 									Управление

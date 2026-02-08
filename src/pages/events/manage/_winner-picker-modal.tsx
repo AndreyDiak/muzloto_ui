@@ -67,7 +67,7 @@ export function WinnerPickerModal({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm max-h-[90vh] min-h-[400px] flex flex-col">
+      <DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm max-h-[90vh] min-h-[400px] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-white">
             {pickerSlot?.type === "personal"
@@ -90,9 +90,9 @@ export function WinnerPickerModal({
                       onClick={() =>
                         onSelectPersonalWinner(r, pickerSlot.index)
                       }
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#00f0ff]/10 hover:border-[#00f0ff]/30 text-left disabled:opacity-60"
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-cyan/10 hover:border-neon-cyan/30 text-left disabled:opacity-60"
                     >
-                      <div className="w-9 h-9 rounded-full bg-[#00f0ff]/10 flex items-center justify-center shrink-0 overflow-hidden">
+                      <div className="w-9 h-9 rounded-full bg-neon-cyan/10 flex items-center justify-center shrink-0 overflow-hidden">
                         {r.avatar_url ? (
                           <img
                             src={r.avatar_url}
@@ -100,7 +100,7 @@ export function WinnerPickerModal({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <User className="w-4 h-4 text-[#00f0ff]" />
+                          <User className="w-4 h-4 text-neon-cyan" />
                         )}
                       </div>
                       <span className="text-white truncate flex-1">
@@ -112,7 +112,7 @@ export function WinnerPickerModal({
                         </span>
                       )}
                       {awardingWinner === r.telegram_id && (
-                        <Loader2 className="w-4 h-4 shrink-0 animate-spin text-[#00f0ff]" />
+                        <Loader2 className="w-4 h-4 shrink-0 animate-spin text-neon-cyan" />
                       )}
                     </button>
                   </li>
@@ -124,12 +124,12 @@ export function WinnerPickerModal({
                 )}
               </ul>
               {totalPages > 1 && (
-                <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-[#00f0ff]/10">
+                <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-neon-cyan/10">
                   <button
                     type="button"
                     disabled={pickerPage <= 1}
                     onClick={() => onPickerPageChange(pickerPage - 1)}
-                    className="flex items-center gap-1 px-2 py-1.5 rounded text-xs text-[#00f0ff] border border-[#00f0ff]/30 bg-[#0a0a0f] disabled:opacity-40 disabled:pointer-events-none"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded text-xs text-neon-cyan border border-neon-cyan/30 bg-surface-dark disabled:opacity-40 disabled:pointer-events-none"
                   >
                     <ChevronLeft className="w-3 h-3" /> Назад
                   </button>
@@ -140,7 +140,7 @@ export function WinnerPickerModal({
                     type="button"
                     disabled={pickerPage >= totalPages}
                     onClick={() => onPickerPageChange(pickerPage + 1)}
-                    className="flex items-center gap-1 px-2 py-1.5 rounded text-xs text-[#00f0ff] border border-[#00f0ff]/30 bg-[#0a0a0f] disabled:opacity-40 disabled:pointer-events-none"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded text-xs text-neon-cyan border border-neon-cyan/30 bg-surface-dark disabled:opacity-40 disabled:pointer-events-none"
                   >
                     Далее <ChevronRight className="w-3 h-3" />
                   </button>
@@ -151,7 +151,7 @@ export function WinnerPickerModal({
               type="button"
               disabled={generatingCode}
               onClick={() => onGenerateCodeForSlot(pickerSlot.index)}
-              className="w-full py-2.5 rounded-lg border border-[#00f0ff]/25 bg-[#0a0a0f] text-[#00f0ff] hover:bg-[#00f0ff]/5 hover:border-[#00f0ff]/40 text-sm font-medium disabled:opacity-50 transition-colors"
+              className="w-full py-2.5 rounded-lg border border-neon-cyan/25 bg-surface-dark text-neon-cyan hover:bg-neon-cyan/5 hover:border-neon-cyan/40 text-sm font-medium disabled:opacity-50 transition-colors"
             >
               {generatingCode ? (
                 <Loader2 className="w-4 h-4 animate-spin mx-auto" />
@@ -173,10 +173,10 @@ export function WinnerPickerModal({
                     <button
                       type="button"
                       onClick={() => onTeamSubmit(pickerSlot.index, team)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#b829ff]/10 hover:border-[#b829ff]/30 text-left transition-colors"
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-purple/10 hover:border-neon-purple/30 text-left transition-colors"
                     >
-                      <div className="w-9 h-9 rounded-full bg-[#b829ff]/10 flex items-center justify-center shrink-0">
-                        <Users className="w-4 h-4 text-[#b829ff]" />
+                      <div className="w-9 h-9 rounded-full bg-neon-purple/10 flex items-center justify-center shrink-0">
+                        <Users className="w-4 h-4 text-neon-purple" />
                       </div>
                       <span className="text-white truncate flex-1">
                         {team.name}
@@ -195,7 +195,7 @@ export function WinnerPickerModal({
               type="button"
               disabled={generatingCode}
               onClick={() => onGenerateTeamCodeForSlot(pickerSlot.index)}
-              className="w-full py-2.5 rounded-lg border border-[#b829ff]/25 bg-[#0a0a0f] text-[#b829ff] hover:bg-[#b829ff]/5 hover:border-[#b829ff]/40 text-sm font-medium disabled:opacity-50 transition-colors"
+              className="w-full py-2.5 rounded-lg border border-neon-purple/25 bg-surface-dark text-neon-purple hover:bg-neon-purple/5 hover:border-neon-purple/40 text-sm font-medium disabled:opacity-50 transition-colors"
             >
               {generatingCode ? (
                 <Loader2 className="w-4 h-4 animate-spin mx-auto" />

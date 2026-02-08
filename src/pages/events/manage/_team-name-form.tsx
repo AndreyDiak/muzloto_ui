@@ -15,20 +15,20 @@ export function TeamNameForm({ initialValue, onSubmit, onCancel }: TeamNameFormP
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Название команды"
-        className="w-full px-4 py-3 rounded-xl bg-[#0a0a0f] border border-[#00f0ff]/30 text-white placeholder-gray-500 focus:border-[#00f0ff] focus:outline-none"
+        className="w-full px-4 py-3 rounded-xl bg-surface-dark border border-neon-cyan/30 text-white placeholder-gray-500 focus:border-neon-cyan focus:outline-none"
       />
       <div className="flex gap-2">
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 py-2.5 rounded-xl border border-[#00f0ff]/30 text-[#00f0ff] hover:bg-[#00f0ff]/10"
+          className="flex-1 py-2.5 rounded-xl border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/10"
         >
           Отмена
         </button>
         <button
           type="button"
           onClick={() => onSubmit(value)}
-          className="flex-1 py-2.5 rounded-xl bg-[#00f0ff]/20 text-white border border-[#00f0ff]/50 hover:bg-[#00f0ff]/30"
+          className="flex-1 py-2.5 rounded-xl bg-neon-cyan/20 text-white border border-neon-cyan/50 hover:bg-neon-cyan/30"
         >
           Готово
         </button>

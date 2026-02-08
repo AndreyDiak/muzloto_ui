@@ -319,7 +319,7 @@ export const ProfileSqan = memo(() => {
 				/>
 			)}
 			<Dialog open={isCodeModalOpen} onOpenChange={handleOpenChange}>
-				<DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
+				<DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
 					<DialogHeader>
 						<DialogTitle className="text-white text-center">Введите код</DialogTitle>
 					</DialogHeader>
@@ -350,8 +350,8 @@ export const ProfileSqan = memo(() => {
                     transition-all duration-200
                     focus:outline-none
                     ${isFilled
-											? 'bg-linear-to-br from-[#00f0ff] to-[#b829ff] border-[#00f0ff] text-white shadow-lg shadow-[#00f0ff]/30 scale-105'
-											: 'bg-[#0a0a0f] border-[#00f0ff]/30 text-gray-600 focus:border-[#00f0ff] focus:ring-2 focus:ring-[#00f0ff]/50'
+											? 'bg-linear-to-br from-neon-cyan to-neon-purple border-neon-cyan text-white shadow-lg shadow-neon-cyan/30 scale-105'
+											: 'bg-surface-dark border-neon-cyan/30 text-gray-600 focus:border-neon-cyan focus:ring-2 focus:ring-neon-cyan/50'
 										}
                   `}
 								/>
@@ -367,19 +367,19 @@ export const ProfileSqan = memo(() => {
 						<button
 							onClick={handleSubmitButtonClick}
 							disabled={codeInputs.join('').length !== CODE_LENGTH || isProcessing}
-							className="flex-1 px-4 py-2.5 bg-linear-to-r from-[#00f0ff] to-[#b829ff] rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-[#00f0ff]/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+							className="flex-1 px-4 py-2.5 bg-linear-to-r from-neon-cyan to-neon-purple rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-neon-cyan/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							{isProcessing ? 'Обработка...' : 'Подтвердить'}
 						</button>
 					</div>
 				</DialogContent>
 			</Dialog>
-			<div className="bg-linear-to-r from-[#00f0ff]/20 to-[#b829ff]/20 rounded-2xl p-0 border border-[#00f0ff]/30 flex items-stretch overflow-hidden">
+			<div className="bg-linear-to-r from-neon-cyan/20 to-neon-purple/20 rounded-2xl p-0 border border-neon-cyan/30 flex items-stretch overflow-hidden">
 				<button
 					onClick={handleScanQR}
 					className="flex-1 flex items-center gap-3 p-4 hover:opacity-90 transition-opacity active:scale-[0.98] rounded-l-2xl"
 				>
-					<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-[#00f0ff] to-[#b829ff] flex items-center justify-center shadow-lg shadow-[#00f0ff]/30">
+					<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-neon-cyan to-neon-purple flex items-center justify-center shadow-lg shadow-neon-cyan/30">
 						<QrCode className="w-6 h-6 text-white" />
 					</div>
 					<div className="flex-1 text-left">
@@ -390,7 +390,7 @@ export const ProfileSqan = memo(() => {
 
 				<button
 					onClick={handleEnterCode}
-					className="shrink-0 w-12 rounded-r-2xl bg-linear-to-br from-[#b829ff] to-[#00f0ff] flex items-center justify-center shadow-lg shadow-[#b829ff]/30 hover:scale-105 transition-transform active:scale-[0.95]"
+					className="shrink-0 w-12 rounded-r-2xl bg-linear-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-lg shadow-neon-purple/30 hover:scale-105 transition-transform active:scale-[0.95]"
 					title="Ввести код вручную"
 				>
 					<Keyboard className="w-5 h-5 text-white" />

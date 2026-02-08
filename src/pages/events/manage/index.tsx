@@ -413,7 +413,7 @@ export default function EventManage() {
           <Skeleton className="h-6 w-48 rounded-lg" />
         </div>
         {/* Personal bingo skeleton */}
-        <div className="bg-[#16161d] rounded-2xl p-5 border border-[#00f0ff]/20">
+        <div className="bg-surface-card rounded-2xl p-5 border border-neon-cyan/20">
           <Skeleton className="h-5 w-44 rounded-lg mb-3" />
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -422,7 +422,7 @@ export default function EventManage() {
           </div>
         </div>
         {/* Team bingo skeleton */}
-        <div className="bg-[#16161d] rounded-2xl p-5 border border-[#b829ff]/20">
+        <div className="bg-surface-card rounded-2xl p-5 border border-neon-purple/20">
           <Skeleton className="h-5 w-40 rounded-lg mb-3" />
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -431,16 +431,16 @@ export default function EventManage() {
           </div>
         </div>
         {/* Accordion skeleton */}
-        <div className="bg-[#16161d] rounded-2xl p-5 border border-[#00f0ff]/20">
+        <div className="bg-surface-card rounded-2xl p-5 border border-neon-cyan/20">
           <Skeleton className="h-5 w-32 rounded-lg mb-3" />
           <Skeleton className="h-12 rounded-xl" />
-          <div className="mt-3 pt-3 border-t border-[#00f0ff]/10">
+          <div className="mt-3 pt-3 border-t border-neon-cyan/10">
             <Skeleton className="h-5 w-36 rounded-lg mb-3" />
             <Skeleton className="h-12 rounded-xl" />
           </div>
         </div>
         {/* QR section skeleton */}
-        <div className="bg-[#16161d] rounded-2xl p-5 border border-[#00f0ff]/20">
+        <div className="bg-surface-card rounded-2xl p-5 border border-neon-cyan/20">
           <Skeleton className="h-5 w-36 rounded-lg mb-3" />
           <Skeleton className="h-12 w-full rounded-xl" />
         </div>
@@ -453,7 +453,7 @@ export default function EventManage() {
       <div className="flex items-center gap-3">
         <Link
           to="/events"
-          className="flex items-center justify-center w-10 h-10 rounded-lg border border-[#00f0ff]/30 bg-[#0a0a0f] text-white hover:bg-[#00f0ff]/10"
+          className="flex items-center justify-center w-10 h-10 rounded-lg border border-neon-cyan/30 bg-surface-dark text-white hover:bg-neon-cyan/10"
         >
           <ChevronLeft className="w-5 h-5" />
         </Link>
@@ -472,12 +472,12 @@ export default function EventManage() {
       />
       
       {/* ——— Accordion: Команды + Участники ——— */}
-      <div className="bg-[#16161d] rounded-2xl border border-[#00f0ff]/20 overflow-hidden">
+      <div className="bg-surface-card rounded-2xl border border-neon-cyan/20 overflow-hidden">
         <Accordion type="multiple" className="w-full">
-          <AccordionItem value="teams" className="border-b border-[#00f0ff]/10">
+          <AccordionItem value="teams" className="border-b border-neon-cyan/10">
             <AccordionTrigger className="px-5 py-4 hover:no-underline">
               <span className="flex items-center gap-2 text-white text-base font-medium">
-                <Users className="w-5 h-5 text-[#b829ff]" />
+                <Users className="w-5 h-5 text-neon-purple" />
                 Команды
                 {eventTeams.length > 0 && (
                   <span className="text-sm font-normal text-gray-400">
@@ -497,7 +497,7 @@ export default function EventManage() {
           <AccordionItem value="participants" className="border-b-0">
             <AccordionTrigger className="px-5 py-4 hover:no-underline">
               <span className="flex items-center gap-2 text-white text-base font-medium">
-                <User className="w-5 h-5 text-[#00f0ff]" />
+                <User className="w-5 h-5 text-neon-cyan" />
                 Участники
                 {!regsLoading && registrations.length > 0 && (
                   <span className="text-sm font-normal text-gray-400">
@@ -524,14 +524,14 @@ export default function EventManage() {
       <button
         type="button"
         onClick={() => setAddTeamOpen(true)}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-[#b829ff]/40 bg-[#b829ff]/5 text-[#b829ff] text-sm font-medium hover:bg-[#b829ff]/10 transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-neon-purple/40 bg-neon-purple/5 text-neon-purple text-sm font-medium hover:bg-neon-purple/10 transition-colors"
       >
         <Plus className="w-4 h-4" />
         Зарегистрировать команду
       </button>
 
       <Dialog open={addTeamOpen} onOpenChange={setAddTeamOpen}>
-        <DialogContent className="bg-[#16161d] border-[#b829ff]/30 text-white max-w-sm">
+        <DialogContent className="bg-surface-card border-neon-purple/30 text-white max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-white text-lg">
               Новая команда
@@ -546,7 +546,7 @@ export default function EventManage() {
                 if (e.key === "Enter" && newTeamName.trim()) handleAddTeam();
               }}
               placeholder="Название команды"
-              className="w-full px-4 py-3 rounded-xl bg-[#0a0a0f] border border-[#b829ff]/30 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:border-[#b829ff]/60"
+              className="w-full px-4 py-3 rounded-xl bg-surface-dark border border-neon-purple/30 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:border-neon-purple/60"
               autoFocus
               disabled={addingTeam}
             />
@@ -554,7 +554,7 @@ export default function EventManage() {
               type="button"
               disabled={!newTeamName.trim() || addingTeam}
               onClick={handleAddTeam}
-              className="w-full py-3 rounded-xl bg-[#b829ff] text-white font-medium text-sm hover:bg-[#b829ff]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl bg-neon-purple text-white font-medium text-sm hover:bg-neon-purple/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               {addingTeam && <Loader2 className="w-4 h-4 animate-spin" />}
               Создать

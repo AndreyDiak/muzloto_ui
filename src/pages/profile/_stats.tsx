@@ -20,7 +20,7 @@ export const ProfileStats = memo(({ stats, isLoading: statsLoading = false }: Pr
 		return (
 			<section className="space-y-2">
 				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-					<BarChart3 className="w-5 h-5 text-[#00f0ff]" />
+					<BarChart3 className="w-5 h-5 text-neon-cyan" />
 					Моя статистика
 				</h3>
 				<div className="grid grid-cols-2 gap-3">
@@ -35,7 +35,7 @@ export const ProfileStats = memo(({ stats, isLoading: statsLoading = false }: Pr
 	return (
 		<section className="space-y-2">
 			<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-				<BarChart3 className="w-5 h-5 text-[#00f0ff]" />
+				<BarChart3 className="w-5 h-5 text-neon-cyan" />
 				Моя статистика
 			</h3>
 			<div className="grid grid-cols-2 gap-3">
@@ -63,13 +63,13 @@ const statCardContent = (stat: IProfileStats) => {
 };
 
 const ProfileStat = memo(({ stat }: { stat: IProfileStats }) => {
-	const cardClassName = `rounded-xl w-full p-4 border border-[#00f0ff]/10 ${stat.bgColor}`;
+	const cardClassName = `rounded-xl w-full p-4 border border-neon-cyan/10 ${stat.bgColor}`;
 
 	if (stat.path) {
 		return (
 			<Tooltip key={stat.label}>
 				<TooltipTrigger asChild>
-					<Link to={stat.path} className={`block ${cardClassName} hover:border-[#00f0ff]/30 transition-colors`}>
+					<Link to={stat.path} className={`block ${cardClassName} hover:border-neon-cyan/30 transition-colors`}>
 						{statCardContent(stat)}
 					</Link>
 				</TooltipTrigger>

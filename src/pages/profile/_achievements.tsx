@@ -29,12 +29,12 @@ export const ProfileAchievements = memo(({ achievements, isLoading: externalLoad
 		return (
 			<section className="space-y-2">
 				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-					<Award className="w-5 h-5 text-[#00f0ff]" />
+					<Award className="w-5 h-5 text-neon-cyan" />
 					{sectionTitle}
 				</h3>
 				<div className="-mx-4 rounded-none overflow-hidden space-y-0">
 					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="h-[72px] w-full rounded-none border-y border-[#00f0ff]/10" />
+						<Skeleton key={i} className="h-[72px] w-full rounded-none border-y border-neon-cyan/10" />
 					))}
 				</div>
 			</section>
@@ -44,10 +44,10 @@ export const ProfileAchievements = memo(({ achievements, isLoading: externalLoad
 	return (
 		<section className="space-y-2">
 			<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-				<Award className="w-5 h-5 text-[#00f0ff]" />
+				<Award className="w-5 h-5 text-neon-cyan" />
 				{sectionTitle}
 			</h3>
-			<Accordion type="single" collapsible className="-mx-4 rounded-none overflow-hidden border-y border-[#00f0ff]/15">
+			<Accordion type="single" collapsible className="-mx-4 rounded-none overflow-hidden border-y border-neon-cyan/15">
 				{achievements.map((achievement) => (
 					<ProfileAchievementAccordionItem key={achievement.slug ?? achievement.name} achievement={achievement} />
 				))}
@@ -90,8 +90,8 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 		<AccordionItem
 			value={achievement.slug ?? achievement.name}
 			className={cn(
-				"border-y border-[#00f0ff]/15 bg-[#16161d] first:border-t-0",
-				canClaim && "border-l-4 border-l-[#ffd700] bg-[#ffd700]/5"
+				"border-y border-neon-cyan/15 bg-surface-card first:border-t-0",
+				canClaim && "border-l-4 border-l-neon-gold bg-neon-gold/5"
 			)}
 		>
 			<AccordionTrigger className="flex w-full items-center hover:no-underline py-0 px-4 [&[data-state=open]>svg]:rotate-180">
@@ -100,20 +100,20 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 						<div
 							className={cn(
 								"w-9 h-9 rounded-lg flex items-center justify-center",
-								unlocked ? "bg-[#ffd700]/15" : "bg-white/5",
-								canClaim && "ring-2 ring-[#ffd700]/50"
+								unlocked ? "bg-neon-gold/15" : "bg-white/5",
+								canClaim && "ring-2 ring-neon-gold/50"
 							)}
 						>
 							<Award
 								className={cn(
 									"w-5 h-5 shrink-0",
-									unlocked ? "text-[#ffd700]" : "text-gray-500"
+									unlocked ? "text-neon-gold" : "text-gray-500"
 								)}
 							/>
 						</div>
 						{canClaim && (
 							<span
-								className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#ffd700] ring-2 ring-[#16161d]"
+								className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-neon-gold ring-2 ring-surface-card"
 								aria-hidden
 							/>
 						)}
@@ -123,12 +123,12 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 							className={cn(
 								"font-medium truncate",
 								unlocked ? "text-white" : "text-gray-500",
-								canClaim && "text-[#ffd700]"
+								canClaim && "text-neon-gold"
 							)}
 						>
 							{achievement.badge ? `${achievement.badge} ` : ""}{achievement.name}
 							{canClaim && (
-								<span className="ml-1.5 text-[10px] font-normal text-[#ffd700]/80">
+								<span className="ml-1.5 text-[10px] font-normal text-neon-gold/80">
 									— Награда доступна!
 								</span>
 							)}
@@ -139,14 +139,14 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 					</div>
 				</div>
 			</AccordionTrigger>
-			<AccordionContent className="p-4 pt-2 border-t border-[#00f0ff]/10">
+			<AccordionContent className="p-4 pt-2 border-t border-neon-cyan/10">
 				<div className="space-y-3 text-sm">
 					<p className="text-white text-sm">{achievement.description}</p>
 					<div>
 						<p className="text-gray-400 text-xs uppercase tracking-wide mb-1">Прогресс</p>
 						<p className="text-white">
 							{unlocked ? (
-								<span className="text-[#ffd700]">Выполнено</span>
+								<span className="text-neon-gold">Выполнено</span>
 							) : (
 								`${achievement.current_value} / ${achievement.threshold}`
 							)}
@@ -154,7 +154,7 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 						{!unlocked && (
 							<div className="mt-1.5 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
 								<div
-									className="h-full rounded-full bg-[#00f0ff]/60 transition-all duration-300"
+									className="h-full rounded-full bg-neon-cyan/60 transition-all duration-300"
 									style={{
 										width: `${Math.min(100, (achievement.current_value / achievement.threshold) * 100)}%`,
 									}}
@@ -167,8 +167,8 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 						<p className="text-white flex items-center gap-1.5">
 							{hasReward ? (
 								<>
-									<Coins className="w-4 h-4 text-[#ffd700]" />
-									<span className="text-[#ffd700]">+{achievement.coin_reward} монет</span>
+									<Coins className="w-4 h-4 text-neon-gold" />
+									<span className="text-neon-gold">+{achievement.coin_reward} монет</span>
 								</>
 							) : (
 								<span className="text-gray-500">Без награды</span>
@@ -182,7 +182,7 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 									void handleClaim();
 								}}
 								disabled={isClaiming}
-								className="mt-3 w-full py-2.5 rounded-xl bg-[#ffd700]/20 text-[#ffd700] font-medium border border-[#ffd700]/40 hover:bg-[#ffd700]/30 disabled:opacity-50 transition-colors"
+								className="mt-3 w-full py-2.5 rounded-xl bg-neon-gold/20 text-neon-gold font-medium border border-neon-gold/40 hover:bg-neon-gold/30 disabled:opacity-50 transition-colors"
 							>
 								{isClaiming ? "Загрузка…" : "Забрать награду"}
 							</button>

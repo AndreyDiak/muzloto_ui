@@ -57,12 +57,12 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 		return (
 			<section className="space-y-2">
 				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-					<TicketIcon className="w-5 h-5 text-[#00f0ff]" />
+					<TicketIcon className="w-5 h-5 text-neon-cyan" />
 					Мои билеты
 				</h3>
 				<div className="-mx-4 rounded-none overflow-hidden space-y-0">
 					{Array.from({ length: 3 }).map((_, i) => (
-						<Skeleton key={i} className="h-[72px] w-full rounded-none border-y border-[#00f0ff]/10" />
+						<Skeleton key={i} className="h-[72px] w-full rounded-none border-y border-neon-cyan/10" />
 					))}
 				</div>
 			</section>
@@ -73,7 +73,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 		return (
 			<section className="space-y-2">
 				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-					<TicketIcon className="w-5 h-5 text-[#00f0ff]" />
+					<TicketIcon className="w-5 h-5 text-neon-cyan" />
 					Мои билеты
 				</h3>
 				<div className="text-sm text-red-400/90 py-4 text-center">{error.message}</div>
@@ -85,7 +85,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 		return (
 			<section className="space-y-2">
 				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-					<TicketIcon className="w-5 h-5 text-[#00f0ff]" />
+					<TicketIcon className="w-5 h-5 text-neon-cyan" />
 					Мои билеты
 				</h3>
 				<div className="text-sm text-gray-500 py-6 text-center">
@@ -118,7 +118,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 						type="button"
 						onClick={onPrev}
 						disabled={currentPage === 0}
-						className="p-2 rounded-lg text-[#00f0ff] hover:bg-[#00f0ff]/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+						className="p-2 rounded-lg text-neon-cyan hover:bg-neon-cyan/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
 						aria-label="Предыдущая страница"
 					>
 						<ChevronLeft className="w-5 h-5" />
@@ -130,7 +130,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 						type="button"
 						onClick={onNext}
 						disabled={currentPage >= totalPages - 1}
-						className="p-2 rounded-lg text-[#00f0ff] hover:bg-[#00f0ff]/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
+						className="p-2 rounded-lg text-neon-cyan hover:bg-neon-cyan/10 disabled:opacity-40 disabled:pointer-events-none transition-colors"
 						aria-label="Следующая страница"
 					>
 						<ChevronRight className="w-5 h-5" />
@@ -141,7 +141,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 		return (
 			<section className="space-y-6">
 				<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-					<TicketIcon className="w-5 h-5 text-[#00f0ff]" />
+					<TicketIcon className="w-5 h-5 text-neon-cyan" />
 					Мои билеты
 				</h3>
 				<div className="space-y-6">
@@ -149,7 +149,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 						<h4 className="text-sm font-medium text-gray-400 mb-2 px-0">
 							Активные {activeTickets.length > 0 && `(${activeTickets.length})`}
 						</h4>
-						<div className="-mx-4 rounded-none overflow-hidden border-y border-[#00f0ff]/15">
+						<div className="-mx-4 rounded-none overflow-hidden border-y border-neon-cyan/15">
 							{activeTickets.length === 0 ? (
 								<p className="text-sm text-gray-500 py-4 px-4 text-center">
 									Нет активных билетов
@@ -171,7 +171,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 						<h4 className="text-sm font-medium text-gray-400 mb-2 px-0">
 							Использованные {usedTickets.length > 0 && `(${usedTickets.length})`}
 						</h4>
-						<div className="-mx-4 rounded-none overflow-hidden border-y border-[#00f0ff]/15">
+						<div className="-mx-4 rounded-none overflow-hidden border-y border-neon-cyan/15">
 							{usedTickets.length === 0 ? (
 								<p className="text-sm text-gray-500 py-4 px-4 text-center">
 									Нет использованных билетов
@@ -197,7 +197,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 	return (
 		<section className="space-y-2">
 			<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-				<TicketIcon className="w-5 h-5 text-[#00f0ff]" />
+				<TicketIcon className="w-5 h-5 text-neon-cyan" />
 				Мои билеты
 			</h3>
 			<div className="-mx-4 rounded-none overflow-hidden">
@@ -218,7 +218,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 						<button
 							type="button"
 							onClick={() => setShowAll((v) => !v)}
-							className="w-full py-3 text-center text-sm text-[#00f0ff] hover:text-[#00f0ff]/80 hover:underline focus:outline-none flex items-center justify-center gap-1.5"
+							className="w-full py-3 text-center text-sm text-neon-cyan hover:text-neon-cyan/80 hover:underline focus:outline-none flex items-center justify-center gap-1.5"
 						>
 							{showAll ? (
 								<>

@@ -27,12 +27,12 @@ function ParticipantInfo({ participant }: { participant: ScanTicketParticipant; 
 	const name = participant.first_name ?? "—";
 	const username = participant.username ? `@${participant.username}` : null;
 	return (
-		<div className="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#00f0ff]/20">
-			<div className="w-10 h-10 rounded-full bg-[#00f0ff]/10 flex items-center justify-center shrink-0 overflow-hidden">
+		<div className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-cyan/20">
+			<div className="w-10 h-10 rounded-full bg-neon-cyan/10 flex items-center justify-center shrink-0 overflow-hidden">
 				{participant.avatar_url ? (
 					<img src={participant.avatar_url} alt="" className="w-full h-full object-cover" />
 				) : (
-					<User className="w-5 h-5 text-[#00f0ff]" />
+					<User className="w-5 h-5 text-neon-cyan" />
 				)}
 			</div>
 			<div className="min-w-0">
@@ -45,9 +45,9 @@ function ParticipantInfo({ participant }: { participant: ScanTicketParticipant; 
 
 function ItemInfo({ item }: { item: ScanTicketItem; }) {
 	return (
-		<div className="flex gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#b829ff]/20">
+		<div className="flex gap-3 p-3 rounded-xl bg-surface-dark border border-neon-purple/20">
 			{item.photo && (
-				<div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-[#16161d]">
+				<div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-surface-card">
 					<img src={item.photo} alt="" className="w-full h-full object-cover" />
 				</div>
 			)}
@@ -66,13 +66,13 @@ function RecentRow({ row, onClick }: { row: RecentScannedItem; onClick: () => vo
 		<button
 			type="button"
 			onClick={onClick}
-			className="w-full flex items-center gap-3 py-2.5 px-3 rounded-xl bg-[#0a0a0f] border border-[#00f0ff]/10 text-left hover:border-[#00f0ff]/30 hover:bg-[#0f0f16] transition-colors active:opacity-90"
+			className="w-full flex items-center gap-3 py-2.5 px-3 rounded-xl bg-surface-dark border border-neon-cyan/10 text-left hover:border-neon-cyan/30 hover:bg-surface-hover transition-colors active:opacity-90"
 		>
 			<div className="flex items-center gap-1.5 text-gray-400 text-xs shrink-0 w-14">
 				<Clock className="w-3.5 h-3.5" />
 				{formatUsedAt(row.used_at)}
 			</div>
-			<div className="font-mono text-[#00f0ff] text-sm shrink-0">{row.code}</div>
+			<div className="font-mono text-neon-cyan text-sm shrink-0">{row.code}</div>
 			<div className="min-w-0 flex-1 truncate text-white text-sm">{name}</div>
 			<div className="min-w-0 flex-1 truncate text-gray-400 text-sm">{itemName}</div>
 		</button>
@@ -199,19 +199,19 @@ export default function Scanner() {
 	return (
 		<>
 			<div className="p-4 space-y-6">
-				<h2 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-[#00f0ff] to-[#b829ff]">
+				<h2 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple">
 					Сканер билетов
 				</h2>
 				<p className="text-gray-400 text-sm">
 					Отсканируйте QR на билете участника. После сканирования билет станет неактивен, на экране отобразятся данные участника и предмет к выдаче.
 				</p>
-				<div className="bg-linear-to-r from-[#00f0ff]/20 to-[#b829ff]/20 rounded-2xl p-0 border border-[#00f0ff]/30 flex items-stretch overflow-hidden">
+				<div className="bg-linear-to-r from-neon-cyan/20 to-neon-purple/20 rounded-2xl p-0 border border-neon-cyan/30 flex items-stretch overflow-hidden">
 					<button
 						type="button"
 						onClick={handleScanQR}
 						className="flex-1 flex items-center gap-3 p-4 hover:opacity-90 transition-opacity active:scale-[0.98] rounded-l-2xl"
 					>
-						<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-[#00f0ff] to-[#b829ff] flex items-center justify-center shadow-lg shadow-[#00f0ff]/30">
+						<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-neon-cyan to-neon-purple flex items-center justify-center shadow-lg shadow-neon-cyan/30">
 							<QrCode className="w-6 h-6 text-white" />
 						</div>
 						<div className="flex-1 text-left">
@@ -222,7 +222,7 @@ export default function Scanner() {
 					<button
 						type="button"
 						onClick={() => setIsManualOpen(true)}
-						className="shrink-0 w-12 rounded-r-2xl bg-linear-to-br from-[#b829ff] to-[#00f0ff] flex items-center justify-center shadow-lg shadow-[#b829ff]/30 hover:scale-105 transition-transform active:scale-95"
+						className="shrink-0 w-12 rounded-r-2xl bg-linear-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-lg shadow-neon-purple/30 hover:scale-105 transition-transform active:scale-95"
 						title="Ввести код вручную"
 					>
 						<Keyboard className="w-5 h-5 text-white" />
@@ -231,7 +231,7 @@ export default function Scanner() {
 
 				<section className="space-y-2">
 					<h3 className="text-lg font-semibold text-white flex items-center gap-2">
-						<Clock className="w-5 h-5 text-[#00f0ff]" />
+						<Clock className="w-5 h-5 text-neon-cyan" />
 						Отсканированные за 24 ч
 					</h3>
 					{recentLoading ? (
@@ -261,7 +261,7 @@ export default function Scanner() {
 									<button
 										type="button"
 										onClick={() => setShowAllRecent((v) => !v)}
-										className="w-full py-3 text-center text-sm text-[#00f0ff] hover:text-[#00f0ff]/80 hover:underline focus:outline-none flex items-center justify-center gap-1.5"
+										className="w-full py-3 text-center text-sm text-neon-cyan hover:text-neon-cyan/80 hover:underline focus:outline-none flex items-center justify-center gap-1.5"
 									>
 										{showAllRecent ? (
 											<>
@@ -289,7 +289,7 @@ export default function Scanner() {
 					if (!open) setCodeInputs(Array(CODE_LENGTH).fill(""));
 				}}
 			>
-				<DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
+				<DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
 					<DialogHeader>
 						<DialogTitle className="text-white text-center">Введите код билета</DialogTitle>
 					</DialogHeader>
@@ -304,7 +304,7 @@ export default function Scanner() {
 								onChange={(e) => handleInputChange(i, e.target.value)}
 								onKeyDown={(e) => handleInputKeyDown(i, e)}
 								maxLength={1}
-								className="w-12 h-14 rounded-xl border-2 border-[#00f0ff]/30 bg-[#0a0a0f] text-center text-xl font-bold text-white focus:border-[#00f0ff] focus:outline-none"
+								className="w-12 h-14 rounded-xl border-2 border-neon-cyan/30 bg-surface-dark text-center text-xl font-bold text-white focus:border-neon-cyan focus:outline-none"
 							/>
 						))}
 					</div>
@@ -313,7 +313,7 @@ export default function Scanner() {
 						type="button"
 						disabled={codeInputs.join("").length !== CODE_LENGTH || isProcessing}
 						onClick={() => handleManualSubmit(codeInputs.join(""))}
-						className="w-full py-2.5 bg-gradient-to-r from-[#00f0ff] to-[#b829ff] rounded-xl text-white font-semibold disabled:opacity-50"
+						className="w-full py-2.5 bg-linear-to-r from-neon-cyan to-neon-purple rounded-xl text-white font-semibold disabled:opacity-50"
 					>
 						{isProcessing ? "Проверка…" : "Подтвердить"}
 					</button>
@@ -321,7 +321,7 @@ export default function Scanner() {
 			</Dialog>
 
 			<Dialog open={!!result} onOpenChange={(open) => !open && setResult(null)}>
-				<DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
+				<DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
 					<DialogHeader>
 						<DialogTitle className="text-white text-center">Билет отсканирован</DialogTitle>
 					</DialogHeader>
@@ -338,7 +338,7 @@ export default function Scanner() {
 							<button
 								type="button"
 								onClick={() => setResult(null)}
-								className="w-full py-2.5 rounded-xl bg-[#00f0ff]/20 text-white font-medium border border-[#00f0ff]/50"
+								className="w-full py-2.5 rounded-xl bg-neon-cyan/20 text-white font-medium border border-neon-cyan/50"
 							>
 								Закрыть
 							</button>
@@ -348,7 +348,7 @@ export default function Scanner() {
 			</Dialog>
 
 			<Dialog open={!!selectedRecent} onOpenChange={(open) => !open && setSelectedRecent(null)}>
-				<DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
+				<DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
 					<DialogHeader>
 						<DialogTitle className="text-white text-center">
 							Билет {selectedRecent?.code}
@@ -361,7 +361,7 @@ export default function Scanner() {
 								{selectedRecent.participant ? (
 									<ParticipantInfo participant={selectedRecent.participant} />
 								) : (
-									<div className="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#00f0ff]/20 text-gray-500 text-sm">
+									<div className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-cyan/20 text-gray-500 text-sm">
 										Нет данных
 									</div>
 								)}
@@ -371,7 +371,7 @@ export default function Scanner() {
 								{selectedRecent.item ? (
 									<ItemInfo item={selectedRecent.item} />
 								) : (
-									<div className="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#b829ff]/20 text-gray-500 text-sm">
+									<div className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-purple/20 text-gray-500 text-sm">
 										Нет данных
 									</div>
 								)}
@@ -379,7 +379,7 @@ export default function Scanner() {
 							<button
 								type="button"
 								onClick={() => setSelectedRecent(null)}
-								className="w-full py-2.5 rounded-xl bg-[#00f0ff]/20 text-white font-medium border border-[#00f0ff]/50"
+								className="w-full py-2.5 rounded-xl bg-neon-cyan/20 text-white font-medium border border-neon-cyan/50"
 							>
 								Закрыть
 							</button>

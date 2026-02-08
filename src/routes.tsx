@@ -16,7 +16,7 @@ const Scanner = lazy(() => import("./pages/scanner"));
 
 function LayoutFallback() {
 	return (
-		<div className="flex min-h-screen flex-col bg-[#0a0a0f]">
+		<div className="flex min-h-screen flex-col bg-surface-dark">
 			<LazyLoadingFallback />
 		</div>
 	);

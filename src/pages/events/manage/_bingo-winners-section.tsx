@@ -46,7 +46,7 @@ export function BingoWinnersSection({
     return (
       <>
         {/* Personal bingo skeleton */}
-        <div className="bg-[#16161d] rounded-2xl p-5 border border-[#00f0ff]/20">
+        <div className="bg-surface-card rounded-2xl p-5 border border-neon-cyan/20">
           <Skeleton className="h-5 w-44 rounded-lg mb-3" />
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -55,7 +55,7 @@ export function BingoWinnersSection({
           </div>
         </div>
         {/* Team bingo skeleton */}
-        <div className="bg-[#16161d] rounded-2xl p-5 border border-[#b829ff]/20">
+        <div className="bg-surface-card rounded-2xl p-5 border border-neon-purple/20">
           <Skeleton className="h-5 w-40 rounded-lg mb-3" />
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -75,9 +75,9 @@ export function BingoWinnersSection({
   return (
     <>
       {/* ——— Personal bingo card ——— */}
-      <div className="bg-[#16161d] rounded-2xl p-5 border border-[#00f0ff]/20">
+      <div className="bg-surface-card rounded-2xl p-5 border border-neon-cyan/20">
         <h2 className="text-lg text-white mb-3 flex items-center gap-2">
-          <Award className="w-5 h-5 text-[#ffd700]" />
+          <Award className="w-5 h-5 text-neon-gold" />
           Персональное бинго
         </h2>
         <div className="space-y-2">
@@ -105,9 +105,9 @@ export function BingoWinnersSection({
       </div>
 
       {/* ——— Team bingo card ——— */}
-      <div className="bg-[#16161d] rounded-2xl p-5 border border-[#b829ff]/20">
+      <div className="bg-surface-card rounded-2xl p-5 border border-neon-purple/20">
         <h2 className="text-lg text-white mb-3 flex items-center gap-2">
-          <Users className="w-5 h-5 text-[#b829ff]" />
+          <Users className="w-5 h-5 text-neon-purple" />
           Командное бинго
         </h2>
         <div className="space-y-2">
@@ -157,8 +157,8 @@ function TeamSlotCard({ icon: Icon, label, coins, slot, locked, highlighted, onC
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border transition-colors min-h-[64px]",
-        highlighted ? "border-[#ffd700]/30" : "border-[#b829ff]/20",
+        "flex items-center gap-3 p-3 rounded-xl bg-surface-dark border transition-colors min-h-[64px]",
+        highlighted ? "border-neon-gold/30" : "border-neon-purple/20",
         locked && "opacity-50",
       )}
     >
@@ -166,13 +166,13 @@ function TeamSlotCard({ icon: Icon, label, coins, slot, locked, highlighted, onC
       <div
         className={cn(
           "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-          highlighted ? "bg-[#ffd700]/10" : "bg-[#b829ff]/10",
+          highlighted ? "bg-neon-gold/10" : "bg-neon-purple/10",
         )}
       >
         <Icon
           className={cn(
             "w-4 h-4",
-            highlighted ? "text-[#ffd700]" : "text-[#b829ff]",
+            highlighted ? "text-neon-gold" : "text-neon-purple",
           )}
         />
       </div>
@@ -182,7 +182,7 @@ function TeamSlotCard({ icon: Icon, label, coins, slot, locked, highlighted, onC
         <span
           className={cn(
             "text-xs block",
-            highlighted ? "text-[#ffd700]/80" : "text-gray-500",
+            highlighted ? "text-neon-gold/80" : "text-gray-500",
           )}
         >
           {label}
@@ -193,7 +193,7 @@ function TeamSlotCard({ icon: Icon, label, coins, slot, locked, highlighted, onC
         ) : hasCode ? (
           <div className="mt-0.5">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-mono font-bold text-[#b829ff] tracking-wider truncate">
+              <p className="text-sm font-mono font-bold text-neon-purple tracking-wider truncate">
                 {slot.code}
               </p>
               {slot.redeemed && (
@@ -244,16 +244,16 @@ function TeamSlotCard({ icon: Icon, label, coins, slot, locked, highlighted, onC
           <button
             type="button"
             onClick={() => onShowQR(slot.code)}
-            className="w-8 h-8 rounded-lg bg-[#b829ff]/10 flex items-center justify-center hover:bg-[#b829ff]/20 transition-colors"
+            className="w-8 h-8 rounded-lg bg-neon-purple/10 flex items-center justify-center hover:bg-neon-purple/20 transition-colors"
             title="Показать QR"
           >
-            <QrCode className="w-4 h-4 text-[#b829ff]" />
+            <QrCode className="w-4 h-4 text-neon-purple" />
           </button>
         ) : null}
         {(hasTeam || hasCode) && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#ffd700]/10">
-            <Coins className="w-3.5 h-3.5 text-[#ffd700]" />
-            <span className="text-xs font-medium text-[#ffd700]">{coins}</span>
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-neon-gold/10">
+            <Coins className="w-3.5 h-3.5 text-neon-gold" />
+            <span className="text-xs font-medium text-neon-gold">{coins}</span>
           </div>
         )}
         {!slot && !locked && (
@@ -298,8 +298,8 @@ function PersonalSlotCard({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border transition-colors min-h-[64px]",
-        highlighted ? "border-[#ffd700]/30" : "border-[#00f0ff]/20",
+        "flex items-center gap-3 p-3 rounded-xl bg-surface-dark border transition-colors min-h-[64px]",
+        highlighted ? "border-neon-gold/30" : "border-neon-cyan/20",
         locked && "opacity-50"
       )}
     >
@@ -307,13 +307,13 @@ function PersonalSlotCard({
       <div
         className={cn(
           "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-          highlighted ? "bg-[#ffd700]/10" : "bg-[#00f0ff]/10"
+          highlighted ? "bg-neon-gold/10" : "bg-neon-cyan/10"
         )}
       >
         <Icon
           className={cn(
             "w-4 h-4",
-            highlighted ? "text-[#ffd700]" : "text-[#00f0ff]"
+            highlighted ? "text-neon-gold" : "text-neon-cyan"
           )}
         />
       </div>
@@ -323,7 +323,7 @@ function PersonalSlotCard({
         <span
           className={cn(
             "text-xs block",
-            highlighted ? "text-[#ffd700]/80" : "text-gray-500"
+            highlighted ? "text-neon-gold/80" : "text-gray-500"
           )}
         >
           {label}
@@ -331,7 +331,7 @@ function PersonalSlotCard({
 
         {hasUser ? (
           <div className="flex items-center gap-2 mt-0.5">
-            <div className="w-6 h-6 rounded-full bg-[#00f0ff]/10 flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="w-6 h-6 rounded-full bg-neon-cyan/10 flex items-center justify-center shrink-0 overflow-hidden">
               {winner.avatar_url ? (
                 <img
                   src={winner.avatar_url}
@@ -339,7 +339,7 @@ function PersonalSlotCard({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="w-3 h-3 text-[#00f0ff]" />
+                <User className="w-3 h-3 text-neon-cyan" />
               )}
             </div>
             <p className="text-sm text-white truncate">
@@ -349,7 +349,7 @@ function PersonalSlotCard({
         ) : hasCode ? (
           <div className="mt-0.5">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-mono font-bold text-[#b829ff] tracking-wider truncate">
+              <p className="text-sm font-mono font-bold text-neon-purple tracking-wider truncate">
                 {winner.code}
               </p>
               {winner.redeemed && (
@@ -400,16 +400,16 @@ function PersonalSlotCard({
           <button
             type="button"
             onClick={() => onShowQR(winner.code)}
-            className="w-8 h-8 rounded-lg bg-[#b829ff]/10 flex items-center justify-center hover:bg-[#b829ff]/20 transition-colors"
+            className="w-8 h-8 rounded-lg bg-neon-purple/10 flex items-center justify-center hover:bg-neon-purple/20 transition-colors"
             title="Показать QR"
           >
-            <QrCode className="w-4 h-4 text-[#b829ff]" />
+            <QrCode className="w-4 h-4 text-neon-purple" />
           </button>
         ) : null}
         {(hasUser || hasCode) && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#ffd700]/10">
-            <Coins className="w-3.5 h-3.5 text-[#ffd700]" />
-            <span className="text-xs font-medium text-[#ffd700]">{coins}</span>
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-neon-gold/10">
+            <Coins className="w-3.5 h-3.5 text-neon-gold" />
+            <span className="text-xs font-medium text-neon-gold">{coins}</span>
           </div>
         )}
         {!winner && !locked && (

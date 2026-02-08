@@ -12,6 +12,10 @@ export interface AchievementItem {
   description: string;
   label: string;
   stat_key: AchievementStatKey;
+  threshold: number;
+  current_value: number;
+  coin_reward: number | null;
+  reward_claimed_at: string | null;
   unlocked: boolean;
   unlocked_at: string | null;
 }
@@ -24,6 +28,10 @@ export interface Achievement {
   description: string;
   badge?: string;
   label?: string;
+  threshold: number;
+  current_value: number;
+  coin_reward: number | null;
+  reward_claimed_at?: string;
 }
 
 /** Элемент из ответа при регистрации/покупке/бинго (ново разблокированная ачивка) */
@@ -33,4 +41,5 @@ export interface NewlyUnlockedAchievement {
   name: string;
   description: string;
   label: string;
+  coinReward?: number;
 }
