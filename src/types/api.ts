@@ -10,6 +10,30 @@ export interface ApiError {
 
 // ——— Events API ———
 
+export interface ApiEventTeam {
+	id: string;
+	name: string;
+}
+
+export interface ApiMyRegistrationResponse {
+	registration: {
+		event: { id: string; title: string } | null;
+		team: ApiEventTeam | null;
+		registered_at: string;
+	} | null;
+}
+
+export interface ApiValidateCodeResponse {
+	event: { id: string; title: string };
+	teams: ApiEventTeam[];
+	alreadyRegistered: boolean;
+	coinsReward: number;
+}
+
+export interface ApiTeamsResponse {
+	teams: ApiEventTeam[];
+}
+
 export interface ApiRegistrationRow {
 	telegram_id: number;
 	registered_at: string;
@@ -17,6 +41,7 @@ export interface ApiRegistrationRow {
 	first_name: string | null;
 	username: string | null;
 	avatar_url: string | null;
+	team: { id: string; name: string | null } | null;
 }
 
 export interface ApiRegistrationsResponse {
@@ -58,9 +83,15 @@ export type ApiPersonalWinnerSlot =
 	| { code: string; redeemed: boolean; redeemed_at: string | null; redeemed_by: ApiPrizeCodeRedeemer | null }
 	| null;
 
+/** Слот командного победителя: команда, код (с опциональной инфой о погашении), или null */
+export type ApiTeamWinnerSlot =
+	| ApiEventTeam
+	| { code: string; redeemed: boolean; redeemed_at: string | null; redeemed_by: ApiPrizeCodeRedeemer | null }
+	| null;
+
 export interface ApiBingoWinnersResponse {
 	personal: ApiPersonalWinnerSlot[];
-	team: (string | null)[];
+	team: ApiTeamWinnerSlot[];
 }
 
 export interface ApiPutBingoWinnersResponse {
@@ -186,6 +217,12 @@ export const PERSONAL_BINGO_SLOTS = [
 	{ slug: "vertical", label: "Вертикаль", rewardType: "personal_bingo_vertical", icon: "MoveVertical", coins: 75 },
 	{ slug: "diagonal", label: "Диагональ", rewardType: "personal_bingo_diagonal", icon: "MoveUpRight", coins: 75 },
 	{ slug: "full_card", label: "Весь бланк", rewardType: "personal_bingo_full_card", icon: "LayoutGrid", coins: 100 },
+] as const;
+
+export const TEAM_BINGO_SLOTS = [
+	{ slug: "horizontal", label: "Горизонталь", rewardType: "team_bingo_horizontal", icon: "MoveHorizontal", coins: 150 },
+	{ slug: "vertical", label: "Вертикаль", rewardType: "team_bingo_vertical", icon: "MoveVertical", coins: 150 },
+	{ slug: "full_card", label: "Весь бланк", rewardType: "team_bingo_full_card", icon: "LayoutGrid", coins: 150 },
 ] as const;
 
 /** Типизированный парсинг JSON ответа */

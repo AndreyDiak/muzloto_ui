@@ -1,15 +1,17 @@
 import { processBingoCode } from "@/actions/process-bingo-code";
-import { processEventCode } from "@/actions/process-event-code";
+import { processEventCode, validateEventCode } from "@/actions/process-event-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RegistrationModal } from "@/components/registration-modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-client";
 import { extractPayloadFromInput, isBingoCodeLike } from "@/lib/event-deep-link";
+import type { ApiValidateCodeResponse } from "@/types/api";
 import { Keyboard, QrCode } from "lucide-react";
-import { memo, useRef, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 
 export const ProfileSqan = memo(() => {
 	const { user, refetchProfile } = useSession();
@@ -23,6 +25,12 @@ export const ProfileSqan = memo(() => {
 	const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(5).fill(null));
 	const isProcessingQRRef = useRef(false);
 	const CODE_LENGTH = 5;
+
+	// Registration modal state
+	const [regModalOpen, setRegModalOpen] = useState(false);
+	const [regModalData, setRegModalData] = useState<ApiValidateCodeResponse | null>(null);
+	const [pendingRegCode, setPendingRegCode] = useState<string>("");
+	const [isRegistering, setIsRegistering] = useState(false);
 
 	const handleScanQR = () => {
 		if (tg?.showScanQrPopup) {
@@ -135,16 +143,48 @@ export const ProfileSqan = memo(() => {
 		setIsProcessing(true);
 
 		try {
+			const data = await validateEventCode(code);
+
+			if (data.alreadyRegistered) {
+				setCodeInputs(Array(5).fill(''));
+				setIsCodeModalOpen(false);
+				showToast('Вы уже зарегистрированы на это мероприятие', 'error');
+				isProcessingQRRef.current = false;
+				return;
+			}
+
+			// Открываем модалку регистрации с информацией о мероприятии и командах
+			setPendingRegCode(code);
+			setRegModalData(data);
+			setCodeInputs(Array(5).fill(''));
+			setIsCodeModalOpen(false);
+			setRegModalOpen(true);
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при обработке кода';
+			showToast(errorMessage, 'error');
+			isProcessingQRRef.current = false;
+		} finally {
+			setIsProcessing(false);
+		}
+	};
+
+	const handleRegistrationConfirm = useCallback(async (teamId: string | undefined) => {
+		if (!user?.id || !pendingRegCode) return;
+		setIsRegistering(true);
+
+		try {
 			await processEventCode({
-				code,
+				code: pendingRegCode,
 				telegramId: user.id,
+				teamId,
 				onSuccess: async (data) => {
 					const eventTitle = data.event.title;
 					const coinsEarned = data.coinsEarned;
 					const newlyUnlocked = data.newlyUnlockedAchievements ?? [];
 
-					setCodeInputs(Array(5).fill(''));
-					setIsCodeModalOpen(false);
+					setRegModalOpen(false);
+					setRegModalData(null);
+					setPendingRegCode("");
 
 					showCoinAnimation(coinsEarned);
 
@@ -158,39 +198,36 @@ export const ProfileSqan = memo(() => {
 
 					setTimeout(() => {
 						showToast(`Успешно! Вы зарегистрированы на мероприятие "${eventTitle}".`, 'success');
-					newlyUnlocked.forEach((a) => {
-						setTimeout(() => {
-							const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
-							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
-						}, 600 + newlyUnlocked.indexOf(a) * 400);
-					});
+						newlyUnlocked.forEach((a, i) => {
+							setTimeout(() => {
+								const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
+								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
+							}, 600 + i * 400);
+						});
 					}, 500);
 
 					isProcessingQRRef.current = false;
 				},
 				onError: (error, statusCode) => {
 					if (statusCode === 409) {
-						setCodeInputs(Array(5).fill(''));
-						setIsCodeModalOpen(false);
+						setRegModalOpen(false);
 						setTimeout(() => {
 							showToast(error || 'Вы уже зарегистрированы на это мероприятие', 'error');
 						}, 100);
 					} else {
 						showToast(error || 'Произошла ошибка при обработке кода', 'error');
 					}
-
 					isProcessingQRRef.current = false;
 				},
 			});
-		} catch (err: any) {
-			const errorMessage = err?.message || err?.error?.message || 'Произошла ошибка при обработке кода';
-			// Для неожиданных ошибок оставляем попап открытым
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при обработке кода';
 			showToast(errorMessage, 'error');
 			isProcessingQRRef.current = false;
 		} finally {
-			setIsProcessing(false);
+			setIsRegistering(false);
 		}
-	};
+	}, [user?.id, pendingRegCode, showCoinAnimation, refetchProfile, queryClient, showToast]);
 
 	const handleSubmitCode = async (codeOverride?: string) => {
 		const code = (codeOverride || codeInputs.join('')).toUpperCase();
@@ -265,6 +302,22 @@ export const ProfileSqan = memo(() => {
 
 	return (
 		<>
+			{regModalData && (
+				<RegistrationModal
+					open={regModalOpen}
+					onOpenChange={(open) => {
+						setRegModalOpen(open);
+						if (!open) {
+							isProcessingQRRef.current = false;
+						}
+					}}
+					eventTitle={regModalData.event.title}
+					teams={regModalData.teams}
+					coinsReward={regModalData.coinsReward}
+					isRegistering={isRegistering}
+					onConfirm={handleRegistrationConfirm}
+				/>
+			)}
 			<Dialog open={isCodeModalOpen} onOpenChange={handleOpenChange}>
 				<DialogContent className="bg-[#16161d] border-[#00f0ff]/30 max-w-sm">
 					<DialogHeader>

@@ -77,7 +77,7 @@ export const UpcomingEvent = memo(
           </div>
 
           {isRoot && (
-            <div className="px-5 pb-5">
+            <div className="pb-5">
               <Link
                 to={`/events/${event.id}/manage`}
                 className="flex items-center justify-center gap-2 w-full px-6 py-2.5 rounded-lg font-medium transition-all text-white border border-[#00f0ff]/40 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20"

@@ -1,13 +1,15 @@
 import { processBingoCode } from "@/actions/process-bingo-code";
-import { processEventCode } from "@/actions/process-event-code";
+import { processEventCode, validateEventCode } from "@/actions/process-event-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
+import { RegistrationModal } from "@/components/registration-modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-client";
 import { parseStartPayload } from "@/lib/event-deep-link";
-import { useEffect, useRef, useState } from "react";
+import type { ApiValidateCodeResponse } from "@/types/api";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "muzloto_start_param_processed";
 
@@ -35,7 +37,7 @@ function getRawPayload(tg: { initDataUnsafe?: { start_param?: string } } | undef
 
 /**
  * Обрабатывает payload при заходе по ссылке по типу:
- * - registration (reg-CODE или 5 символов) → регистрация на мероприятие, начисление монет.
+ * - registration (reg-CODE или 5 символов) → валидация + модалка регистрации с выбором команды.
  * - prize (prize-TOKEN / p-TOKEN или Bxxxx) → получение приза.
  */
 export function StartParamHandler() {
@@ -46,6 +48,13 @@ export function StartParamHandler() {
 	const queryClient = useQueryClient();
 	const processedRef = useRef(false);
 	const [retryAt, setRetryAt] = useState(0);
+
+	// Registration modal state
+	const [regModalOpen, setRegModalOpen] = useState(false);
+	const [regModalData, setRegModalData] = useState<ApiValidateCodeResponse | null>(null);
+	const [pendingCode, setPendingCode] = useState("");
+	const [pendingStorageKey, setPendingStorageKey] = useState("");
+	const [isRegistering, setIsRegistering] = useState(false);
 
 	useEffect(() => {
 		const payload = (() => {
@@ -60,31 +69,24 @@ export function StartParamHandler() {
 		processedRef.current = true;
 
 		if (payload.type === "registration") {
-			const timeoutId = setTimeout(() => {
-				processEventCode({
-					code: payload.value,
-					telegramId: user.id,
-					onSuccess: (data) => {
+			const timeoutId = setTimeout(async () => {
+				try {
+					const data = await validateEventCode(payload.value);
+					if (data.alreadyRegistered) {
 						sessionStorage.setItem(STORAGE_KEY, storageKey);
-						refetchProfile();
-						showCoinAnimation(data.coinsEarned ?? 10);
-						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-						showToast(
-							`Успешно! Вы зарегистрированы на мероприятие «${data.event.title}». +${data.coinsEarned} монет`,
-							"success"
-						);
-						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
-							setTimeout(() => {
-								const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
-								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
-							}, 600 + i * 400);
-						});
-					},
-					onError: (message) => {
-						processedRef.current = false;
-						showToast(message || "Не удалось обработать код", "error");
-					},
-				});
+						showToast("Вы уже зарегистрированы на это мероприятие", "error");
+						return;
+					}
+					// Открываем модалку регистрации
+					setPendingCode(payload.value);
+					setPendingStorageKey(storageKey);
+					setRegModalData(data);
+					setRegModalOpen(true);
+				} catch (err: unknown) {
+					processedRef.current = false;
+					const msg = err instanceof Error ? err.message : "Не удалось обработать код";
+					showToast(msg, "error");
+				}
 			}, 150);
 			return () => clearTimeout(timeoutId);
 		}
@@ -117,6 +119,47 @@ export function StartParamHandler() {
 		}
 	}, [tg?.initDataUnsafe?.start_param, user?.id, isSupabaseSessionReady, retryAt, showToast, refetchProfile, showCoinAnimation, queryClient]);
 
+	const handleRegistrationConfirm = useCallback(async (teamId: string | undefined) => {
+		if (!user?.id || !pendingCode) return;
+		setIsRegistering(true);
+		try {
+			await processEventCode({
+				code: pendingCode,
+				telegramId: user.id,
+				teamId,
+				onSuccess: (data) => {
+					sessionStorage.setItem(STORAGE_KEY, pendingStorageKey);
+					setRegModalOpen(false);
+					setRegModalData(null);
+					setPendingCode("");
+					refetchProfile();
+					showCoinAnimation(data.coinsEarned ?? 10);
+					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+					showToast(
+						`Успешно! Вы зарегистрированы на мероприятие «${data.event.title}». +${data.coinsEarned} монет`,
+						"success"
+					);
+					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
+						setTimeout(() => {
+							const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
+							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
+						}, 600 + i * 400);
+					});
+				},
+				onError: (message) => {
+					processedRef.current = false;
+					showToast(message || "Не удалось обработать код", "error");
+				},
+			});
+		} catch (err: unknown) {
+			processedRef.current = false;
+			const msg = err instanceof Error ? err.message : "Ошибка при регистрации";
+			showToast(msg, "error");
+		} finally {
+			setIsRegistering(false);
+		}
+	}, [user?.id, pendingCode, pendingStorageKey, refetchProfile, showCoinAnimation, queryClient, showToast]);
+
 	// start_param иногда приходит с задержкой — перепроверяем через 0.8 с
 	useEffect(() => {
 		if (!user?.id || !isSupabaseSessionReady) return;
@@ -124,6 +167,21 @@ export function StartParamHandler() {
 		return () => clearTimeout(t);
 	}, [user?.id, isSupabaseSessionReady]);
 
-	return null;
+	if (!regModalData) return null;
+
+	return (
+		<RegistrationModal
+			open={regModalOpen}
+			onOpenChange={(open) => {
+				setRegModalOpen(open);
+				if (!open) processedRef.current = false;
+			}}
+			eventTitle={regModalData.event.title}
+			teams={regModalData.teams}
+			coinsReward={regModalData.coinsReward}
+			isRegistering={isRegistering}
+			onConfirm={handleRegistrationConfirm}
+		/>
+	);
 }
 

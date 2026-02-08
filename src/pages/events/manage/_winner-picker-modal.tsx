@@ -5,13 +5,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type {
+  ApiEventTeam,
   ApiPersonalWinner,
   ApiPersonalWinnerSlot,
   ApiRegistrationsResponse,
+  ApiTeamWinnerSlot,
 } from "@/types/api";
-import { PERSONAL_BINGO_SLOTS } from "@/types/api";
-import { ChevronLeft, ChevronRight, Loader2, User } from "lucide-react";
-import { TeamNameForm } from "./_team-name-form";
+import { PERSONAL_BINGO_SLOTS, TEAM_BINGO_SLOTS } from "@/types/api";
+import { ChevronLeft, ChevronRight, Loader2, User, Users } from "lucide-react";
 
 const PAGE_SIZE = 5;
 
@@ -24,7 +25,8 @@ interface WinnerPickerModalProps {
   pickerSlot: PickerSlot;
   registrations: ApiRegistrationsResponse["registrations"];
   personalWinners: ApiPersonalWinnerSlot[];
-  teamWinners: (string | null)[];
+  teamWinners: ApiTeamWinnerSlot[];
+  eventTeams: ApiEventTeam[];
   pickerPage: number;
   awardingWinner: number | null;
   generatingCode: boolean;
@@ -32,14 +34,16 @@ interface WinnerPickerModalProps {
   onPickerPageChange: (page: number) => void;
   onSelectPersonalWinner: (r: ApiPersonalWinner, slotIndex: number) => void;
   onGenerateCodeForSlot: (slotIndex: number) => void;
-  onTeamSubmit: (index: number, name: string) => void;
+  onTeamSubmit: (index: number, team: ApiEventTeam) => void;
+  onGenerateTeamCodeForSlot: (slotIndex: number) => void;
 }
 
 export function WinnerPickerModal({
   pickerSlot,
   registrations,
   // personalWinners,
-  teamWinners,
+  teamWinners: _teamWinners,
+  eventTeams,
   pickerPage,
   awardingWinner,
   generatingCode,
@@ -48,6 +52,7 @@ export function WinnerPickerModal({
   onSelectPersonalWinner,
   onGenerateCodeForSlot,
   onTeamSubmit,
+  onGenerateTeamCodeForSlot,
 }: WinnerPickerModalProps) {
   const totalPages = Math.ceil(registrations.length / PAGE_SIZE);
   const slice = registrations.slice(
@@ -67,9 +72,11 @@ export function WinnerPickerModal({
           <DialogTitle className="text-white">
             {pickerSlot?.type === "personal"
               ? PERSONAL_BINGO_SLOTS[pickerSlot.index ?? 0]?.label ?? `Победитель ${(pickerSlot.index ?? 0) + 1}`
-              : `Команда ${(pickerSlot?.index ?? 0) + 1}`}
+              : TEAM_BINGO_SLOTS[pickerSlot?.index ?? 0]?.label ?? `Команда ${(pickerSlot?.index ?? 0) + 1}`}
           </DialogTitle>
         </DialogHeader>
+
+        {/* ——— Personal: список участников + генерация кода ——— */}
         {pickerSlot?.type === "personal" && pickerSlot.index !== undefined && (
           <div className="space-y-4">
             <div>
@@ -154,12 +161,49 @@ export function WinnerPickerModal({
             </button>
           </div>
         )}
+
+        {/* ——— Team: список команд + генерация кода ——— */}
         {pickerSlot?.type === "team" && pickerSlot.index !== undefined && (
-          <TeamNameForm
-            initialValue={teamWinners[pickerSlot.index] ?? ""}
-            onSubmit={(name) => onTeamSubmit(pickerSlot.index, name)}
-            onCancel={onClose}
-          />
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs text-gray-400 mb-2">Выберите команду-победителя</p>
+              <ul className="space-y-1">
+                {eventTeams.map((team) => (
+                  <li key={team.id}>
+                    <button
+                      type="button"
+                      onClick={() => onTeamSubmit(pickerSlot.index, team)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border border-[#b829ff]/10 hover:border-[#b829ff]/30 text-left transition-colors"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-[#b829ff]/10 flex items-center justify-center shrink-0">
+                        <Users className="w-4 h-4 text-[#b829ff]" />
+                      </div>
+                      <span className="text-white truncate flex-1">
+                        {team.name}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+                {eventTeams.length === 0 && (
+                  <p className="text-gray-400 text-sm py-4 text-center">
+                    Нет команд
+                  </p>
+                )}
+              </ul>
+            </div>
+            <button
+              type="button"
+              disabled={generatingCode}
+              onClick={() => onGenerateTeamCodeForSlot(pickerSlot.index)}
+              className="w-full py-2.5 rounded-lg border border-[#b829ff]/25 bg-[#0a0a0f] text-[#b829ff] hover:bg-[#b829ff]/5 hover:border-[#b829ff]/40 text-sm font-medium disabled:opacity-50 transition-colors"
+            >
+              {generatingCode ? (
+                <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+              ) : (
+                "Сгенерировать код"
+              )}
+            </button>
+          </div>
         )}
       </DialogContent>
     </Dialog>

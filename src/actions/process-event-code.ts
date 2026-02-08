@@ -1,10 +1,16 @@
 import type { NewlyUnlockedAchievement } from '@/entities/achievement';
 import { authFetch } from '@/lib/auth-fetch';
-import { type ApiProcessEventCodeResponse, type ApiError, parseJson } from '@/types/api';
+import {
+  type ApiProcessEventCodeResponse,
+  type ApiValidateCodeResponse,
+  type ApiError,
+  parseJson,
+} from '@/types/api';
 
 interface ProcessEventCodeParams {
   code: string;
   telegramId: number;
+  teamId?: string;
   onSuccess?: (data: {
     event: { title: string };
     newBalance: number;
@@ -17,9 +23,33 @@ interface ProcessEventCodeParams {
 const CODE_LENGTH = 5;
 const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '');
 
+/**
+ * Валидирует код мероприятия: возвращает информацию о мероприятии, список команд и награду.
+ * Не создаёт регистрацию — только проверяет.
+ */
+export async function validateEventCode(code: string): Promise<ApiValidateCodeResponse> {
+  if (!code || code.length !== CODE_LENGTH) {
+    throw new Error('Неверный формат кода. Код должен состоять из 5 символов.');
+  }
+
+  const response = await authFetch(`${BACKEND_URL}/api/events/validate-code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: code.toUpperCase() }),
+  });
+
+  if (!response.ok) {
+    const errorData = await parseJson<ApiError>(response).catch(() => ({ error: `HTTP ${response.status}` }));
+    throw new Error(errorData.error || `Ошибка ${response.status}`);
+  }
+
+  return parseJson<ApiValidateCodeResponse>(response);
+}
+
 export async function processEventCode({
   code,
   telegramId: _telegramId,
+  teamId,
   onSuccess,
   onError,
 }: ProcessEventCodeParams): Promise<void> {
@@ -29,10 +59,13 @@ export async function processEventCode({
   }
 
   try {
+    const body: Record<string, string> = { code: code.toUpperCase() };
+    if (teamId) body.team_id = teamId;
+
     const response = await authFetch(`${BACKEND_URL}/api/events/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: code.toUpperCase() }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {

@@ -14,13 +14,9 @@ export interface AchievementItem {
   stat_key: AchievementStatKey;
   unlocked: boolean;
   unlocked_at: string | null;
-  reward_claimed_at: string | null;
-  threshold: number;
-  current_value: number;
-  coin_reward: number | null;
 }
 
-/** Модель для отображения в списке достижений (аккордеон) */
+/** Модель для отображения в списке достижений (карточка + тултип) */
 export interface Achievement {
   slug?: string;
   name: string;
@@ -28,10 +24,6 @@ export interface Achievement {
   description: string;
   badge?: string;
   label?: string;
-  threshold: number;
-  current_value: number;
-  coin_reward: number | null;
-  reward_claimed_at?: string | null;
 }
 
 /** Элемент из ответа при регистрации/покупке/бинго (ново разблокированная ачивка) */
@@ -41,6 +33,4 @@ export interface NewlyUnlockedAchievement {
   name: string;
   description: string;
   label: string;
-  /** Награда монетами за эту ачивку (если есть) */
-  coinReward?: number;
 }

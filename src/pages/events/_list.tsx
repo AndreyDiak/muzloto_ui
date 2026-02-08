@@ -50,26 +50,15 @@ export const EventsList = memo(({ events, isRoot }: Props) => {
 										</span>
 									</div>
 								</div>
-								{isRoot ? (
-									<Link
-										to={`/events/${event.id}/manage`}
-										className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap border border-[#00f0ff]/40 bg-[#00f0ff]/10 text-[#00f0ff] hover:bg-[#00f0ff]/20"
-									>
-										<Settings className="w-3.5 h-3.5" />
-										Управление
-									</Link>
-								) : (
-									<span
-										className="px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap"
-										style={{
-											background: `${eventColor}30`,
-											color: eventColor,
-											border: `1px solid ${eventColor}50`,
-										}}
-									>
-										Регистрация
-									</span>
-								)}
+							{isRoot && (
+								<Link
+									to={`/events/${event.id}/manage`}
+									className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap border border-[#00f0ff]/40 bg-[#00f0ff]/10 text-[#00f0ff] hover:bg-[#00f0ff]/20"
+								>
+									<Settings className="w-3.5 h-3.5" />
+									Управление
+								</Link>
+							)}
 							</div>
 						</div>
 					);

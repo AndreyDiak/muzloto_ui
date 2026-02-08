@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { ApiPersonalWinnerSlot } from "@/types/api";
-import { PERSONAL_BINGO_SLOTS } from "@/types/api";
+import type { ApiPersonalWinnerSlot, ApiTeamWinnerSlot } from "@/types/api";
+import { PERSONAL_BINGO_SLOTS, TEAM_BINGO_SLOTS } from "@/types/api";
 import type { LucideIcon } from "lucide-react";
 import {
   Award,
@@ -27,7 +27,7 @@ const SLOT_ICONS: Record<string, LucideIcon> = {
 
 interface BingoWinnersSectionProps {
   personalWinners: ApiPersonalWinnerSlot[];
-  teamWinners: (string | null)[];
+  teamWinners: ApiTeamWinnerSlot[];
   loading?: boolean;
   onSelectPersonal: (index: number) => void;
   onSelectTeam: (index: number) => void;
@@ -59,7 +59,7 @@ export function BingoWinnersSection({
           <Skeleton className="h-5 w-40 rounded-lg mb-3" />
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-[56px] rounded-xl" />
+              <Skeleton key={i} className="h-[64px] rounded-xl" />
             ))}
           </div>
         </div>
@@ -111,34 +111,159 @@ export function BingoWinnersSection({
           Командное бинго
         </h2>
         <div className="space-y-2">
-          {teamWinners.map((name, i) => (
-            <button
-              key={i}
-              type="button"
-              disabled={!!name}
-              onClick={() => !name && onSelectTeam(i)}
-              className={cn(
-                "w-full p-3 rounded-xl bg-[#0a0a0f] border border-[#b829ff]/20 text-left transition-colors min-h-[56px]",
-                !name && "hover:border-[#b829ff]/40 cursor-pointer",
-                name && "cursor-default opacity-90"
-              )}
-            >
-              <span className="text-xs text-gray-500 block">
-                Команда {i + 1}
-              </span>
-              {name ? (
-                <p className="text-sm text-white mt-1 truncate">{name}</p>
-              ) : (
-                <div className="flex items-center gap-1.5 text-gray-500 mt-1">
-                  <Plus className="w-4 h-4 shrink-0" />
-                  <span className="text-sm">Ввести название</span>
-                </div>
-              )}
-            </button>
-          ))}
+          {TEAM_BINGO_SLOTS.map((slotDef, i) => {
+            const slot = teamWinners[i];
+            const Icon = SLOT_ICONS[slotDef.icon];
+            const isFullCard = slotDef.slug === "full_card";
+            const firstTwoFilled = teamWinners[0] != null && teamWinners[1] != null;
+            const locked = isFullCard && !firstTwoFilled && !slot;
+            return (
+              <TeamSlotCard
+                key={slotDef.slug}
+                icon={Icon}
+                label={slotDef.label}
+                coins={slotDef.coins}
+                slot={slot}
+                locked={locked}
+                highlighted={isFullCard}
+                onClick={() => !slot && !locked && onSelectTeam(i)}
+                onShowQR={onShowPrizeQR}
+              />
+            );
+          })}
         </div>
       </div>
     </>
+  );
+}
+
+/* ——— Team slot card ——— */
+
+interface TeamSlotCardProps {
+  icon: LucideIcon;
+  label: string;
+  coins: number;
+  slot: ApiTeamWinnerSlot;
+  locked?: boolean;
+  highlighted?: boolean;
+  onClick: () => void;
+  onShowQR?: (code: string) => void;
+}
+
+function TeamSlotCard({ icon: Icon, label, coins, slot, locked, highlighted, onClick, onShowQR }: TeamSlotCardProps) {
+  const hasCode = slot != null && "code" in slot;
+  const hasTeam = slot != null && !hasCode;
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0f] border transition-colors min-h-[64px]",
+        highlighted ? "border-[#ffd700]/30" : "border-[#b829ff]/20",
+        locked && "opacity-50",
+      )}
+    >
+      {/* Left: icon */}
+      <div
+        className={cn(
+          "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
+          highlighted ? "bg-[#ffd700]/10" : "bg-[#b829ff]/10",
+        )}
+      >
+        <Icon
+          className={cn(
+            "w-4 h-4",
+            highlighted ? "text-[#ffd700]" : "text-[#b829ff]",
+          )}
+        />
+      </div>
+
+      {/* Middle */}
+      <div className="flex-1 min-w-0">
+        <span
+          className={cn(
+            "text-xs block",
+            highlighted ? "text-[#ffd700]/80" : "text-gray-500",
+          )}
+        >
+          {label}
+        </span>
+
+        {hasTeam ? (
+          <p className="text-sm text-white mt-0.5 truncate">{slot.name}</p>
+        ) : hasCode ? (
+          <div className="mt-0.5">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-mono font-bold text-[#b829ff] tracking-wider truncate">
+                {slot.code}
+              </p>
+              {slot.redeemed && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-green-500/15 text-[10px] font-medium text-green-400 shrink-0">
+                  <Check className="w-2.5 h-2.5" />
+                  Активирован
+                </span>
+              )}
+            </div>
+            {slot.redeemed && slot.redeemed_by && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 overflow-hidden">
+                  {slot.redeemed_by.avatar_url ? (
+                    <img
+                      src={slot.redeemed_by.avatar_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-2.5 h-2.5 text-green-400" />
+                  )}
+                </div>
+                <p className="text-xs text-gray-400 truncate">
+                  {slot.redeemed_by.first_name || (slot.redeemed_by.username ? `@${slot.redeemed_by.username}` : "—")}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : locked ? (
+          <span className="text-xs text-gray-600 mt-0.5 block">
+            Заполните предыдущие слоты
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={onClick}
+            className="flex items-center gap-1.5 text-gray-500 mt-0.5 hover:text-gray-300 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5 shrink-0" />
+            <span className="text-sm">Выбрать команду</span>
+          </button>
+        )}
+      </div>
+
+      {/* Right: QR + coins */}
+      <div className="shrink-0 flex items-center gap-1.5">
+        {hasCode && !slot.redeemed && onShowQR ? (
+          <button
+            type="button"
+            onClick={() => onShowQR(slot.code)}
+            className="w-8 h-8 rounded-lg bg-[#b829ff]/10 flex items-center justify-center hover:bg-[#b829ff]/20 transition-colors"
+            title="Показать QR"
+          >
+            <QrCode className="w-4 h-4 text-[#b829ff]" />
+          </button>
+        ) : null}
+        {(hasTeam || hasCode) && (
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#ffd700]/10">
+            <Coins className="w-3.5 h-3.5 text-[#ffd700]" />
+            <span className="text-xs font-medium text-[#ffd700]">{coins}</span>
+          </div>
+        )}
+        {!slot && !locked && (
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5">
+            <Coins className="w-3.5 h-3.5 text-gray-500" />
+            <span className="text-xs text-gray-500">{coins}</span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
