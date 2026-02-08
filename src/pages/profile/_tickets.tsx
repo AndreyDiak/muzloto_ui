@@ -60,9 +60,9 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 					<TicketIcon className="w-5 h-5 text-neon-cyan" />
 					Мои билеты
 				</h3>
-				<div className="-mx-4 rounded-none overflow-hidden space-y-0">
+				<div className="px-4 space-y-3">
 					{Array.from({ length: 3 }).map((_, i) => (
-						<Skeleton key={i} className="h-[72px] w-full rounded-none border-y border-neon-cyan/10" />
+						<Skeleton key={i} className="h-[64px] w-full rounded-xl" />
 					))}
 				</div>
 			</section>
@@ -149,7 +149,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 						<h4 className="text-sm font-medium text-gray-400 mb-2 px-0">
 							Активные {activeTickets.length > 0 && `(${activeTickets.length})`}
 						</h4>
-						<div className="-mx-4 rounded-none overflow-hidden border-y border-neon-cyan/15">
+						<div className="px-4 space-y-3">
 							{activeTickets.length === 0 ? (
 								<p className="text-sm text-gray-500 py-4 px-4 text-center">
 									Нет активных билетов
@@ -171,7 +171,7 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 						<h4 className="text-sm font-medium text-gray-400 mb-2 px-0">
 							Использованные {usedTickets.length > 0 && `(${usedTickets.length})`}
 						</h4>
-						<div className="-mx-4 rounded-none overflow-hidden border-y border-neon-cyan/15">
+						<div className="px-4 space-y-3">
 							{usedTickets.length === 0 ? (
 								<p className="text-sm text-gray-500 py-4 px-4 text-center">
 									Нет использованных билетов
@@ -200,18 +200,18 @@ export const ProfileTickets = memo(({ defaultExpanded = false, groupByUsed = fal
 				<TicketIcon className="w-5 h-5 text-neon-cyan" />
 				Мои билеты
 			</h3>
-			<div className="-mx-4 rounded-none overflow-hidden">
+			<div className="px-4 space-y-3">
 				{visibleTickets.map(renderCard)}
 				{hasMore && (
 					<>
 						<div
-							className="overflow-hidden transition-[grid-template-rows] duration-200 ease-out"
+							className="overflow-hidden transition-[grid-template-rows] duration-200 ease-out space-y-3"
 							style={{
 								display: "grid",
 								gridTemplateRows: showAll ? "1fr" : "0fr",
 							}}
 						>
-							<div className="min-h-0">
+							<div className="min-h-0 space-y-3">
 								{restTickets.map(renderCard)}
 							</div>
 						</div>
