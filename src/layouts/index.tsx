@@ -1,5 +1,6 @@
 import { useSession } from '@/app/context/session';
 import { useAchievements } from '@/hooks/use-achievements';
+import { useTelegramBack } from '@/hooks/use-telegram-back';
 import { cn } from '@/lib/utils';
 import { Award, Calendar, Coins, QrCode, ShoppingBag, TicketIcon, User } from 'lucide-react';
 import { memo, Suspense, useMemo } from 'react';
@@ -9,6 +10,7 @@ import { ClickableTooltip, TooltipContent, TooltipTrigger } from '../components/
 import { LazyLoadingFallback } from './fallback';
 
 export const BasicLayout = () => {
+  useTelegramBack();
   const { profile, isRoot, isSupabaseSessionReady } = useSession();
   const { achievements } = useAchievements(isSupabaseSessionReady);
   const coins = profile?.balance ?? 0;
