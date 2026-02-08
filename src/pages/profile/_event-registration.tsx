@@ -1,6 +1,6 @@
 import { authFetch } from "@/lib/auth-fetch";
 import { type ApiMyRegistrationResponse, parseJson } from "@/types/api";
-import { CalendarCheck, Users } from "lucide-react";
+import { CalendarCheck, ChevronRight, Users } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { Link } from "react-router";
 
@@ -39,7 +39,7 @@ export const ProfileEventRegistration = memo(() => {
   return (
     <Link
       to={`/events/${data.event.id}/overview`}
-      className="-mx-4 flex items-center gap-3 bg-neon-cyan/10 border-y border-neon-cyan/20 py-3 px-4 transition-colors hover:bg-neon-cyan/15"
+      className="-mx-4 flex items-center gap-3 bg-neon-cyan/10 border-y border-neon-cyan/20 py-3 px-4 transition-colors hover:bg-neon-cyan/15 active:opacity-90 cursor-pointer"
     >
       <div className="w-9 h-9 rounded-lg bg-neon-cyan/15 flex items-center justify-center shrink-0">
         <CalendarCheck className="w-4 h-4 text-neon-cyan" />
@@ -54,6 +54,12 @@ export const ProfileEventRegistration = memo(() => {
             {data.team.name}
           </span>
         )}
+      </div>
+      <div className="flex items-center gap-1 text-xs text-neon-cyan font-medium shrink-0">
+        <span>
+          Обзор
+        </span>
+        <ChevronRight className="w-4 h-4" />
       </div>
     </Link>
   );
