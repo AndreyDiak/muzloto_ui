@@ -225,6 +225,19 @@ export const TEAM_BINGO_SLOTS = [
 	{ slug: "full_card", label: "Весь бланк", rewardType: "team_bingo_full_card", icon: "LayoutGrid", coins: 150 },
 ] as const;
 
+export type BingoSlotDef = {
+	slug: string;
+	label: string;
+	rewardType: string;
+	icon: string;
+	coins: number;
+};
+
+export interface ApiBingoConfigResponse {
+	personal: BingoSlotDef[];
+	team: BingoSlotDef[];
+}
+
 /** Типизированный парсинг JSON ответа */
 export async function parseJson<T>(res: Response): Promise<T> {
 	return res.json() as Promise<T>;

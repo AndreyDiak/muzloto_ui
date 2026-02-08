@@ -11,6 +11,7 @@ const Achievements = lazy(() => import("./pages/achievements"));
 const Tickets = lazy(() => import("./pages/tickets"));
 const Events = lazy(() => import("./pages/events"));
 const EventManage = lazy(() => import("./pages/events/manage"));
+const EventOverview = lazy(() => import("./pages/events/overview"));
 const Catalog = lazy(() => import("./pages/catalog"));
 const Scanner = lazy(() => import("./pages/scanner"));
 
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
 			{ path: "/tickets", Component: Tickets },
 			{ path: "/events", Component: Events },
 			{ path: "/events/:eventId/manage", Component: EventManage },
+			{ path: "/events/:eventId/overview", Component: EventOverview },
 			{ path: "/catalog", Component: Catalog },
 			{ path: "/scanner", Component: Scanner }
 		]

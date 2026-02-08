@@ -6,8 +6,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { ApiEventTeam } from "@/types/api";
-import { ChevronDown, Coins, Loader2 } from "lucide-react";
+import { Coins, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface RegistrationModalProps {
@@ -80,23 +87,29 @@ export function RegistrationModal({
               <label className="text-xs text-gray-400 block mb-1.5">
                 Выберите команду
               </label>
-              <div className="relative">
-                <select
-                  value={selectedTeamId}
-                  onChange={(e) => setSelectedTeamId(e.target.value)}
-                  className="w-full appearance-none px-4 py-3 pr-10 rounded-xl bg-surface-dark border border-neon-cyan/30 text-white focus:border-neon-cyan focus:outline-none focus:ring-1 focus:ring-neon-cyan/30 transition-colors"
+              <Select
+                value={selectedTeamId || undefined}
+                onValueChange={setSelectedTeamId}
+              >
+                <SelectTrigger
+                  className="w-full h-12 px-4 rounded-xl bg-surface-dark border-neon-cyan/30 text-white focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan/30 [&_svg]:text-gray-500"
                 >
-                  <option value="" disabled>
-                    Команда...
-                  </option>
+                  <SelectValue placeholder="Команда..." />
+                </SelectTrigger>
+                <SelectContent
+                  className="bg-surface-card border-neon-cyan/30 max-h-60"
+                >
                   {teams.map((t) => (
-                    <option key={t.id} value={t.id}>
+                    <SelectItem
+                      key={t.id}
+                      value={t.id}
+                      className="text-white focus:bg-neon-cyan/10 focus:text-white data-highlighted:bg-neon-cyan/10"
+                    >
                       {t.name}
-                    </option>
+                    </SelectItem>
                   ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-              </div>
+                </SelectContent>
+              </Select>
             </div>
           )}
 

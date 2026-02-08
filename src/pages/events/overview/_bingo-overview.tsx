@@ -12,23 +12,17 @@ const SLOT_ICONS: Record<string, LucideIcon> = {
   LayoutGrid,
 };
 
-interface BingoWinnersSectionProps {
+interface BingoOverviewProps {
   personalWinners: ApiPersonalWinnerSlot[];
   teamWinners: ApiTeamWinnerSlot[];
   loading?: boolean;
-  onSelectPersonal: (index: number) => void;
-  onSelectTeam: (index: number) => void;
-  onShowPrizeQR?: (code: string) => void;
 }
 
-export function BingoWinnersSection({
+export function BingoOverview({
   personalWinners,
   teamWinners,
   loading,
-  onSelectPersonal,
-  onSelectTeam,
-  onShowPrizeQR,
-}: BingoWinnersSectionProps) {
+}: BingoOverviewProps) {
   const { personalSlots, teamSlots } = useBingoConfig();
 
   if (loading) {
@@ -38,7 +32,7 @@ export function BingoWinnersSection({
           <Skeleton className="h-5 w-44 rounded-lg mb-3" />
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-[64px] rounded-xl" />
+              <Skeleton key={i} className="h-[52px] rounded-xl" />
             ))}
           </div>
         </div>
@@ -46,7 +40,7 @@ export function BingoWinnersSection({
           <Skeleton className="h-5 w-40 rounded-lg mb-3" />
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-[64px] rounded-xl" />
+              <Skeleton key={i} className="h-[52px] rounded-xl" />
             ))}
           </div>
         </div>
@@ -82,10 +76,7 @@ export function BingoWinnersSection({
                 locked={locked}
                 highlighted={isFullCard}
                 variant="personal"
-                mode="manage"
-                onClick={() => !winner && !locked && onSelectPersonal(i)}
-                onShowQR={onShowPrizeQR}
-                emptyButtonLabel="Выбрать"
+                mode="overview"
               />
             );
           })}
@@ -114,10 +105,7 @@ export function BingoWinnersSection({
                 locked={locked}
                 highlighted={isFullCard}
                 variant="team"
-                mode="manage"
-                onClick={() => !slot && !locked && onSelectTeam(i)}
-                onShowQR={onShowPrizeQR}
-                emptyButtonLabel="Выбрать команду"
+                mode="overview"
               />
             );
           })}

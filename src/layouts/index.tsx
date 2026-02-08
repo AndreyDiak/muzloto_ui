@@ -107,9 +107,8 @@ const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAc
 };
 
 const BalanceSkeleton = memo(() => (
-  <div className="flex h-9 items-center gap-2 bg-surface-dark px-3 rounded-full border border-neon-cyan/15">
-    <Skeleton className="h-5 w-5 shrink-0 rounded" />
-    <Skeleton className="h-5 w-12 shrink-0 rounded" />
+  <div className="flex h-9 items-center bg-surface-dark px-3 rounded-full border border-neon-cyan/15">
+    <Skeleton className="h-5 w-14 rounded-full" />
   </div>
 ));
 

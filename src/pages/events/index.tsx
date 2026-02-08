@@ -1,7 +1,7 @@
 import { useSession } from "@/app/context/session";
 import { useEvents } from "@/hooks/use-events";
+import { EventCard } from "./_event-card";
 import { EventsList } from "./_list";
-import { UpcomingEvent } from "./_upcoming";
 
 export default function Events() {
 	const { isRoot } = useSession();
@@ -37,12 +37,9 @@ export default function Events() {
 
 	return (
 		<div className="p-4 space-y-6">
-			{/* <h2 className="layout-header">
-				Ближайшие события
-			</h2> */}
 
 			{/* Featured Event - Ближайшее */}
-			<UpcomingEvent event={firstEvent} isRoot={isRoot} />
+			<EventCard event={firstEvent} isRoot={isRoot} isUpcoming />
 
 			{/* Other Events - Compact List */}
 			<EventsList events={displayedEvents} isRoot={isRoot} />

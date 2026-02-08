@@ -10,8 +10,8 @@ export default function Profile() {
   return (
     <div className="p-4 space-y-6">
       <ProfileInfo />
-      <ProfileEventRegistration />
       <ProfileSqan />
+      <ProfileEventRegistration />
       <ProfileStats stats={stats} isLoading={isLoading} />
     </div>
   );

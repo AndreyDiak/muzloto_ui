@@ -9,6 +9,7 @@ import {
   getEventCodeDeepLink,
   getPrizeDeepLink,
 } from "@/lib/event-deep-link";
+import { useBingoConfig } from "@/hooks/use-bingo-config";
 import {
   type ApiAwardCoinsResponse,
   type ApiBingoWinnersResponse,
@@ -20,8 +21,6 @@ import {
   type ApiRegistrationsResponse,
   type ApiTeamWinnerSlot,
   type ApiTeamsResponse,
-  PERSONAL_BINGO_SLOTS,
-  TEAM_BINGO_SLOTS,
   parseJson,
 } from "@/types/api";
 import {
@@ -55,6 +54,7 @@ const TEAM_BINGO_COUNT = 3;
 export default function EventManage() {
   const { eventId } = useParams<{ eventId: string }>();
   const { isRoot, isSupabaseSessionReady } = useSession();
+  const { personalSlots, teamSlots } = useBingoConfig();
   const { showToast } = useToast();
   const [event, setEvent] = useState<SEvent | null>(null);
   const [eventLoading, setEventLoading] = useState(true);
@@ -269,7 +269,7 @@ export default function EventManage() {
           body: JSON.stringify({
             event_id: eventId,
             telegram_id: r.telegram_id,
-            reward_type: PERSONAL_BINGO_SLOTS[slotIndex].rewardType,
+            reward_type: personalSlots[slotIndex]?.rewardType ?? "personal_bingo_horizontal",
           }),
         });
         const data = await parseJson<ApiAwardCoinsResponse | ApiError>(
@@ -297,7 +297,7 @@ export default function EventManage() {
         setAwardingWinner(null);
       }
     },
-    [eventId, showToast, personalWinners, teamWinners, saveBingoWinners],
+    [eventId, showToast, personalWinners, teamWinners, saveBingoWinners, personalSlots],
   );
 
   const handleGeneratePrizeCodeForSlot = useCallback(
@@ -311,7 +311,7 @@ export default function EventManage() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              reward_type: PERSONAL_BINGO_SLOTS[slotIndex].rewardType,
+              reward_type: personalSlots[slotIndex]?.rewardType ?? "personal_bingo_horizontal",
             }),
           },
         );
@@ -340,18 +340,45 @@ export default function EventManage() {
         setGeneratingCode(false);
       }
     },
-    [eventId, showToast, personalWinners, teamWinners, saveBingoWinners],
+    [eventId, showToast, personalWinners, teamWinners, saveBingoWinners, personalSlots],
   );
 
   const handleTeamSubmit = useCallback(
     async (index: number, team: ApiEventTeam) => {
+      if (!eventId) return;
       const newTeam = [...teamWinners];
       newTeam[index] = team;
       setTeamWinners(newTeam);
       setPickerSlot(null);
       await saveBingoWinners(personalWinners, newTeam);
+
+      try {
+        const res = await authFetch(`${BACKEND_URL}/api/events/award-team-coins`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            event_id: eventId,
+            team_id: team.id,
+            reward_type: teamSlots[index]?.rewardType ?? "team_bingo_horizontal",
+          }),
+        });
+        const data = await parseJson<{ success?: boolean; perMember?: number; membersCount?: number } | ApiError>(
+          res,
+        ).catch(() => ({} as ApiError));
+        if (!res.ok) {
+          showToast("error" in data ? data.error : "Ошибка начисления монет команде", "error");
+          return;
+        }
+        const payload = data as { perMember: number; membersCount: number };
+        showToast(
+          `Монеты начислены: ${payload.perMember} каждому из ${payload.membersCount} участников`,
+          "success",
+        );
+      } catch (e) {
+        showToast(e instanceof Error ? e.message : "Ошибка начисления", "error");
+      }
     },
-    [teamWinners, personalWinners, saveBingoWinners],
+    [eventId, teamWinners, personalWinners, saveBingoWinners, showToast, teamSlots],
   );
 
   const handleGenerateTeamPrizeCodeForSlot = useCallback(
@@ -364,7 +391,7 @@ export default function EventManage() {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reward_type: TEAM_BINGO_SLOTS[slotIndex]?.rewardType ?? "team_bingo_horizontal" }),
+            body: JSON.stringify({ reward_type: teamSlots[slotIndex]?.rewardType ?? "team_bingo_horizontal" }),
           },
         );
         const data = await parseJson<ApiPrizeCodesResponse | ApiError>(
@@ -392,7 +419,7 @@ export default function EventManage() {
         setGeneratingCode(false);
       }
     },
-    [eventId, showToast, personalWinners, teamWinners, saveBingoWinners],
+    [eventId, showToast, personalWinners, teamWinners, saveBingoWinners, teamSlots],
   );
 
   const handleClosePicker = useCallback(() => {
@@ -566,6 +593,8 @@ export default function EventManage() {
       <WinnerPickerModal
         pickerSlot={pickerSlot}
         registrations={registrations}
+        personalSlots={personalSlots}
+        teamSlots={teamSlots}
         personalWinners={personalWinners}
         teamWinners={teamWinners}
         eventTeams={eventTeams}

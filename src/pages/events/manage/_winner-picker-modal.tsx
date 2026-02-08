@@ -11,7 +11,7 @@ import type {
   ApiRegistrationsResponse,
   ApiTeamWinnerSlot,
 } from "@/types/api";
-import { PERSONAL_BINGO_SLOTS, TEAM_BINGO_SLOTS } from "@/types/api";
+import type { BingoSlotDef } from "@/types/api";
 import { ChevronLeft, ChevronRight, Loader2, User, Users } from "lucide-react";
 
 const PAGE_SIZE = 5;
@@ -24,6 +24,8 @@ type PickerSlot =
 interface WinnerPickerModalProps {
   pickerSlot: PickerSlot;
   registrations: ApiRegistrationsResponse["registrations"];
+  personalSlots: readonly BingoSlotDef[];
+  teamSlots: readonly BingoSlotDef[];
   personalWinners: ApiPersonalWinnerSlot[];
   teamWinners: ApiTeamWinnerSlot[];
   eventTeams: ApiEventTeam[];
@@ -41,6 +43,8 @@ interface WinnerPickerModalProps {
 export function WinnerPickerModal({
   pickerSlot,
   registrations,
+  personalSlots,
+  teamSlots,
   // personalWinners,
   teamWinners: _teamWinners,
   eventTeams,
@@ -71,8 +75,8 @@ export function WinnerPickerModal({
         <DialogHeader>
           <DialogTitle className="text-white">
             {pickerSlot?.type === "personal"
-              ? PERSONAL_BINGO_SLOTS[pickerSlot.index ?? 0]?.label ?? `Победитель ${(pickerSlot.index ?? 0) + 1}`
-              : TEAM_BINGO_SLOTS[pickerSlot?.index ?? 0]?.label ?? `Команда ${(pickerSlot?.index ?? 0) + 1}`}
+              ? personalSlots[pickerSlot.index ?? 0]?.label ?? `Победитель ${(pickerSlot.index ?? 0) + 1}`
+              : teamSlots[pickerSlot?.index ?? 0]?.label ?? `Команда ${(pickerSlot?.index ?? 0) + 1}`}
           </DialogTitle>
         </DialogHeader>
 
