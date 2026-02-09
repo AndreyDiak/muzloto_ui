@@ -117,20 +117,38 @@ export function TicketQRModal({
 		showToast("Код скопирован", "success");
 	}, [code, showToast]);
 
-	const handleDownloadQr = useCallback(() => {
+	const handleDownloadQr = useCallback(async () => {
 		const qr = qrInstanceRef.current;
 		if (!qr) {
 			showToast("QR-код ещё генерируется", "info");
 			return;
 		}
+		const fileName = `event-${code}.png`;
 		try {
-			qr.download({
+			await qr.download({
 				name: `event-${code}`,
 				extension: "png",
 			});
-		} catch (error) {
-			console.error(error);
-			showToast("Не удалось сохранить QR-код", "error");
+			showToast("QR-код сохранён", "success");
+		} catch {
+			// В WebView (например Telegram) стандартный download может не сработать — пробуем через Blob
+			try {
+				const blob = await qr.getRawData("png");
+				if (!blob || !(blob instanceof Blob)) throw new Error("No blob");
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = fileName;
+				a.rel = "noopener";
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+				showToast("QR-код сохранён", "success");
+			} catch (e) {
+				console.error(e);
+				showToast("Не удалось сохранить QR-код. Попробуйте скопировать код вручную.", "error");
+			}
 		}
 	}, [code, showToast]);
 
