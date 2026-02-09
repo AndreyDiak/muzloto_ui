@@ -15,12 +15,11 @@ interface Props {
 	color: string;
 }
 
-export const CatalogItem = ({ item, color }: Props) => {
-	const { profile, refetchProfile } = useSession();
+export const CatalogItem = ({ item, color: _color }: Props) => {
+	const { refetchProfile } = useSession();
 	const { showToast } = useToast();
 	const queryClient = useQueryClient();
-	const coins = profile?.balance ?? 0;
-	const [isPurchasing, setIsPurchasing] = useState(false);
+	const [_isPurchasing, setIsPurchasing] = useState(false);
 	const [ticketResult, setTicketResult] = useState<PurchaseSuccessPayload | null>(null);
 
 	useOnTicketUsed((ticketId) => {

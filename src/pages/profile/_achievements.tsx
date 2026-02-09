@@ -58,7 +58,6 @@ export const ProfileAchievements = memo(({ achievements, isLoading: externalLoad
 
 const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Achievement }) => {
 	const unlocked = achievement.unlocked;
-	const progress = `${achievement.current_value} / ${achievement.threshold}`;
 	const hasReward = achievement.coin_reward != null && achievement.coin_reward > 0;
 	const rewardClaimed = !!achievement.reward_claimed_at;
 	const canClaim = unlocked && hasReward && !rewardClaimed;

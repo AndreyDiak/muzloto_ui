@@ -197,7 +197,7 @@ export const ProfileSqan = memo(() => {
 					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
 
 					setTimeout(() => {
-						showToast(`Успешно! Вы зарегистрированы на мероприятие "${eventTitle}".`, 'success');
+						showToast(`Успешно! Вы зарегистрированы на мероприятие «${eventTitle}». Подтверждение придёт вам в личку от бота.`, 'success');
 						newlyUnlocked.forEach((a, i) => {
 							setTimeout(() => {
 								const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';

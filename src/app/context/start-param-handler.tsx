@@ -136,7 +136,7 @@ export function StartParamHandler() {
 					showCoinAnimation(data.coinsEarned ?? 10);
 					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
 					showToast(
-						`Успешно! Вы зарегистрированы на мероприятие «${data.event.title}». +${data.coinsEarned} монет`,
+						`Успешно! Вы зарегистрированы на «${data.event.title}». +${data.coinsEarned} монет. Подтверждение придёт в личку от бота.`,
 						"success"
 					);
 					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {

@@ -9,7 +9,6 @@ import {
   getEventCodeDeepLink,
 } from "@/lib/event-deep-link";
 import {
-  type ApiError,
   type ApiEventTeam,
   type ApiRegistrationsResponse,
   type ApiTeamsResponse,
