@@ -77,17 +77,15 @@ export const CatalogItem = ({ item, color }: Props) => {
 
 				<button
 					onClick={handlePurchase}
-					disabled={coins < item.price || isPurchasing}
+					disabled={true}
+					title="Покупка временно недоступна"
 					className="w-full py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 					style={{
-						background:
-							coins >= item.price && !isPurchasing
-								? `linear-gradient(135deg, ${color} 0%, ${color}99 100%)`
-								: "#333",
-						boxShadow: coins >= item.price && !isPurchasing ? `0 0 15px ${color}40` : "none",
+						background: "#333",
+						boxShadow: "none",
 					}}
 				>
-					{isPurchasing ? "Оформление…" : `Получить за ${item.price} монет`}
+					Покупка временно недоступна
 				</button>
 			</div>
 

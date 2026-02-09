@@ -2,7 +2,7 @@ import { useSession } from '@/app/context/session';
 import { useAchievements } from '@/hooks/use-achievements';
 import { useTelegramBack } from '@/hooks/use-telegram-back';
 import { cn } from '@/lib/utils';
-import { Award, Calendar, Coins, QrCode, ShoppingBag, TicketIcon, User } from 'lucide-react';
+import { Award, Calendar, Coins, QrCode, ShoppingBag, User } from 'lucide-react';
 import { memo, Suspense, useMemo } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { Skeleton } from '../components/ui/skeleton';
@@ -63,7 +63,6 @@ const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAc
     { path: '/', icon: User, label: 'Профиль' },
     { path: '/events', icon: Calendar, label: 'Афиша' },
     { path: '/catalog', icon: ShoppingBag, label: 'Каталог' },
-    { path: '/tickets', icon: TicketIcon, label: 'Билеты' },
     { path: '/achievements', icon: Award, label: 'Достижения', hasUnclaimed: hasUnclaimedAchievementRewards },
   ];
   return (

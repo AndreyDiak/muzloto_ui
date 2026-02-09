@@ -133,8 +133,8 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 								</span>
 							)}
 						</p>
-						<p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
-							{achievement.label ?? (unlocked ? "Получено" : progress)}
+						<p className="text-xs text-gray-500 mt-0.5 whitespace-normal">
+							{achievement.description}
 						</p>
 					</div>
 				</div>

@@ -8,7 +8,6 @@ const BasicLayout = lazy(() =>
 
 const Profile = lazy(() => import("./pages/profile"));
 const Achievements = lazy(() => import("./pages/achievements"));
-const Tickets = lazy(() => import("./pages/tickets"));
 const Events = lazy(() => import("./pages/events"));
 const EventManage = lazy(() => import("./pages/events/manage"));
 const EventOverview = lazy(() => import("./pages/events/overview"));
@@ -38,7 +37,6 @@ export const router = createBrowserRouter([
 		children: [
 			{ index: true, Component: Profile },
 			{ path: "/achievements", Component: Achievements },
-			{ path: "/tickets", Component: Tickets },
 			{ path: "/events", Component: Events },
 			{ path: "/events/:eventId/manage", Component: EventManage },
 			{ path: "/events/:eventId/overview", Component: EventOverview },
