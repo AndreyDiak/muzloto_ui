@@ -2,7 +2,7 @@ import { useSession } from '@/app/context/session';
 import { useAchievements } from '@/hooks/use-achievements';
 import { useTelegramBack } from '@/hooks/use-telegram-back';
 import { cn } from '@/lib/utils';
-import { Award, Calendar, Coins, QrCode, ShoppingBag, User } from 'lucide-react';
+import { Award, Calendar, Coins, ShoppingBag, User } from 'lucide-react';
 import { memo, Suspense, useMemo } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { Skeleton } from '../components/ui/skeleton';
@@ -28,15 +28,6 @@ export const BasicLayout = () => {
       <header className="sticky top-0 z-50 bg-surface-card/80 backdrop-blur-md border-b border-neon-cyan/20 px-4 py-3">
         <div className="flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            {isRoot && (
-              <Link
-                to="/scanner"
-                className="flex shrink-0 items-center justify-center w-10 h-10 rounded-lg border border-neon-cyan/30 bg-surface-dark text-white hover:bg-neon-cyan/10 hover:border-neon-cyan/50 transition-colors"
-                aria-label="Сканер"
-              >
-                <QrCode className="w-6 h-6" />
-              </Link>
-            )}
             <h1 className="text-transparent text-xl bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple truncate min-w-0">
               Караоке Лото
             </h1>
@@ -46,7 +37,6 @@ export const BasicLayout = () => {
           </div>
         </div>
       </header>
-
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-20">
         <Suspense fallback={<LazyLoadingFallback />}>
           <Outlet />

@@ -129,22 +129,13 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
           }
         >
           {isRoot && (
-            <>
-              <Link
-                to={`/events/${event.id}/overview`}
-                className={`${btnCls(u)} ${linkBase}`}
-              >
-                <Eye className={u ? "w-4 h-4" : "w-3.5 h-3.5"} />
-                Обзор
-              </Link>
-              <Link
-                to={`/events/${event.id}/manage`}
-                className={`${btnCls(u)} transition-all border-2 border-neon-purple/60 bg-neon-purple/25 hover:bg-neon-purple/40 hover:border-neon-purple ${u ? "text-white" : "text-neon-purple"}`}
-              >
-                <Settings className={u ? "w-4 h-4" : "w-3.5 h-3.5"} />
-                Управление
-              </Link>
-            </>
+            <Link
+              to={`/events/${event.id}/manage`}
+              className={`${btnCls(u)} transition-all border-2 border-neon-purple/60 bg-neon-purple/25 hover:bg-neon-purple/40 hover:border-neon-purple ${u ? "text-white" : "text-neon-purple"}`}
+            >
+              <Settings className={u ? "w-4 h-4" : "w-3.5 h-3.5"} />
+              Управление
+            </Link>
           )}
         </div>
       </div>
