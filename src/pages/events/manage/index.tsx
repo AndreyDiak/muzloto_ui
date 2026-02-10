@@ -30,10 +30,9 @@ import {
 } from "@/types/api";
 import { ChevronLeft, Gift, Loader2, Plus, User, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router";
+import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { EventQRSection } from "./_event-qr-section";
 import { ParticipantsSection } from "./_participants-section";
-import { RaffleModal } from "./_raffle-modal";
 import { TeamsSection } from "./_teams-section";
 
 const BACKEND_URL = (
@@ -42,6 +41,8 @@ const BACKEND_URL = (
 
 export default function EventManage() {
   const { eventId } = useParams<{ eventId: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { isRoot } = useSession();
   const { showToast } = useToast();
   const [event, setEvent] = useState<SEvent | null>(null);
@@ -60,7 +61,6 @@ export default function EventManage() {
   const [participantsPage, setParticipantsPage] = useState(1);
 
   const [raffleWinner, setRaffleWinner] = useState<ApiRaffleResponse["winner"]>(null);
-  const [raffleOpen, setRaffleOpen] = useState(false);
 
   const handleAddTeam = useCallback(async () => {
     const trimmed = newTeamName.trim();
@@ -167,6 +167,13 @@ export default function EventManage() {
     }
   }, [eventId, isRoot, fetchEvent, fetchRegistrations, fetchEventTeams, fetchRaffle]);
 
+  useEffect(() => {
+    if (location.state?.raffleConfirmed && eventId) {
+      fetchRaffle();
+      navigate(`/events/${eventId}/manage`, { replace: true, state: {} });
+    }
+  }, [location.state?.raffleConfirmed, eventId, fetchRaffle, navigate]);
+
   if (!isRoot) {
     return <Navigate to="/events" replace />;
   }
@@ -263,13 +270,12 @@ export default function EventManage() {
         <p className="text-gray-400 text-sm mb-4">
           Один победитель среди зарегистрированных. Розыгрыш проводится один раз.
         </p>
-        <button
-          type="button"
-          onClick={() => setRaffleOpen(true)}
-          className="w-full py-3 rounded-xl bg-neon-gold/15 text-neon-gold font-medium border border-neon-gold/30 hover:bg-neon-gold/25 transition-colors"
+        <Link
+          to={`/events/${eventId}/raffle`}
+          className="block w-full py-3 rounded-xl bg-neon-gold/15 text-neon-gold font-medium border border-neon-gold/30 hover:bg-neon-gold/25 transition-colors text-center"
         >
           {raffleWinner ? "Посмотреть победителя" : "Провести розыгрыш"}
-        </button>
+        </Link>
       </div>
 
       <EventQRSection onShowQR={() => setShowQR(true)} />
@@ -333,16 +339,6 @@ export default function EventManage() {
         />
       )}
 
-      {eventId && (
-        <RaffleModal
-          eventId={eventId}
-          registrations={registrations}
-          open={raffleOpen}
-          onOpenChange={setRaffleOpen}
-          existingWinner={raffleWinner}
-          onRaffleDone={fetchRaffle}
-        />
-      )}
     </div>
   );
 }

@@ -10,6 +10,14 @@ const Profile = lazy(() => import("./pages/profile"));
 const Achievements = lazy(() => import("./pages/achievements"));
 const Events = lazy(() => import("./pages/events"));
 const EventManage = lazy(() => import("./pages/events/manage"));
+const RafflePage = lazy(() => import("./pages/events/raffle"));
+function RaffleRoute() {
+	return (
+		<Suspense fallback={<LayoutFallback />}>
+			<RafflePage />
+		</Suspense>
+	);
+}
 const Catalog = lazy(() => import("./pages/catalog"));
 const Scanner = lazy(() => import("./pages/scanner"));
 const Admin = lazy(() => import("./pages/admin"));
@@ -43,5 +51,6 @@ export const router = createBrowserRouter([
 			{ path: "/scanner", Component: Scanner },
 			{ path: "/admin", Component: Admin }
 		]
-	}
+	},
+	{ path: "/events/:eventId/raffle", Component: RaffleRoute }
 ]);

@@ -8,7 +8,7 @@ export default function Profile() {
   const { stats, isLoading } = useProfileStats();
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-4">
       <ProfileInfo />
       <ProfileSqan />
       <ProfileEventRegistration />
