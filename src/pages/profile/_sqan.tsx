@@ -5,10 +5,10 @@ import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { RegistrationModal } from "@/components/registration-modal";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/query-client";
 import { extractPayloadFromInput, isBingoCodeLike } from "@/lib/event-deep-link";
+import { queryKeys } from "@/lib/query-client";
 import type { ApiValidateCodeResponse } from "@/types/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { QrCode } from "lucide-react";
 import { memo, useCallback, useRef, useState } from "react";
 

@@ -1,37 +1,39 @@
 import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { SEvent } from "@/entities/event";
 import { http } from "@/http";
 import { authFetch } from "@/lib/auth-fetch";
 import {
-  getEventCodeBotStartLink,
-  getEventCodeDeepLink,
+	getEventCodeBotStartLink,
+	getEventCodeDeepLink,
 } from "@/lib/event-deep-link";
 import {
-  type ApiEventTeam,
-  type ApiRegistrationsResponse,
-  type ApiTeamsResponse,
-  parseJson,
+	type ApiEventTeam,
+	type ApiRaffleResponse,
+	type ApiRegistrationsResponse,
+	type ApiTeamsResponse,
+	parseJson,
 } from "@/types/api";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, Loader2, Plus, User, Users } from "lucide-react";
+import { ChevronLeft, Gift, Loader2, Plus, User, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router";
 import { EventQRSection } from "./_event-qr-section";
 import { ParticipantsSection } from "./_participants-section";
+import { RaffleModal } from "./_raffle-modal";
 import { TeamsSection } from "./_teams-section";
 
 const BACKEND_URL = (
@@ -56,6 +58,9 @@ export default function EventManage() {
   const [newTeamName, setNewTeamName] = useState("");
   const [addingTeam, setAddingTeam] = useState(false);
   const [participantsPage, setParticipantsPage] = useState(1);
+
+  const [raffleWinner, setRaffleWinner] = useState<ApiRaffleResponse["winner"]>(null);
+  const [raffleOpen, setRaffleOpen] = useState(false);
 
   const handleAddTeam = useCallback(async () => {
     const trimmed = newTeamName.trim();
@@ -140,14 +145,27 @@ export default function EventManage() {
     }
   }, [eventId]);
 
+  const fetchRaffle = useCallback(async () => {
+    if (!eventId) return;
+    try {
+      const res = await authFetch(`${BACKEND_URL}/api/events/${eventId}/raffle`);
+      if (!res.ok) return;
+      const json = await parseJson<ApiRaffleResponse>(res);
+      setRaffleWinner(json.winner ?? null);
+    } catch {
+      setRaffleWinner(null);
+    }
+  }, [eventId]);
+
   useEffect(() => {
     if (!eventId) return;
     fetchEvent();
     if (isRoot) {
       fetchRegistrations();
       fetchEventTeams();
+      fetchRaffle();
     }
-  }, [eventId, isRoot, fetchEvent, fetchRegistrations, fetchEventTeams]);
+  }, [eventId, isRoot, fetchEvent, fetchRegistrations, fetchEventTeams, fetchRaffle]);
 
   if (!isRoot) {
     return <Navigate to="/events" replace />;
@@ -233,6 +251,27 @@ export default function EventManage() {
         </Accordion>
       </div>
 
+      {/* ——— Розыгрыш ——— */}
+      <div className="bg-card-neutral rounded-2xl p-5 border border-white/[0.06]">
+        <div className="flex items-center gap-2 text-white text-base font-medium mb-2">
+          <Gift className="w-5 h-5 text-neon-cyan" />
+          Розыгрыш
+          {raffleWinner && (
+            <span className="text-sm font-normal text-gray-400">(проведён)</span>
+          )}
+        </div>
+        <p className="text-gray-400 text-sm mb-4">
+          Один победитель среди зарегистрированных. Розыгрыш проводится один раз.
+        </p>
+        <button
+          type="button"
+          onClick={() => setRaffleOpen(true)}
+          className="w-full py-3 rounded-xl bg-neon-gold/15 text-neon-gold font-medium border border-neon-gold/30 hover:bg-neon-gold/25 transition-colors"
+        >
+          {raffleWinner ? "Посмотреть победителя" : "Провести розыгрыш"}
+        </button>
+      </div>
+
       <EventQRSection onShowQR={() => setShowQR(true)} />
 
       {/* — Кнопка добавления команды (временное решение) — */}
@@ -291,6 +330,17 @@ export default function EventManage() {
             getEventCodeBotStartLink(event.code) ||
             undefined
           }
+        />
+      )}
+
+      {eventId && (
+        <RaffleModal
+          eventId={eventId}
+          registrations={registrations}
+          open={raffleOpen}
+          onOpenChange={setRaffleOpen}
+          existingWinner={raffleWinner}
+          onRaffleDone={fetchRaffle}
         />
       )}
     </div>

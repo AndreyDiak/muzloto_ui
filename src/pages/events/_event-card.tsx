@@ -3,7 +3,6 @@ import {
   Banknote,
   Calendar,
   Clock,
-  Eye,
   MapPin,
   Settings,
 } from "lucide-react";
@@ -40,9 +39,6 @@ const btnCls = (upcoming: boolean) =>
   upcoming
     ? "flex items-center justify-center gap-2 flex-1 px-6 py-2.5 rounded-lg font-medium text-white"
     : "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap text-neon-cyan";
-
-const linkBase =
-  "transition-all bg-neon-cyan/15 hover:bg-neon-cyan/25 border border-white/[0.06]";
 
 export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Props) => {
   const eventColors = useEventColors();

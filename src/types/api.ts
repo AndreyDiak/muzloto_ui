@@ -48,6 +48,19 @@ export interface ApiRegistrationsResponse {
 	registrations: ApiRegistrationRow[];
 }
 
+/** Победитель розыгрыша (одна запись на мероприятие) */
+export interface ApiRaffleWinner {
+	telegram_id: number;
+	first_name: string | null;
+	username: string | null;
+	avatar_url: string | null;
+}
+
+export interface ApiRaffleResponse {
+	winner: ApiRaffleWinner | null;
+	drawn_at?: string;
+}
+
 export interface ApiAwardCoinsResponse {
 	success: true;
 	newBalance: number;

@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { authFetch } from "@/lib/auth-fetch";
 import { queryKeys, STALE_TIME_MS } from "@/lib/query-client";
 import type { ApiMyRegistrationResponse } from "@/types/api";
 import { parseJson } from "@/types/api";
+import { useQuery } from "@tanstack/react-query";
 
 const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001").replace(
 	/\/$/,
