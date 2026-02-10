@@ -10,9 +10,9 @@ const Profile = lazy(() => import("./pages/profile"));
 const Achievements = lazy(() => import("./pages/achievements"));
 const Events = lazy(() => import("./pages/events"));
 const EventManage = lazy(() => import("./pages/events/manage"));
-const EventOverview = lazy(() => import("./pages/events/overview"));
 const Catalog = lazy(() => import("./pages/catalog"));
 const Scanner = lazy(() => import("./pages/scanner"));
+const Admin = lazy(() => import("./pages/admin"));
 
 function LayoutFallback() {
 	return (
@@ -39,9 +39,9 @@ export const router = createBrowserRouter([
 			{ path: "/achievements", Component: Achievements },
 			{ path: "/events", Component: Events },
 			{ path: "/events/:eventId/manage", Component: EventManage },
-			{ path: "/events/:eventId/overview", Component: EventOverview },
 			{ path: "/catalog", Component: Catalog },
-			{ path: "/scanner", Component: Scanner }
+			{ path: "/scanner", Component: Scanner },
+			{ path: "/admin", Component: Admin }
 		]
 	}
 ]);

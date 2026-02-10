@@ -13,7 +13,7 @@ export const ProfileInfo = memo(() => {
   const displayName = [firstName, lastName].filter(Boolean).join(" ") || username || "—";
 
   return (
-    <div className="bg-surface-card rounded-2xl p-4 border border-neon-cyan/20 neon-glow">
+    <div className="bg-card-cyan rounded-2xl p-4">
       <div className="flex items-center gap-4">
         <Avatar size="lg" className='w-14! h-14!'>
           <AvatarImage src={photoUrl} />

@@ -1,8 +1,8 @@
 import { useSession } from '@/app/context/session';
 import { useAchievements } from '@/hooks/use-achievements';
 import { useTelegramBack } from '@/hooks/use-telegram-back';
-import { cn } from '@/lib/utils';
-import { Award, Calendar, Coins, ShoppingBag, User } from 'lucide-react';
+import { cn, prettifyCoins } from '@/lib/utils';
+import { Award, Calendar, Coins, Shield, ShoppingBag, User } from 'lucide-react';
 import { memo, Suspense, useMemo } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { Skeleton } from '../components/ui/skeleton';
@@ -25,12 +25,14 @@ export const BasicLayout = () => {
 
   return (
     <div className="min-h-screen bg-surface-dark flex flex-col max-w-md mx-auto">
-      <header className="sticky top-0 z-50 bg-surface-card/80 backdrop-blur-md border-b border-neon-cyan/20 px-4 py-3">
+      <header className="sticky top-0 z-50 bg-surface-card/90 backdrop-blur-md border-b border-white/[0.06] px-4 py-3">
         <div className="flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <h1 className="text-transparent text-xl bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple truncate min-w-0">
-              Караоке Лото
-            </h1>
+            <img
+              src="/app_logo.png"
+              alt="Караоке Лото"
+              className="h-8 w-auto max-w-[180px] object-contain object-left"
+            />
           </div>
           <div className="flex h-9 min-w-22 shrink-0 items-center justify-end">
             {showBalanceSkeleton ? <BalanceSkeleton /> : <Balance coins={coins} />}
@@ -42,21 +44,22 @@ export const BasicLayout = () => {
           <Outlet />
         </Suspense>
       </main>
-      <Navigation hasUnclaimedAchievementRewards={hasUnclaimedAchievementRewards} />
+      <Navigation hasUnclaimedAchievementRewards={hasUnclaimedAchievementRewards} isRoot={isRoot} />
     </div>
   );
 };
 
-const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAchievementRewards?: boolean }) => {
+const Navigation = ({ hasUnclaimedAchievementRewards = false, isRoot = false }: { hasUnclaimedAchievementRewards?: boolean; isRoot?: boolean }) => {
   const location = useLocation();
   const navItems = [
     { path: '/', icon: User, label: 'Профиль' },
     { path: '/events', icon: Calendar, label: 'Афиша' },
     { path: '/catalog', icon: ShoppingBag, label: 'Каталог' },
     { path: '/achievements', icon: Award, label: 'Достижения', hasUnclaimed: hasUnclaimedAchievementRewards },
+    ...(isRoot ? [{ path: '/admin', icon: Shield, label: 'Админка' }] : []),
   ];
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-surface-card/95 backdrop-blur-md border-t border-neon-cyan/20">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-surface-card/95 backdrop-blur-md border-t border-white/[0.06]">
       <div className="flex items-center py-2">
         {navItems.map(({ path, icon: Icon, label, hasUnclaimed }) => {
           const isActive = location.pathname === path;
@@ -77,8 +80,8 @@ const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAc
                 <Icon
                   className={cn(
                     'w-5 h-5 shrink-0',
-                    isActive ? 'drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]' : '',
-                    highlight && !isActive && 'drop-shadow-[0_0_6px_rgba(255,215,0,0.5)]',
+                    isActive ? '' : '',
+                    highlight && !isActive && '',
                   )}
                 />
                 {hasUnclaimed && (
@@ -98,7 +101,7 @@ const Navigation = ({ hasUnclaimedAchievementRewards = false }: { hasUnclaimedAc
 };
 
 const BalanceSkeleton = memo(() => (
-  <div className="flex h-9 items-center bg-surface-dark px-3 rounded-full border border-neon-cyan/15">
+  <div className="flex h-9 items-center bg-surface-dark/80 px-3 rounded-full border border-white/[0.06]">
     <Skeleton className="h-5 w-14 rounded-full" />
   </div>
 ));
@@ -107,16 +110,16 @@ const Balance = memo(({ coins }: { coins: number; }) => {
   return (
     <ClickableTooltip>
       <TooltipTrigger
-        className="flex h-9 items-center gap-2 bg-surface-dark px-3 rounded-full border border-neon-gold/30 gold-glow"
+        className="flex h-9 items-center gap-2 px-3 rounded-full border border-white/[0.06]"
       >
         <Coins className="w-5 h-5 text-neon-gold" />
-        <span className="font-semibold text-neon-gold">{coins}</span>
+        <span className="font-semibold text-neon-gold">{prettifyCoins(coins)}</span>
       </TooltipTrigger>
       <TooltipContent side="bottom" style={{
         // @ts-ignore
         "--foreground": "var(--accent-gold-darker)",
       }}>
-        <p className="text-sm text-white">Ваш баланс <b>{coins}</b> монет</p>
+        <p className="text-sm text-white">Ваш баланс <b>{prettifyCoins(coins)}</b> монет</p>
       </TooltipContent>
     </ClickableTooltip>
   );

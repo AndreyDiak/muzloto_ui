@@ -10,7 +10,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Achievement, AchievementItem } from "@/entities/achievement";
 import { queryKeys } from "@/lib/query-client";
-import { cn } from "@/lib/utils";
+import { cn, prettifyCoins } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { Award, Coins } from "lucide-react";
 import { memo, useState } from "react";
@@ -34,7 +34,7 @@ export const ProfileAchievements = memo(({ achievements, isLoading: externalLoad
 				</h3>
 				<div className="-mx-4 rounded-none overflow-hidden space-y-0">
 					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="h-[72px] w-full rounded-none border-y border-neon-cyan/10" />
+						<Skeleton key={i} className="h-[72px] w-full rounded-none border-y border-white/[0.06]" />
 					))}
 				</div>
 			</section>
@@ -47,7 +47,7 @@ export const ProfileAchievements = memo(({ achievements, isLoading: externalLoad
 				<Award className="w-5 h-5 text-neon-cyan" />
 				{sectionTitle}
 			</h3>
-			<Accordion type="single" collapsible className="-mx-4 rounded-none overflow-hidden border-y border-neon-cyan/15">
+			<Accordion type="single" collapsible className="-mx-4 rounded-none overflow-hidden border-y border-white/[0.06]">
 				{achievements.map((achievement) => (
 					<ProfileAchievementAccordionItem key={achievement.slug ?? achievement.name} achievement={achievement} />
 				))}
@@ -89,7 +89,7 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 		<AccordionItem
 			value={achievement.slug ?? achievement.name}
 			className={cn(
-				"border-y border-neon-cyan/15 bg-surface-card first:border-t-0",
+				"border-y border-white/[0.06] bg-surface-card first:border-t-0",
 				canClaim && "border-l-4 border-l-neon-gold bg-neon-gold/5"
 			)}
 		>
@@ -138,7 +138,7 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 					</div>
 				</div>
 			</AccordionTrigger>
-			<AccordionContent className="p-4 pt-2 border-t border-neon-cyan/10">
+			<AccordionContent className="p-4 pt-2 border-t border-white/[0.06]">
 				<div className="space-y-3 text-sm">
 					<p className="text-white text-sm">{achievement.description}</p>
 					<div>
@@ -167,7 +167,7 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 							{hasReward ? (
 								<>
 									<Coins className="w-4 h-4 text-neon-gold" />
-									<span className="text-neon-gold">+{achievement.coin_reward} монет</span>
+									<span className="text-neon-gold">+{prettifyCoins(achievement.coin_reward ?? 0)} монет</span>
 								</>
 							) : (
 								<span className="text-gray-500">Без награды</span>
@@ -181,7 +181,7 @@ const ProfileAchievementAccordionItem = memo(({ achievement }: { achievement: Ac
 									void handleClaim();
 								}}
 								disabled={isClaiming}
-								className="mt-3 w-full py-2.5 rounded-xl bg-neon-gold/20 text-neon-gold font-medium border border-neon-gold/40 hover:bg-neon-gold/30 disabled:opacity-50 transition-colors"
+								className="mt-3 w-full py-2.5 rounded-xl bg-neon-gold/20 text-neon-gold font-medium hover:bg-neon-gold/30 disabled:opacity-50 transition-colors"
 							>
 								{isClaiming ? "Загрузка…" : "Забрать награду"}
 							</button>

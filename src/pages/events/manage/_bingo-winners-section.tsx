@@ -34,7 +34,7 @@ export function BingoWinnersSection({
   if (loading) {
     return (
       <>
-        <div className="bg-surface-card rounded-2xl p-5 border border-neon-cyan/20">
+        <div className="bg-card-neutral rounded-2xl p-5 border border-white/[0.06]">
           <Skeleton className="h-5 w-44 rounded-lg mb-3" />
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -42,7 +42,7 @@ export function BingoWinnersSection({
             ))}
           </div>
         </div>
-        <div className="bg-surface-card rounded-2xl p-5 border border-neon-purple/20">
+        <div className="bg-card-neutral rounded-2xl p-5 border border-white/[0.06]">
           <Skeleton className="h-5 w-40 rounded-lg mb-3" />
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -61,7 +61,7 @@ export function BingoWinnersSection({
 
   return (
     <>
-      <div className="bg-surface-card rounded-2xl p-5 border border-neon-cyan/20">
+      <div className="bg-card-neutral rounded-2xl p-5 border border-white/[0.06]">
         <h2 className="text-lg text-white mb-3 flex items-center gap-2">
           <Award className="w-5 h-5 text-neon-gold" />
           Персональное бинго
@@ -92,7 +92,7 @@ export function BingoWinnersSection({
         </div>
       </div>
 
-      <div className="bg-surface-card rounded-2xl p-5 border border-neon-purple/20">
+      <div className="bg-card-neutral rounded-2xl p-5 border border-white/[0.06]">
         <h2 className="text-lg text-white mb-3 flex items-center gap-2">
           <Users className="w-5 h-5 text-neon-purple" />
           Командное бинго

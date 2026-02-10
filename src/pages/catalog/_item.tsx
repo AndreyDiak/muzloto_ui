@@ -6,6 +6,7 @@ import type { SCatalogItem } from "@/entities/catalog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
 import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
 import { queryKeys } from "@/lib/query-client";
+import { prettifyCoins } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { Coins } from "lucide-react";
 import { useState } from "react";
@@ -58,7 +59,7 @@ export const CatalogItem = ({ item, color: _color }: Props) => {
 		<>
 			<div
 				key={item.id}
-				className="bg-surface-card rounded-xl p-4 border border-neon-cyan/10 flex flex-col"
+				className="bg-surface-card border border-white/[0.06] rounded-xl p-4 flex flex-col"
 			>
 				<h3 className="text-white text-lg font-bold mb-2 flex-1">{item.name}</h3>
 				{/* TODO: return in future */}
@@ -71,7 +72,7 @@ export const CatalogItem = ({ item, color: _color }: Props) => {
 
 				<div className="flex items-center gap-1 mb-3">
 					<Coins className="w-4 h-4 text-neon-gold" />
-					<span className="text-neon-gold font-semibold text-sm">{item.price}</span>
+					<span className="text-neon-gold font-semibold text-sm">{prettifyCoins(item.price)}</span>
 				</div>
 
 				<button

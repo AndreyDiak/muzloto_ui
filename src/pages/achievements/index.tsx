@@ -20,7 +20,6 @@ function mapToAchievement(a: AchievementItem): Achievement {
 
 const VISIT_GROUP: AchievementStatKey = "games_visited";
 const TICKETS_GROUP: AchievementStatKey = "tickets_purchased";
-const BINGO_GROUP: AchievementStatKey = "bingo_collected";
 
 export default function Achievements() {
   const { isSupabaseSessionReady } = useSession();
@@ -32,10 +31,7 @@ export default function Achievements() {
   const ticketAchievements = list
     .filter((a) => a.stat_key === TICKETS_GROUP)
     .map(mapToAchievement);
-  const bingoAchievements = list
-    .filter((a) => a.stat_key === BINGO_GROUP)
-    .map(mapToAchievement);
-
+  
   return (
     <div className="p-4 space-y-6">
       {error && (
@@ -47,13 +43,8 @@ export default function Achievements() {
         isLoading={isLoading}
       />
       <ProfileAchievements
-        sectionTitle="Билеты"
+        sectionTitle="Каталог"
         achievements={ticketAchievements}
-        isLoading={isLoading}
-      />
-      <ProfileAchievements
-        sectionTitle="Бинго"
-        achievements={bingoAchievements}
         isLoading={isLoading}
       />
     </div>

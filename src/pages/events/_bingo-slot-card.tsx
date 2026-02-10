@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn, prettifyCoins } from "@/lib/utils";
 import type {
   ApiEventTeam,
   ApiPersonalWinner,
@@ -215,7 +215,7 @@ export function BingoSlotCard({
                 slot && !locked ? "text-neon-gold" : "text-gray-500",
               )}
             >
-              {coins}
+              {prettifyCoins(coins)}
             </span>
           </div>
         </div>

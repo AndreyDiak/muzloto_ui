@@ -42,7 +42,7 @@ const btnCls = (upcoming: boolean) =>
     : "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap text-neon-cyan";
 
 const linkBase =
-  "transition-all border border-neon-cyan/40 bg-neon-cyan/10 hover:bg-neon-cyan/20";
+  "transition-all bg-neon-cyan/15 hover:bg-neon-cyan/25 border border-white/[0.06]";
 
 export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Props) => {
   const eventColors = useEventColors();
@@ -54,8 +54,8 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
     <div
       className={
         u
-          ? "bg-surface-card rounded-2xl overflow-hidden border border-neon-cyan/20 neon-glow"
-          : "bg-surface-card rounded-xl border border-neon-cyan/10 transition-all hover:border-neon-cyan/20"
+          ? "bg-card-cyan rounded-2xl overflow-hidden"
+          : "bg-surface-card rounded-xl border border-white/[0.06] transition-all hover:bg-neon-cyan/[0.06]"
       }
     >
       {u && (
@@ -84,7 +84,7 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
       <div className="p-5 flex flex-col gap-5">
         <div>
           {u && (
-            <span className="inline-block px-2 py-1 bg-neon-cyan/20 text-neon-cyan text-xs rounded-full border border-neon-cyan/30 mb-2">
+            <span className="inline-block px-2 py-1 bg-neon-cyan/25 text-neon-cyan text-xs rounded-full mb-2">
               Скоро
             </span>
           )}
@@ -131,7 +131,7 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
           {isRoot && (
             <Link
               to={`/events/${event.id}/manage`}
-              className={`${btnCls(u)} transition-all border-2 border-neon-purple/60 bg-neon-purple/25 hover:bg-neon-purple/40 hover:border-neon-purple ${u ? "text-white" : "text-neon-purple"}`}
+              className={`${btnCls(u)} transition-all bg-neon-purple/25 hover:bg-neon-purple/40 border border-white/[0.06] ${u ? "text-white" : "text-neon-purple"}`}
             >
               <Settings className={u ? "w-4 h-4" : "w-3.5 h-3.5"} />
               Управление

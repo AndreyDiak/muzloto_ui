@@ -7,6 +7,7 @@ export const queryKeys = {
 	events: ["events"] as const,
 	catalog: ["catalog"] as const,
 	recentScanned: ["recent-scanned"] as const,
+	myRegistration: ["my-registration"] as const,
 	tickets: (telegramId: number) =>
 		["tickets", telegramId] as const,
 };

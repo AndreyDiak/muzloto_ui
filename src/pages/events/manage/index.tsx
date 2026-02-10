@@ -27,10 +27,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, Loader2, Plus, Users } from "lucide-react";
+import { ChevronLeft, Loader2, Plus, User, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router";
 import { EventQRSection } from "./_event-qr-section";
+import { ParticipantsSection } from "./_participants-section";
 import { TeamsSection } from "./_teams-section";
 
 const BACKEND_URL = (
@@ -54,6 +55,7 @@ export default function EventManage() {
   const [addTeamOpen, setAddTeamOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [addingTeam, setAddingTeam] = useState(false);
+  const [participantsPage, setParticipantsPage] = useState(1);
 
   const handleAddTeam = useCallback(async () => {
     const trimmed = newTeamName.trim();
@@ -175,7 +177,7 @@ export default function EventManage() {
       <div className="flex items-center gap-3">
         <Link
           to="/events"
-          className="flex items-center justify-center w-10 h-10 rounded-lg border-2 border-neon-cyan/60 bg-neon-cyan/20 text-white hover:bg-neon-cyan/30 hover:border-neon-cyan transition-colors"
+          className="flex items-center justify-center w-10 h-10 rounded-lg bg-neon-cyan/25 text-white hover:bg-neon-cyan/35 transition-colors border border-white/[0.06]"
         >
           <ChevronLeft className="w-5 h-5" />
         </Link>
@@ -184,10 +186,10 @@ export default function EventManage() {
         </h1>
       </div>
 
-      {/* ——— Команды ——— */}
-      <div className="bg-surface-card rounded-2xl border border-neon-cyan/20 overflow-hidden">
+      {/* ——— Команды и участники ——— */}
+      <div className="bg-card-neutral rounded-2xl overflow-hidden border border-white/[0.06]">
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="teams" className="border-b-0">
+          <AccordionItem value="teams" className="border-b border-white/[0.06]">
             <AccordionTrigger className="px-5 py-4 hover:no-underline">
               <span className="flex items-center gap-2 text-white text-base font-medium">
                 <Users className="w-5 h-5 text-neon-purple" />
@@ -207,6 +209,27 @@ export default function EventManage() {
               />
             </AccordionContent>
           </AccordionItem>
+          <AccordionItem value="participants" className="border-b-0">
+            <AccordionTrigger className="px-5 py-4 hover:no-underline">
+              <span className="flex items-center gap-2 text-white text-base font-medium">
+                <User className="w-5 h-5 text-neon-cyan" />
+                Участники
+                {!regsLoading && registrations.length > 0 && (
+                  <span className="text-sm font-normal text-gray-400">
+                    ({registrations.length})
+                  </span>
+                )}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-5 pb-4">
+              <ParticipantsSection
+                registrations={registrations}
+                loading={regsLoading}
+                page={participantsPage}
+                onPageChange={setParticipantsPage}
+              />
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
       </div>
 
@@ -216,14 +239,14 @@ export default function EventManage() {
       <button
         type="button"
         onClick={() => setAddTeamOpen(true)}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-neon-purple/40 bg-neon-purple/5 text-neon-purple text-sm font-medium hover:bg-neon-purple/10 transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-neon-purple/15 text-neon-purple text-sm font-medium hover:bg-neon-purple/25 transition-colors border border-white/[0.06]"
       >
         <Plus className="w-4 h-4" />
         Зарегистрировать команду
       </button>
 
       <Dialog open={addTeamOpen} onOpenChange={setAddTeamOpen}>
-        <DialogContent className="bg-surface-card border-neon-purple/30 text-white max-w-sm">
+        <DialogContent className="bg-surface-card border border-white/[0.08] text-white max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-white text-lg">
               Новая команда
@@ -238,7 +261,7 @@ export default function EventManage() {
                 if (e.key === "Enter" && newTeamName.trim()) handleAddTeam();
               }}
               placeholder="Название команды"
-              className="w-full px-4 py-3 rounded-xl bg-surface-dark border border-neon-purple/30 text-white placeholder:text-gray-500 text-sm focus:outline-none focus:border-neon-purple/60"
+              className="w-full px-4 py-3 rounded-xl bg-surface-dark border border-white/[0.08] text-white placeholder:text-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-neon-purple/30"
               autoFocus
               disabled={addingTeam}
             />

@@ -4,13 +4,12 @@ import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RegistrationModal } from "@/components/registration-modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-client";
 import { extractPayloadFromInput, isBingoCodeLike } from "@/lib/event-deep-link";
 import type { ApiValidateCodeResponse } from "@/types/api";
-import { Keyboard, QrCode } from "lucide-react";
+import { QrCode } from "lucide-react";
 import { memo, useCallback, useRef, useState } from "react";
 
 export const ProfileSqan = memo(() => {
@@ -19,7 +18,6 @@ export const ProfileSqan = memo(() => {
 	const queryClient = useQueryClient();
 	const { showCoinAnimation } = useCoinAnimation();
 	const { tg } = useTelegram();
-	const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
 	const [codeInputs, setCodeInputs] = useState<string[]>(Array(5).fill(''));
 	const [isProcessing, setIsProcessing] = useState(false);
 	const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(5).fill(null));
@@ -81,13 +79,8 @@ export const ProfileSqan = memo(() => {
 			}
 		} else {
 			// Если нативный сканер недоступен (например, на десктопе)
-			showToast('Сканер QR кодов доступен только на мобильных устройствах. Используйте ввод кода вручную.', 'info');
-			setIsCodeModalOpen(true);
+			showToast('Сканер QR доступен только на мобильных. Введите код ниже.', 'info');
 		}
-	};
-
-	const handleEnterCode = () => {
-		setIsCodeModalOpen(true);
 	};
 
 	const handleProcessBingoCode = async (code: string) => {
@@ -102,16 +95,15 @@ export const ProfileSqan = memo(() => {
 				telegramId: user.id,
 				onSuccess: (data) => {
 					setCodeInputs(Array(5).fill(''));
-					setIsCodeModalOpen(false);
-					showCoinAnimation(data.coinsEarned);
-					refetchProfile().catch(() => {});
-					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-					showToast(`Победа в бинго! +${data.coinsEarned} монет.`, 'success');
-					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
-						setTimeout(() => {
-							const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
-							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
-						}, 600 + i * 400);
+					showCoinAnimation(data.coinsEarned, undefined, () => {
+						refetchProfile().catch(() => {});
+						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
+							setTimeout(() => {
+								const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
+								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
+							}, 600 + i * 400);
+							});
 					});
 					isProcessingQRRef.current = false;
 				},
@@ -147,7 +139,6 @@ export const ProfileSqan = memo(() => {
 
 			if (data.alreadyRegistered) {
 				setCodeInputs(Array(5).fill(''));
-				setIsCodeModalOpen(false);
 				showToast('Вы уже зарегистрированы на это мероприятие', 'error');
 				isProcessingQRRef.current = false;
 				return;
@@ -157,7 +148,6 @@ export const ProfileSqan = memo(() => {
 			setPendingRegCode(code);
 			setRegModalData(data);
 			setCodeInputs(Array(5).fill(''));
-			setIsCodeModalOpen(false);
 			setRegModalOpen(true);
 		} catch (err: unknown) {
 			const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при обработке кода';
@@ -178,7 +168,6 @@ export const ProfileSqan = memo(() => {
 				telegramId: user.id,
 				teamId,
 				onSuccess: async (data) => {
-					const eventTitle = data.event.title;
 					const coinsEarned = data.coinsEarned;
 					const newlyUnlocked = data.newlyUnlockedAchievements ?? [];
 
@@ -186,25 +175,21 @@ export const ProfileSqan = memo(() => {
 					setRegModalData(null);
 					setPendingRegCode("");
 
-					showCoinAnimation(coinsEarned);
-
-					try {
-						await refetchProfile();
-					} catch {
-						// Игнорируем ошибки обновления профиля
-					}
-
-					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-
-					setTimeout(() => {
-						showToast(`Успешно! Вы зарегистрированы на мероприятие «${eventTitle}». Подтверждение придёт вам в личку от бота.`, 'success');
+					showCoinAnimation(coinsEarned, undefined, async () => {
+						try {
+							await refetchProfile();
+						} catch {
+							// Игнорируем ошибки обновления профиля
+						}
+						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+						void queryClient.invalidateQueries({ queryKey: queryKeys.myRegistration });
 						newlyUnlocked.forEach((a, i) => {
 							setTimeout(() => {
 								const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
 								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
 							}, 600 + i * 400);
 						});
-					}, 500);
+					});
 
 					isProcessingQRRef.current = false;
 				},
@@ -279,25 +264,7 @@ export const ProfileSqan = memo(() => {
 			inputRefs.current[index - 1]?.focus();
 		} else if (e.key === 'ArrowRight' && index < CODE_LENGTH - 1) {
 			inputRefs.current[index + 1]?.focus();
-		} else if (e.key === 'Escape') {
-			handleCloseModal();
 		}
-	};
-
-	const handleCloseModal = () => {
-		setCodeInputs(Array(5).fill(''));
-		setIsCodeModalOpen(false);
-	};
-
-	const handleOpenChange = (open: boolean) => {
-		if (!open) {
-			setCodeInputs(Array(5).fill(''));
-		} else {
-			setTimeout(() => {
-				inputRefs.current[0]?.focus();
-			}, 100);
-		}
-		setIsCodeModalOpen(open);
 	};
 
 	return (
@@ -318,68 +285,14 @@ export const ProfileSqan = memo(() => {
 					onConfirm={handleRegistrationConfirm}
 				/>
 			)}
-			<Dialog open={isCodeModalOpen} onOpenChange={handleOpenChange}>
-				<DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
-					<DialogHeader>
-						<DialogTitle className="text-white text-center">Введите код</DialogTitle>
-					</DialogHeader>
-
-					<div className="flex gap-2 justify-center mb-6">
-						{Array.from({ length: CODE_LENGTH }).map((_, index) => {
-							const value = codeInputs[index] || '';
-							const isFilled = value !== '';
-
-							return (
-								<input
-									key={index}
-									ref={(el) => {
-										inputRefs.current[index] = el;
-									}}
-									type="text"
-									inputMode="text"
-									value={value}
-									onChange={(e) => handleInputChange(index, e.target.value)}
-									onKeyDown={(e) => handleInputKeyDown(index, e)}
-									onFocus={(e) => {
-										e.target.select();
-									}}
-									maxLength={1}
-									className={`
-                    w-14 h-16 rounded-xl border-2 flex items-center justify-center
-                    text-center text-2xl font-bold
-                    transition-all duration-200
-                    focus:outline-none
-                    ${isFilled
-											? 'bg-linear-to-br from-neon-cyan to-neon-purple border-neon-cyan text-white shadow-lg shadow-neon-cyan/30 scale-105'
-											: 'bg-surface-dark border-neon-cyan/30 text-gray-600 focus:border-neon-cyan focus:ring-2 focus:ring-neon-cyan/50'
-										}
-                  `}
-								/>
-							);
-						})}
-					</div>
-
-					<p className="text-center text-gray-400 text-sm mb-4">
-						Введите код из {CODE_LENGTH} символов
-					</p>
-
-					<div className="flex">
-						<button
-							onClick={handleSubmitButtonClick}
-							disabled={codeInputs.join('').length !== CODE_LENGTH || isProcessing}
-							className="flex-1 px-4 py-2.5 bg-linear-to-r from-neon-cyan to-neon-purple rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-neon-cyan/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							{isProcessing ? 'Обработка...' : 'Подтвердить'}
-						</button>
-					</div>
-				</DialogContent>
-			</Dialog>
-			<div className="bg-linear-to-r from-neon-cyan/20 to-neon-purple/20 rounded-2xl p-0 border border-neon-cyan/30 flex items-stretch overflow-hidden">
+			{/* Секция камеры: только QR */}
+			<div className="bg-linear-to-r from-neon-cyan/15 to-neon-purple/15 rounded-2xl overflow-hidden border border-neon-cyan/30">
 				<button
+					type="button"
 					onClick={handleScanQR}
-					className="flex-1 flex items-center gap-3 p-4 hover:opacity-90 transition-opacity active:scale-[0.98] rounded-l-2xl"
+					className="w-full flex items-center gap-3 p-4 hover:opacity-90 transition-opacity active:scale-[0.98]"
 				>
-					<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-neon-cyan to-neon-purple flex items-center justify-center shadow-lg shadow-neon-cyan/30">
+					<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-neon-cyan to-neon-purple flex items-center justify-center">
 						<QrCode className="w-6 h-6 text-white" />
 					</div>
 					<div className="flex-1 text-left">
@@ -387,13 +300,48 @@ export const ProfileSqan = memo(() => {
 						<p className="text-xs text-gray-400">Открыть сканер</p>
 					</div>
 				</button>
+			</div>
 
+			{/* Ввод кода вручную: инпут на 5 букв + кнопка */}
+			<div className="bg-card-neutral rounded-2xl p-4 space-y-4">
+				<p className="text-sm text-gray-400">Введите код из {CODE_LENGTH} букв</p>
+				<div className="flex gap-2 w-full">
+					{Array.from({ length: CODE_LENGTH }).map((_, index) => {
+						const value = codeInputs[index] || '';
+						const isFilled = value !== '';
+						return (
+							<input
+								key={index}
+								ref={(el) => {
+									inputRefs.current[index] = el;
+								}}
+								type="text"
+								inputMode="text"
+								autoComplete="off"
+								value={value}
+								onChange={(e) => handleInputChange(index, e.target.value)}
+								onKeyDown={(e) => handleInputKeyDown(index, e)}
+								onFocus={(e) => e.target.select()}
+								maxLength={1}
+								className={`
+									flex-1 min-w-0 h-16 rounded-lg border text-center text-2xl font-bold
+									transition-all duration-200 focus:outline-none
+									${isFilled
+										? 'bg-surface-card text-white border-white/[0.12]'
+										: 'bg-surface-dark border-white/[0.08] text-gray-500 focus:border-white/20 focus:ring-2 focus:ring-white/10'
+									}
+								`}
+							/>
+						);
+					})}
+				</div>
 				<button
-					onClick={handleEnterCode}
-					className="shrink-0 w-12 rounded-r-2xl bg-linear-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-lg shadow-neon-purple/30 hover:scale-105 transition-transform active:scale-[0.95]"
-					title="Ввести код вручную"
+					type="button"
+					onClick={handleSubmitButtonClick}
+					disabled={codeInputs.join('').length !== CODE_LENGTH || isProcessing}
+					className="w-full py-3 rounded-xl bg-linear-to-r from-neon-cyan to-neon-purple text-white font-semibold hover:opacity-95 transition-opacity active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					<Keyboard className="w-5 h-5 text-white" />
+					{isProcessing ? 'Обработка...' : 'Активировать код'}
 				</button>
 			</div>
 		</>

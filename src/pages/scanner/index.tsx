@@ -211,7 +211,7 @@ export default function Scanner() {
 						onClick={handleScanQR}
 						className="flex-1 flex items-center gap-3 p-4 hover:opacity-90 transition-opacity active:scale-[0.98] rounded-l-2xl"
 					>
-						<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-neon-cyan to-neon-purple flex items-center justify-center shadow-lg shadow-neon-cyan/30">
+						<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-neon-cyan to-neon-purple flex items-center justify-center">
 							<QrCode className="w-6 h-6 text-white" />
 						</div>
 						<div className="flex-1 text-left">
@@ -222,7 +222,7 @@ export default function Scanner() {
 					<button
 						type="button"
 						onClick={() => setIsManualOpen(true)}
-						className="shrink-0 w-12 rounded-r-2xl bg-linear-to-br from-neon-purple to-neon-cyan flex items-center justify-center shadow-lg shadow-neon-purple/30 hover:scale-105 transition-transform active:scale-95"
+						className="shrink-0 w-12 rounded-r-2xl bg-linear-to-br from-neon-purple to-neon-cyan flex items-center justify-center hover:scale-105 transition-transform active:scale-95"
 						title="Ввести код вручную"
 					>
 						<Keyboard className="w-5 h-5 text-white" />

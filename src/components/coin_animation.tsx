@@ -1,3 +1,4 @@
+import { prettifyCoins } from '@/lib/utils';
 import { Coins } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -60,7 +61,7 @@ export function CoinAnimation({ coins, duration = 2500, onComplete }: CoinAnimat
             animation: coinsVisible ? 'coinBounce 0.6s ease-out' : 'none',
           }}
         >
-          <div className="w-24 h-24 rounded-full bg-linear-to-br from-neon-gold to-neon-gold-light flex items-center justify-center shadow-2xl shadow-neon-gold/50">
+          <div className="w-24 h-24 rounded-full bg-linear-to-br from-neon-gold to-neon-gold-light flex items-center justify-center">
             <Coins className="w-12 h-12 text-neon-gold-dark" fill="currentColor" />
           </div>
           <div
@@ -79,7 +80,7 @@ export function CoinAnimation({ coins, duration = 2500, onComplete }: CoinAnimat
             }}
           >
             <div className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-neon-gold to-neon-gold-light mb-2">
-              +{coins}
+              +{prettifyCoins(coins)}
             </div>
             <div className="text-lg text-white/90 font-semibold">
               Монет получено!

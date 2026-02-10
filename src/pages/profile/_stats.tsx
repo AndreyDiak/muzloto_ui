@@ -1,10 +1,10 @@
 import { useSession } from "@/app/context/session";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { IProfileStats } from "@/entities/profile";
 import { BarChart3 } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router";
 import { ClickableTooltip, Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
-import type { IProfileStats } from "@/entities/profile";
 
 interface Props {
 	stats: IProfileStats[];
@@ -24,7 +24,7 @@ export const ProfileStats = memo(({ stats, isLoading: statsLoading = false }: Pr
 					Моя статистика
 				</h3>
 				<div className="grid grid-cols-2 gap-3">
-					{Array.from({ length: 4 }).map((_, i) => (
+					{Array.from({ length: 2 }).map((_, i) => (
 						<Skeleton key={i} className="h-[88px] w-full rounded-xl" />
 					))}
 				</div>
@@ -63,23 +63,17 @@ const statCardContent = (stat: IProfileStats) => {
 };
 
 const ProfileStat = memo(({ stat }: { stat: IProfileStats }) => {
-	const cardClassName = `rounded-xl w-full p-4 border border-neon-cyan/10 ${stat.bgColor}`;
+	const cardClassName = `rounded-xl w-full p-4 border border-white/[0.06] ${stat.bgColor}`;
 
 	if (stat.path) {
 		return (
 			<Tooltip key={stat.label}>
 				<TooltipTrigger asChild>
-					<Link to={stat.path} className={`block ${cardClassName} hover:border-neon-cyan/30 transition-colors`}>
+					<Link to={stat.path} className={`block ${cardClassName} hover:bg-white/[0.06] transition-colors`}>
 						{statCardContent(stat)}
 					</Link>
 				</TooltipTrigger>
-				<TooltipContent
-					side="bottom"
-					style={{
-						// @ts-ignore
-						"--foreground": stat.bgColor,
-					}}
-				>
+				<TooltipContent side="bottom">
 					<p className="text-sm text-white">{stat.description}</p>
 				</TooltipContent>
 			</Tooltip>
@@ -91,13 +85,7 @@ const ProfileStat = memo(({ stat }: { stat: IProfileStats }) => {
 			<TooltipTrigger className={cardClassName}>
 				{statCardContent(stat)}
 			</TooltipTrigger>
-			<TooltipContent
-				side="bottom"
-				style={{
-					// @ts-ignore
-					"--foreground": stat.bgColor,
-				}}
-			>
+			<TooltipContent side="bottom">
 				<p className="text-sm text-white">{stat.description}</p>
 			</TooltipContent>
 		</ClickableTooltip>

@@ -23,7 +23,7 @@ export function useProfileStats(): {
       label: "Посещено событий",
       value: String(registrationsCount),
       textColor: "var(--accent-gold)",
-      bgColor: "var(--accent-gold-darker)",
+      bgColor: "bg-surface-card",
       description:
         registrationsCount === 0
           ? "Вы ещё не посещали событий"
@@ -35,7 +35,7 @@ export function useProfileStats(): {
       label: "Достижения",
       value: String(achievementsUnlockedCount),
       textColor: "var(--accent-pink)",
-      bgColor: "var(--accent-pink-darker)",
+      bgColor: "bg-surface-card",
       description:
         achievementsUnlockedCount === 0
           ? "У вас пока нет достижений"

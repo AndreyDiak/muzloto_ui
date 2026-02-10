@@ -32,7 +32,7 @@ const cardContent = (
 		>
 			<div
 				className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-					isUsed ? "bg-gray-600/25" : "bg-neon-cyan/15 border border-neon-cyan/30"
+					isUsed ? "bg-gray-600/25" : "bg-neon-cyan/20"
 				}`}
 			>
 				<TicketIcon className={`w-4 h-4 ${isUsed ? "text-gray-500" : "text-neon-cyan"}`} />
@@ -63,8 +63,10 @@ export const ProfileTicketCard = memo(({ ticket, isModalOpen, onOpenModal, onClo
 	const name = ticket.catalog?.name ?? "Билет";
 	const isUsed = !!ticket.used_at;
 
-	const buttonClassName = `w-full flex rounded-xl text-left bg-surface-card border border-neon-cyan/20 overflow-hidden min-h-[64px] active:opacity-90 transition-opacity ${
-		isUsed ? "opacity-75 border-gray-500/20" : "border-l-4 border-l-neon-cyan"
+	const buttonClassName = `w-full flex rounded-xl text-left overflow-hidden min-h-[64px] active:opacity-90 transition-opacity ${
+		isUsed
+			? "bg-surface-card border border-white/[0.06] opacity-75"
+			: "bg-neon-cyan/[0.08] border border-white/[0.06] border-l-4 border-l-neon-cyan"
 	}`;
 
 	if (isUsed) {

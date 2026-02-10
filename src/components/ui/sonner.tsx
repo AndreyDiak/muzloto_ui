@@ -22,7 +22,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       toastOptions={{
         classNames: {
-          toast: "group toast group-[.toaster]:bg-surface-card group-[.toaster]:text-white group-[.toaster]:border-neon-cyan/30",
+          toast: "group toast group-[.toaster]:bg-surface-card group-[.toaster]:text-white group-[.toaster]:border-white/[0.08]",
           error: "group-[.toaster]:bg-red-500/10 group-[.toaster]:text-red-200 group-[.toaster]:border-red-500/30",
           success: "group-[.toaster]:bg-green-500/10 group-[.toaster]:text-green-200 group-[.toaster]:border-green-500/30",
           info: "group-[.toaster]:bg-blue-500/10 group-[.toaster]:text-blue-200 group-[.toaster]:border-blue-500/30",

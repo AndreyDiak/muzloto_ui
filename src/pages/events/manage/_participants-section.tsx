@@ -26,7 +26,7 @@ export function ParticipantsSection({
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-cyan/10"
+            className="flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-white/[0.08]"
           >
             <Skeleton className="w-10 h-10 rounded-full" />
             <div className="flex-1 space-y-1.5">
@@ -49,7 +49,7 @@ export function ParticipantsSection({
         {slice.map((r) => (
           <li
             key={r.telegram_id}
-            className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-cyan/10"
+            className="flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-white/[0.08]"
           >
             <div className="w-10 h-10 rounded-full bg-neon-cyan/10 flex items-center justify-center shrink-0 overflow-hidden">
               {r.avatar_url ? (
@@ -81,12 +81,12 @@ export function ParticipantsSection({
         ))}
       </ul>
       {totalPages > 1 && (
-        <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-neon-cyan/10">
+        <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-white/[0.06]">
           <button
             type="button"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
-            className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-neon-cyan border border-neon-cyan/30 bg-surface-dark disabled:opacity-40 disabled:pointer-events-none"
+            className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-neon-cyan border border-white/[0.08] bg-surface-card disabled:opacity-40 disabled:pointer-events-none"
           >
             <ChevronLeft className="w-4 h-4" /> Назад
           </button>
@@ -97,7 +97,7 @@ export function ParticipantsSection({
             type="button"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
-            className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-neon-cyan border border-neon-cyan/30 bg-surface-dark disabled:opacity-40 disabled:pointer-events-none"
+            className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-neon-cyan border border-white/[0.08] bg-surface-card disabled:opacity-40 disabled:pointer-events-none"
           >
             Далее <ChevronRight className="w-4 h-4" />
           </button>

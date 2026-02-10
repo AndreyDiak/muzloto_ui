@@ -124,18 +124,39 @@ export function TicketQRModal({
 			return;
 		}
 		const fileName = `event-${code}.png`;
-		try {
-			await qr.download({
-				name: `event-${code}`,
-				extension: "png",
-			});
-			showToast("QR-код сохранён", "success");
-		} catch {
-			// В WebView (например Telegram) стандартный download может не сработать — пробуем через Blob
-			try {
-				const blob = await qr.getRawData("png");
-				if (!blob || !(blob instanceof Blob)) throw new Error("No blob");
-				const url = URL.createObjectURL(blob);
+		const isMobile = /iPhone|iPad|iPod|Android|webOS/i.test(navigator.userAgent) || "ontouchstart" in window;
+
+		const tryFallbackForMobile = async () => {
+			const blob = await qr.getRawData("png");
+			if (!blob || !(blob instanceof Blob)) throw new Error("No blob");
+			const url = URL.createObjectURL(blob);
+
+			// Web Share API (на мобильных часто есть «Сохранить» в шаринге)
+			if (isMobile && navigator.share && navigator.canShare) {
+				try {
+					const file = new File([blob], fileName, { type: "image/png" });
+					if (navigator.canShare({ files: [file] })) {
+						await navigator.share({
+							files: [file],
+							title: itemName,
+						});
+						URL.revokeObjectURL(url);
+						showToast("QR-код сохранён или отправлен", "success");
+						return;
+					}
+				} catch (shareErr) {
+					// Пользователь отменил или share не сработал — идём в открытие в новой вкладке
+				}
+			}
+
+			// Открыть изображение в новой вкладке: на мобильных можно удержать и «Сохранить изображение»
+			const opened = window.open(url, "_blank", "noopener");
+			if (opened) {
+				setTimeout(() => URL.revokeObjectURL(url), 5000);
+				showToast("Удерживайте изображение, чтобы сохранить", "info");
+			} else {
+				URL.revokeObjectURL(url);
+				// Попупы могли быть заблокированы — последняя попытка через <a> click
 				const a = document.createElement("a");
 				a.href = url;
 				a.download = fileName;
@@ -143,18 +164,35 @@ export function TicketQRModal({
 				document.body.appendChild(a);
 				a.click();
 				document.body.removeChild(a);
-				URL.revokeObjectURL(url);
+				setTimeout(() => URL.revokeObjectURL(url), 500);
+				showToast("Если не сохранилось: удерживайте QR на экране для сохранения", "info");
+			}
+		};
+
+		try {
+			if (isMobile) {
+				// На мобильных qr.download() почти всегда не срабатывает — сразу fallback
+				await tryFallbackForMobile();
+			} else {
+				await qr.download({
+					name: `event-${code}`,
+					extension: "png",
+				});
 				showToast("QR-код сохранён", "success");
+			}
+		} catch {
+			try {
+				await tryFallbackForMobile();
 			} catch (e) {
 				console.error(e);
-				showToast("Не удалось сохранить QR-код. Попробуйте скопировать код вручную.", "error");
+				showToast("Не удалось сохранить QR-код. Скопируйте код вручную.", "error");
 			}
 		}
-	}, [code, showToast]);
+	}, [code, itemName, showToast]);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
+			<DialogContent className="bg-surface-card border border-white/[0.08] max-w-sm">
 				<DialogHeader>
 					<DialogTitle className="text-white text-center">{dialogTitle}</DialogTitle>
 				</DialogHeader>
@@ -204,14 +242,14 @@ export function TicketQRModal({
 						type="button"
 						onClick={handleDownloadQr}
 						disabled={!isQrReady}
-						className="w-full py-2.5 rounded-xl bg-neon-cyan text-black font-medium border border-neon-cyan/80 hover:bg-neon-cyan/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						className="w-full py-2.5 rounded-xl bg-neon-cyan text-black font-medium hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						Скачать QR
 					</button>
 					<button
 						type="button"
 						onClick={() => onOpenChange(false)}
-						className="w-full py-2.5 rounded-xl bg-neon-cyan/20 text-white font-medium border border-neon-cyan/50"
+						className="w-full py-2.5 rounded-xl bg-neon-cyan/25 text-white font-medium hover:bg-neon-cyan/30 transition-colors"
 					>
 						Закрыть
 					</button>

@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { prettifyCoins } from "@/lib/utils";
 import type { ApiEventTeam } from "@/types/api";
 import { Coins, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -54,7 +55,7 @@ export function RegistrationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
+      <DialogContent className="bg-surface-card border border-white/[0.08] max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-white text-center">
             Регистрация на мероприятие
@@ -66,7 +67,7 @@ export function RegistrationModal({
           <p className="text-center text-sm text-gray-400">{eventTitle}</p>
 
           {/* User info */}
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-dark border border-neon-cyan/15">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-neon-cyan/[0.06] border border-white/[0.06]">
             <Avatar className="w-12 h-12">
               <AvatarImage src={photoUrl} />
               <AvatarFallback className="bg-neon-cyan/10 text-neon-cyan">
@@ -92,12 +93,12 @@ export function RegistrationModal({
                 onValueChange={setSelectedTeamId}
               >
                 <SelectTrigger
-                  className="w-full h-12 px-4 rounded-xl bg-surface-dark border-neon-cyan/30 text-white focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan/30 [&_svg]:text-gray-500"
+                  className="w-full h-12 px-4 rounded-xl bg-surface-dark border border-white/[0.08] text-white focus:ring-2 focus:ring-neon-cyan/30 [&_svg]:text-gray-500"
                 >
                   <SelectValue placeholder="Команда..." />
                 </SelectTrigger>
                 <SelectContent
-                  className="bg-surface-card border-neon-cyan/30 max-h-60"
+                  className="bg-surface-card border border-white/[0.08] max-h-60"
                 >
                   {teams.map((t) => (
                     <SelectItem
@@ -114,11 +115,11 @@ export function RegistrationModal({
           )}
 
           {/* Coins reward hint */}
-          <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-neon-gold/5 border border-neon-gold/15">
+          <div className="flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-neon-gold/15">
             <Coins className="w-4 h-4 text-neon-gold shrink-0" />
             <span className="text-sm text-neon-gold">
               За регистрацию вы получите{" "}
-              <span className="font-semibold">{coinsReward}</span> монет
+              <span className="font-semibold">{prettifyCoins(coinsReward)}</span> монет
             </span>
           </div>
 
@@ -127,7 +128,7 @@ export function RegistrationModal({
             type="button"
             disabled={!canConfirm || isRegistering}
             onClick={() => onConfirm(hasTeams ? selectedTeamId : undefined)}
-            className="w-full py-3 rounded-xl bg-linear-to-r from-neon-cyan to-neon-purple text-white font-semibold hover:shadow-lg hover:shadow-neon-cyan/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl bg-linear-to-r from-neon-cyan to-neon-purple text-white font-semibold hover:opacity-95 transition-opacity active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isRegistering ? (
               <Loader2 className="w-5 h-5 animate-spin mx-auto" />
