@@ -77,29 +77,33 @@ export default function RafflePage() {
 
 	if (loading) {
 		return (
-			<div className="min-h-dvh bg-surface-card flex flex-col items-center justify-center gap-4 px-4">
-				<div className="relative flex items-center gap-3 min-h-10 w-full">
-					{backLink}
-					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-						<span className="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink">
-							Караоке Лото
-						</span>
+			<div className="min-h-dvh bg-surface-dark flex flex-col items-center justify-center gap-4 px-4">
+				<div className="w-full max-w-xl mx-auto flex flex-col items-center gap-4">
+					<div className="relative flex items-center gap-3 min-h-10 w-full">
+						{backLink}
+						<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
+							<span className="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink">
+								Караоке Лото
+							</span>
+						</div>
 					</div>
+					<p className="text-gray-400 text-sm">Загрузка…</p>
 				</div>
-				<p className="text-gray-400 text-sm">Загрузка…</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="min-h-dvh h-dvh max-h-dvh flex flex-col bg-surface-card text-white overflow-hidden">
-			<RaffleContent
-				eventId={eventId}
-				registrations={registrations}
-				existingWinner={raffleWinner}
-				onRaffleDone={onRaffleDone}
-				headerLeft={backLink}
-			/>
+		<div className="min-h-dvh h-dvh max-h-dvh flex flex-col bg-surface-dark text-white overflow-hidden">
+			<div className="w-full max-w-xl mx-auto flex flex-col flex-1 min-h-0 bg-surface-card">
+				<RaffleContent
+					eventId={eventId}
+					registrations={registrations}
+					existingWinner={raffleWinner}
+					onRaffleDone={onRaffleDone}
+					headerLeft={backLink}
+				/>
+			</div>
 		</div>
 	);
 }
