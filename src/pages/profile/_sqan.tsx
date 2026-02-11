@@ -1,4 +1,3 @@
-import { processBingoCode } from "@/actions/process-bingo-code";
 import { processEventCode, validateEventCode } from "@/actions/process-event-code";
 import { redeemPurchaseCode } from "@/actions/redeem-purchase-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
@@ -14,7 +13,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
-import { extractPayloadFromInput, isBingoCodeLike, isShopCodeLike } from "@/lib/event-deep-link";
+import { extractPayloadFromInput } from "@/lib/event-deep-link";
 import { queryKeys } from "@/lib/query-client";
 import type { ApiValidateCodeResponse } from "@/types/api";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,8 +26,7 @@ export const ProfileSqan = memo(() => {
 	const queryClient = useQueryClient();
 	const { showCoinAnimation } = useCoinAnimation();
 	const { tg } = useTelegram();
-	// 6 полей: код покупки 5 символов или 6 (Cxxxxx), мероприятие/бинго — 5
-	const CODE_LENGTH = 6;
+	const CODE_LENGTH = 5;
 	const [codeInputs, setCodeInputs] = useState<string[]>(Array(CODE_LENGTH).fill(''));
 	const [isProcessing, setIsProcessing] = useState(false);
 	const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(CODE_LENGTH).fill(null));
@@ -65,13 +63,9 @@ export const ProfileSqan = memo(() => {
 						isProcessingQRRef.current = true;
 						const trimmedText = text.trim();
 
-						// Пробуем распарсить как raw payload, URL с startapp, или код (5/6 символов)
+						// Пробуем распарсить как raw payload, URL с startapp, или код (5 символов)
 						const parsed = extractPayloadFromInput(trimmedText);
 						if (parsed) {
-							if (parsed.type === "prize") {
-								handleProcessBingoCode(parsed.value);
-								return true;
-							}
 							if (parsed.type === "registration") {
 								handleProcessEventCode(parsed.value);
 								return true;
@@ -82,7 +76,7 @@ export const ProfileSqan = memo(() => {
 							}
 						}
 
-						showToast('Неверный формат. Ожидается код из 5–6 символов или ссылка.', 'error');
+						showToast('Неверный формат. Ожидается код из 5 символов или ссылка.', 'error');
 						isProcessingQRRef.current = false;
 						return false;
 						} catch {
@@ -99,41 +93,6 @@ export const ProfileSqan = memo(() => {
 		} else {
 			// Если нативный сканер недоступен (например, на десктопе)
 			showToast('Сканер QR доступен только на мобильных. Введите код ниже.', 'info');
-		}
-	};
-
-	const handleProcessBingoCode = async (code: string) => {
-		if (isProcessing || !user?.id) {
-			if (!user?.id) showToast('Ошибка: не удалось определить пользователя.', 'error');
-			return;
-		}
-		setIsProcessing(true);
-		try {
-			await processBingoCode({
-				code,
-				telegramId: user.id,
-				onSuccess: (data) => {
-					setCodeInputs(Array(5).fill(''));
-					setManualCodeModalOpen(false);
-					showCoinAnimation(data.coinsEarned, undefined, () => {
-						refetchProfile().catch(() => {});
-						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
-							setTimeout(() => {
-								const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
-								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
-							}, 600 + i * 400);
-							});
-					});
-					isProcessingQRRef.current = false;
-				},
-				onError: (err) => {
-					showToast(err ?? 'Не удалось засчитать победу.', 'error');
-					isProcessingQRRef.current = false;
-				},
-			});
-		} finally {
-			setIsProcessing(false);
 		}
 	};
 
@@ -180,11 +139,6 @@ export const ProfileSqan = memo(() => {
 			return;
 		}
 
-		if (isBingoCodeLike(code)) {
-			handleProcessBingoCode(code);
-			return;
-		}
-
 		setIsProcessing(true);
 
 		try {
@@ -212,7 +166,7 @@ export const ProfileSqan = memo(() => {
 		}
 	};
 
-	const handleRegistrationConfirm = useCallback(async (teamId: string | undefined) => {
+	const handleRegistrationConfirm = useCallback(async () => {
 		if (!user?.id || !pendingRegCode) return;
 		setIsRegistering(true);
 
@@ -220,7 +174,6 @@ export const ProfileSqan = memo(() => {
 			await processEventCode({
 				code: pendingRegCode,
 				telegramId: user.id,
-				teamId,
 				onSuccess: async (data) => {
 					const coinsEarned = data.coinsEarned;
 					const newlyUnlocked = data.newlyUnlockedAchievements ?? [];
@@ -270,19 +223,33 @@ export const ProfileSqan = memo(() => {
 	}, [user?.id, pendingRegCode, showCoinAnimation, refetchProfile, queryClient, showToast]);
 
 	const handleSubmitCode = async (codeOverride?: string) => {
-		const raw = (codeOverride ?? codeInputs.join('')).toUpperCase();
+		const raw = (codeOverride ?? codeInputs.join('')).trim().toUpperCase();
 		if (raw.length < 5) return;
-		const code5 = raw.length >= 5 ? raw.slice(0, 5) : raw;
-		// Код покупки каталога: 5 символов (новый) или 6 (Cxxxxx, старый)
-		if (isShopCodeLike(raw)) {
-			await handleRedeemPurchaseCode(raw.slice(0, raw.length >= 6 ? 6 : 5));
-			return;
-		}
-		// 5 символов: бинго или мероприятие
-		if (isBingoCodeLike(code5)) {
-			await handleProcessBingoCode(code5);
-		} else {
-			await handleProcessEventCode(code5);
+		const code5 = raw.slice(0, 5);
+		// 5 символов: сначала пробуем мероприятие, при 404 — код покупки
+		setIsProcessing(true);
+		try {
+			const data = await validateEventCode(code5);
+			if (data.alreadyRegistered) {
+				setCodeInputs(Array(CODE_LENGTH).fill(''));
+				showToast('Вы уже зарегистрированы на это мероприятие', 'error');
+				return;
+			}
+			setPendingRegCode(code5);
+			setRegModalData(data);
+			setCodeInputs(Array(CODE_LENGTH).fill(''));
+			setManualCodeModalOpen(false);
+			setRegModalOpen(true);
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : "";
+			const isEventNotFound = msg.includes("Мероприятие не найдено") || msg.includes("404");
+			if (isEventNotFound) {
+				await handleRedeemPurchaseCode(code5);
+			} else {
+				showToast(msg || "Ошибка при обработке кода", "error");
+			}
+		} finally {
+			setIsProcessing(false);
 		}
 	};
 
@@ -305,10 +272,8 @@ export const ProfileSqan = memo(() => {
 
 		if (char && (index === 4 || index === CODE_LENGTH - 1)) {
 			const fullCode = newInputs.join('');
-			// Авто-отправка при 5 или 6 символах
-			const shouldSubmit5 = fullCode.length === 5;
-			const shouldSubmit6 = fullCode.length === 6;
-			if (shouldSubmit5 || shouldSubmit6) {
+			// Авто-отправка при 5 символах
+			if (fullCode.length === 5) {
 				setTimeout(() => handleSubmitCode(fullCode), 100);
 			}
 		}
@@ -341,7 +306,6 @@ export const ProfileSqan = memo(() => {
 						}
 					}}
 					eventTitle={regModalData.event.title}
-					teams={regModalData.teams}
 					coinsReward={regModalData.coinsReward}
 					isRegistering={isRegistering}
 					onConfirm={handleRegistrationConfirm}
@@ -389,10 +353,10 @@ export const ProfileSqan = memo(() => {
 				<DialogContent className="bg-surface-card border-white/10 text-white sm:max-w-sm max-w-[calc(100vw-2rem)]">
 					<DialogHeader>
 						<DialogTitle className="text-white">Введите код</DialogTitle>
-						<p className="text-sm text-gray-400">5 символов — код покупки, мероприятие или приз</p>
+						<p className="text-sm text-gray-400">5 символов — регистрация на мероприятие или код покупки</p>
 					</DialogHeader>
 					<div className="space-y-4 pt-2">
-						<div className="grid grid-cols-6 gap-1.5 sm:gap-2 w-full max-w-full">
+						<div className="grid grid-cols-5 gap-1.5 sm:gap-2 w-full max-w-full">
 							{Array.from({ length: CODE_LENGTH }).map((_, index) => {
 								const value = codeInputs[index] || '';
 								const isFilled = value !== '';

@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 import { Navigate } from "react-router";
 import { CatalogSection } from "./_catalog-section";
 import { EventsSection } from "./_events-section";
-import { GenerateCertSection } from "./_generate_cert";
 
 export default function Admin() {
 	const { isRoot, isSupabaseSessionReady } = useSession();
@@ -25,10 +24,9 @@ export default function Admin() {
 		<div className="p-4 pb-24 space-y-6">
 			<h1 className="text-xl font-semibold text-white">Админка</h1>
 
-			<Accordion type="multiple" defaultValue={["prize"]} className="space-y-2">
+			<Accordion type="multiple" className="space-y-2">
 				<EventsSection />
 				<CatalogSection />
-				<GenerateCertSection />
 			</Accordion>
 		</div>
 	);

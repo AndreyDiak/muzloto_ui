@@ -267,7 +267,7 @@ export function RaffleContent({
 				<div className="relative flex items-center gap-3 shrink-0 min-h-10">
 					{headerLeft}
 					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-						<span className="text-lg font-bold text-neon-gold tracking-tight drop-shadow-[0_0_8px_var(--color-neon-gold)]">
+						<span className="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink">
 						Караоке Лото
 					</span>
 					</div>
@@ -286,7 +286,7 @@ export function RaffleContent({
 					<div className="relative flex items-center gap-3 min-h-10">
 						{headerLeft}
 						<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-							<span className="text-lg font-bold text-neon-gold tracking-tight drop-shadow-[0_0_8px_var(--color-neon-gold)]">
+							<span className="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink">
 						Караоке Лото
 					</span>
 						</div>
@@ -331,7 +331,7 @@ export function RaffleContent({
 				<div className="relative flex items-center gap-3 min-h-10">
 					{headerLeft}
 					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-						<span className="text-lg font-bold text-neon-gold tracking-tight drop-shadow-[0_0_8px_var(--color-neon-gold)]">
+						<span className="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink">
 						Караоке Лото
 					</span>
 					</div>
@@ -388,9 +388,10 @@ export function RaffleContent({
 						</div>
 					</div>
 				) : (
-					<div className="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col items-center justify-center">
+					<div className="flex-1 min-h-0 min-w-0 overflow-auto flex flex-col items-center justify-center">
+						{/* Обёртка с aspect-ratio: размер только по ширине, высота из соотношения — ячейки остаются квадратными при любом viewport */}
 						<div
-							className="grid gap-2 sm:gap-3 p-1 w-full max-w-full max-h-full"
+							className="w-full max-w-full shrink-0 grid gap-2 sm:gap-3 p-1"
 							style={{
 								aspectRatio: `${gridCols} / ${gridRows}`,
 								gridTemplateColumns: `repeat(${gridCols}, 1fr)`,

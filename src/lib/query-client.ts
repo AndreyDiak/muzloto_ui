@@ -3,9 +3,9 @@ import { QueryClient } from "@tanstack/react-query";
 /** Ключи запросов для инвалидации кеша */
 export const queryKeys = {
 	achievements: ["achievements"] as const,
-	bingoConfig: ["bingo-config"] as const,
 	events: ["events"] as const,
 	catalog: ["catalog"] as const,
+	catalogActivePurchaseCodes: ["catalog", "active-purchase-codes"] as const,
 	recentScanned: ["recent-scanned"] as const,
 	myRegistration: ["my-registration"] as const,
 	tickets: (telegramId: number) =>

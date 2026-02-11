@@ -12,11 +12,3 @@ export type AdminCatalogItem = {
 	price: number;
 	created_at: string;
 };
-
-export type PrizeCert = {
-	id: string;
-	code: string;
-	coins_amount: number;
-	used_at: string | null;
-	created_at: string;
-};

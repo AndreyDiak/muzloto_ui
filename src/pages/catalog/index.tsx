@@ -1,4 +1,5 @@
 import { useSession } from "@/app/context/session";
+import { useActivePurchaseCodes } from "@/hooks/use-active-purchase-codes";
 import { useCatalog } from "@/hooks/use-catalog";
 import { useCssColor } from "@/hooks/use-css-color";
 import { CatalogItem } from "./_item";
@@ -15,6 +16,7 @@ export default function Catalog() {
 	const { isRoot } = useSession();
 	const colors = useCssColor(colorVars);
 	const { error, isLoading, items } = useCatalog();
+	const { codes: activeCodes } = useActivePurchaseCodes(!!isRoot);
 
 	if (isLoading) {
 		return (
@@ -42,12 +44,14 @@ export default function Catalog() {
 
 	return (
 		<div className="p-4 space-y-6">
-			{/* <h2 className="layout-header">
-				Каталог
-			</h2> */}
-
 			{items.map((item, index) => (
-				<CatalogItem key={item.id} item={item} color={colors[index % colors.length]} isRoot={isRoot} />
+				<CatalogItem
+					key={item.id}
+					item={item}
+					color={colors[index % colors.length]}
+					isRoot={isRoot}
+					activeCode={isRoot ? (activeCodes.find((c) => c.catalog_item_id === item.id) ?? null) : null}
+				/>
 			))}
 		</div>
 	);

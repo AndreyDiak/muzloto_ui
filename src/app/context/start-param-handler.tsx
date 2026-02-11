@@ -1,4 +1,3 @@
-import { processBingoCode } from "@/actions/process-bingo-code";
 import { processEventCode, validateEventCode } from "@/actions/process-event-code";
 import { redeemPurchaseCode } from "@/actions/redeem-purchase-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
@@ -38,8 +37,8 @@ function getRawPayload(tg: { initDataUnsafe?: { start_param?: string } } | undef
 
 /**
  * Обрабатывает payload при заходе по ссылке по типу:
- * - registration (reg-CODE или 5 символов) → валидация + модалка регистрации с выбором команды.
- * - prize (prize-TOKEN / p-TOKEN или Bxxxx) → получение приза.
+ * - registration (reg-CODE или 5 символов) → валидация + модалка регистрации.
+ * - shop (shop-CODE или 5 символов) → погашение кода покупки.
  */
 export function StartParamHandler() {
 	const { tg } = useTelegram();
@@ -92,33 +91,6 @@ export function StartParamHandler() {
 			return () => clearTimeout(timeoutId);
 		}
 
-		if (payload.type === "prize") {
-			const timeoutId = setTimeout(() => {
-				processBingoCode({
-					code: payload.value,
-					telegramId: user.id,
-					onSuccess: (data) => {
-						sessionStorage.setItem(STORAGE_KEY, storageKey);
-						refetchProfile();
-						showCoinAnimation(data.coinsEarned ?? 10);
-						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-						showToast(`Приз получен! +${data.coinsEarned} монет.`, "success");
-						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
-							setTimeout(() => {
-								const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
-								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
-							}, 600 + i * 400);
-						});
-					},
-					onError: (message) => {
-						processedRef.current = false;
-						showToast(message || "Не удалось получить приз.", "error");
-					},
-				});
-			}, 150);
-			return () => clearTimeout(timeoutId);
-		}
-
 		if (payload.type === "shop") {
 			const timeoutId = setTimeout(() => {
 				redeemPurchaseCode({
@@ -145,14 +117,13 @@ export function StartParamHandler() {
 		}
 	}, [tg?.initDataUnsafe?.start_param, user?.id, isSupabaseSessionReady, retryAt, showToast, refetchProfile, showCoinAnimation, queryClient]);
 
-	const handleRegistrationConfirm = useCallback(async (teamId: string | undefined) => {
+	const handleRegistrationConfirm = useCallback(async () => {
 		if (!user?.id || !pendingCode) return;
 		setIsRegistering(true);
 		try {
 			await processEventCode({
 				code: pendingCode,
 				telegramId: user.id,
-				teamId,
 				onSuccess: (data) => {
 					sessionStorage.setItem(STORAGE_KEY, pendingStorageKey);
 					setRegModalOpen(false);
@@ -203,7 +174,6 @@ export function StartParamHandler() {
 				if (!open) processedRef.current = false;
 			}}
 			eventTitle={regModalData.event.title}
-			teams={regModalData.teams}
 			coinsReward={regModalData.coinsReward}
 			isRegistering={isRegistering}
 			onConfirm={handleRegistrationConfirm}

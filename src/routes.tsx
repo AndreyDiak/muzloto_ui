@@ -7,7 +7,6 @@ const BasicLayout = lazy(() =>
 );
 
 const Profile = lazy(() => import("./pages/profile"));
-const Achievements = lazy(() => import("./pages/achievements"));
 const Events = lazy(() => import("./pages/events"));
 const EventManage = lazy(() => import("./pages/events/manage"));
 const RafflePage = lazy(() => import("./pages/events/raffle"));
@@ -44,7 +43,6 @@ export const router = createBrowserRouter([
 		Component: LayoutWithSuspense,
 		children: [
 			{ index: true, Component: Profile },
-			{ path: "/achievements", Component: Achievements },
 			{ path: "/events", Component: Events },
 			{ path: "/events/:eventId/manage", Component: EventManage },
 			{ path: "/catalog", Component: Catalog },

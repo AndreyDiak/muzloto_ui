@@ -72,11 +72,6 @@ export function ParticipantsSection({
                 </p>
               )}
             </div>
-            {r.team?.name && (
-              <span className="text-xs text-neon-purple shrink-0 truncate max-w-[100px]">
-                {r.team.name}
-              </span>
-            )}
           </li>
         ))}
       </ul>

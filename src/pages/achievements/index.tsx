@@ -3,9 +3,9 @@ import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useAchievements } from "@/hooks/use-achievements";
 import { prettifyCoins } from "@/lib/utils";
-import { Footprints, Music2 } from "lucide-react";
-import { Link } from "react-router";
+import { Music2 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 
 const VISIT_REWARD_EVERY = 5;
 
@@ -42,10 +42,6 @@ export default function Achievements() {
 
       {/* Блок прогресса посещений: каждое 5-е — награда */}
       <section className="space-y-2">
-        <h2 className="text-base font-semibold text-white flex items-center gap-2">
-          <Footprints className="w-5 h-5 text-neon-gold" />
-          Посещения
-        </h2>
         <div
           className={`block rounded-xl p-4 border transition-colors ${
             visitRewardPending
@@ -59,7 +55,7 @@ export default function Achievements() {
                 key={i}
                 className={`flex-1 min-w-0 aspect-square rounded-full border-2 flex items-center justify-center ${
                   i < displayProgress
-                    ? "bg-neon-gold/80 border-neon-gold text-surface-card"
+                    ? "border-neon-cyan/40 text-white bg-linear-to-br from-neon-cyan to-neon-purple"
                     : "border-white/20 bg-white/5 text-white/40"
                 }`}
                 aria-hidden
@@ -84,19 +80,18 @@ export default function Achievements() {
               >
                 {isClaimingVisit ? "Загрузка…" : `Забрать приз (+${prettifyCoins(visitRewardCoins)} монет)`}
               </button>
-              <Link to="/events" className="text-xs text-gray-400 hover:text-white">
+              <Link to="/events" className="text-xs text-transparent bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple hover:opacity-90">
                 К мероприятиям
               </Link>
             </div>
           ) : (
-            <Link to="/events" className="mt-3 block text-center text-sm text-neon-gold/90 hover:text-neon-gold">
+            <Link to="/events" className="mt-3 block text-center text-sm text-transparent bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple hover:opacity-90">
               К мероприятиям
             </Link>
           )}
         </div>
       </section>
 
-      {/* Достижения за каталог: <ProfileAchievements sectionTitle="Достижения за каталог" achievements={...} /> */}
     </div>
   );
 }

@@ -7,12 +7,6 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SEvent } from "@/entities/event";
 import { http } from "@/http";
@@ -21,19 +15,17 @@ import {
 	getEventCodeBotStartLink,
 	getEventCodeDeepLink,
 } from "@/lib/event-deep-link";
+import { prettifyCoins } from "@/lib/utils";
 import {
-	type ApiEventTeam,
 	type ApiRaffleResponse,
 	type ApiRegistrationsResponse,
-	type ApiTeamsResponse,
 	parseJson,
 } from "@/types/api";
-import { ChevronLeft, Gift, Loader2, Plus, User, Users } from "lucide-react";
+import { ChevronLeft, Coins, Gift, User } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { EventQRSection } from "./_event-qr-section";
 import { ParticipantsSection } from "./_participants-section";
-import { TeamsSection } from "./_teams-section";
 
 const BACKEND_URL = (
   import.meta.env.VITE_BACKEND_URL || "http://localhost:3001"
@@ -52,45 +44,10 @@ export default function EventManage() {
   >([]);
   const [regsLoading, setRegsLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
-  const [eventTeams, setEventTeams] = useState<ApiEventTeam[]>([]);
-
-  // — Add-team modal state —
-  const [addTeamOpen, setAddTeamOpen] = useState(false);
-  const [newTeamName, setNewTeamName] = useState("");
-  const [addingTeam, setAddingTeam] = useState(false);
   const [participantsPage, setParticipantsPage] = useState(1);
 
   const [raffleWinner, setRaffleWinner] = useState<ApiRaffleResponse["winner"]>(null);
-
-  const handleAddTeam = useCallback(async () => {
-    const trimmed = newTeamName.trim();
-    if (!trimmed || !eventId) return;
-    setAddingTeam(true);
-    try {
-      const res = await authFetch(`${BACKEND_URL}/api/events/${eventId}/teams`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        showToast(json.error ?? "Ошибка", "error");
-        return;
-      }
-      setEventTeams((prev) =>
-        [...prev, json.team as ApiEventTeam].sort((a, b) =>
-          a.name.localeCompare(b.name),
-        ),
-      );
-      setNewTeamName("");
-      setAddTeamOpen(false);
-      showToast(`Команда «${trimmed}» создана`);
-    } catch {
-      showToast("Ошибка сети", "error");
-    } finally {
-      setAddingTeam(false);
-    }
-  }, [newTeamName, eventId, showToast]);
+  const [raffleWinnerCoins, setRaffleWinnerCoins] = useState<number | null>(null);
 
   const fetchEvent = useCallback(async () => {
     if (!eventId) return;
@@ -131,20 +88,6 @@ export default function EventManage() {
     }
   }, [eventId]);
 
-  const fetchEventTeams = useCallback(async () => {
-    if (!eventId) return;
-    try {
-      const res = await authFetch(
-        `${BACKEND_URL}/api/events/${eventId}/teams`,
-      );
-      if (!res.ok) return;
-      const json = await parseJson<ApiTeamsResponse>(res);
-      setEventTeams(json.teams ?? []);
-    } catch {
-      // ignore
-    }
-  }, [eventId]);
-
   const fetchRaffle = useCallback(async () => {
     if (!eventId) return;
     try {
@@ -152,8 +95,10 @@ export default function EventManage() {
       if (!res.ok) return;
       const json = await parseJson<ApiRaffleResponse>(res);
       setRaffleWinner(json.winner ?? null);
+      setRaffleWinnerCoins(json.winner_coins ?? null);
     } catch {
       setRaffleWinner(null);
+      setRaffleWinnerCoins(null);
     }
   }, [eventId]);
 
@@ -162,10 +107,9 @@ export default function EventManage() {
     fetchEvent();
     if (isRoot) {
       fetchRegistrations();
-      fetchEventTeams();
       fetchRaffle();
     }
-  }, [eventId, isRoot, fetchEvent, fetchRegistrations, fetchEventTeams, fetchRaffle]);
+  }, [eventId, isRoot, fetchEvent, fetchRegistrations, fetchRaffle]);
 
   useEffect(() => {
     if (location.state?.raffleConfirmed && eventId) {
@@ -211,29 +155,9 @@ export default function EventManage() {
         </h1>
       </div>
 
-      {/* ——— Команды и участники ——— */}
+      {/* ——— Участники ——— */}
       <div className="bg-card-neutral rounded-2xl overflow-hidden border border-white/[0.06]">
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="teams" className="border-b border-white/[0.06]">
-            <AccordionTrigger className="px-5 py-4 hover:no-underline">
-              <span className="flex items-center gap-2 text-white text-base font-medium">
-                <Users className="w-5 h-5 text-neon-purple" />
-                Команды
-                {eventTeams.length > 0 && (
-                  <span className="text-sm font-normal text-gray-400">
-                    ({eventTeams.length})
-                  </span>
-                )}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent className="px-5 pb-4">
-              <TeamsSection
-                teams={eventTeams}
-                registrations={registrations}
-                loading={regsLoading}
-              />
-            </AccordionContent>
-          </AccordionItem>
           <AccordionItem value="participants" className="border-b-0">
             <AccordionTrigger className="px-5 py-4 hover:no-underline">
               <span className="flex items-center gap-2 text-white text-base font-medium">
@@ -270,58 +194,43 @@ export default function EventManage() {
         <p className="text-gray-400 text-sm mb-4">
           Один победитель среди зарегистрированных. Розыгрыш проводится один раз.
         </p>
-        <Link
-          to={`/events/${eventId}/raffle`}
-          className="block w-full py-3 rounded-xl bg-neon-gold/15 text-neon-gold font-medium border border-neon-gold/30 hover:bg-neon-gold/25 transition-colors text-center"
-        >
-          {raffleWinner ? "Посмотреть победителя" : "Провести розыгрыш"}
-        </Link>
+        {raffleWinner ? (
+          <div className="flex items-center gap-4 py-2">
+            <div className="w-14 h-14 rounded-full bg-neon-cyan/10 flex items-center justify-center overflow-hidden border-2 border-neon-gold/40 shrink-0">
+              {raffleWinner.avatar_url ? (
+                <img
+                  src={raffleWinner.avatar_url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-7 h-7 text-neon-cyan" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-white font-semibold text-lg">{raffleWinner.first_name || "—"}</p>
+              {raffleWinner.username && (
+                <p className="text-gray-400 text-sm mt-0.5">@{raffleWinner.username}</p>
+              )}
+            </div>
+            {raffleWinnerCoins != null && raffleWinnerCoins > 0 && (
+              <div className="shrink-0 flex items-center gap-1.5 text-neon-gold text-sm">
+                <Coins className="w-4 h-4" />
+                <span>{prettifyCoins(raffleWinnerCoins)} монет</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link
+            to={`/events/${eventId}/raffle`}
+            className="block w-full py-3 rounded-xl bg-neon-gold/15 text-neon-gold font-medium border border-neon-gold/30 hover:bg-neon-gold/25 transition-colors text-center"
+          >
+            Провести розыгрыш
+          </Link>
+        )}
       </div>
 
       <EventQRSection onShowQR={() => setShowQR(true)} />
-
-      {/* — Кнопка добавления команды (временное решение) — */}
-      <button
-        type="button"
-        onClick={() => setAddTeamOpen(true)}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-neon-purple/15 text-neon-purple text-sm font-medium hover:bg-neon-purple/25 transition-colors border border-white/[0.06]"
-      >
-        <Plus className="w-4 h-4" />
-        Зарегистрировать команду
-      </button>
-
-      <Dialog open={addTeamOpen} onOpenChange={setAddTeamOpen}>
-        <DialogContent className="bg-surface-card border border-white/[0.08] text-white max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-white text-lg">
-              Новая команда
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <input
-              type="text"
-              value={newTeamName}
-              onChange={(e) => setNewTeamName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && newTeamName.trim()) handleAddTeam();
-              }}
-              placeholder="Название команды"
-              className="w-full px-4 py-3 rounded-xl bg-surface-dark border border-white/[0.08] text-white placeholder:text-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-neon-purple/30"
-              autoFocus
-              disabled={addingTeam}
-            />
-            <button
-              type="button"
-              disabled={!newTeamName.trim() || addingTeam}
-              onClick={handleAddTeam}
-              className="w-full py-3 rounded-xl bg-neon-purple text-white font-medium text-sm hover:bg-neon-purple/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-            >
-              {addingTeam && <Loader2 className="w-4 h-4 animate-spin" />}
-              Создать
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {event && (
         <TicketQRModalLazy

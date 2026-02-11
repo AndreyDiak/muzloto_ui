@@ -50,7 +50,7 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
     <div
       className={
         u
-          ? "bg-card-cyan rounded-2xl overflow-hidden"
+          ? "bg-card-event rounded-2xl overflow-hidden"
           : "bg-surface-card rounded-xl border border-white/[0.06] transition-all hover:bg-neon-cyan/[0.06]"
       }
     >
@@ -63,8 +63,8 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
                 alt=""
                 className="w-full h-full object-cover object-center block brightness-90 contrast-110 saturate-125"
               />
-              <div className="absolute inset-0 bg-linear-to-t from-neon-cyan/35 via-black/30 to-transparent" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_10%,rgba(0,240,255,0.25),transparent_40%)]" />
+              <div className="absolute inset-0 bg-linear-to-t from-neon-cyan/30 via-black/28 to-transparent" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_10%,rgba(0,240,255,0.22),transparent_45%)]" />
             </div>
           ) : (
             <div
@@ -80,7 +80,7 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
       <div className="p-5 flex flex-col gap-5">
         <div>
           {u && (
-            <span className="inline-block px-2 py-1 bg-neon-cyan/25 text-neon-cyan text-xs rounded-full mb-2">
+            <span className="inline-block px-2 py-1 bg-neon-cyan/22 text-neon-cyan text-xs rounded-full mb-2">
               Скоро
             </span>
           )}
@@ -127,7 +127,7 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
           {isRoot && (
             <Link
               to={`/events/${event.id}/manage`}
-              className={`${btnCls(u)} transition-all bg-neon-purple/25 hover:bg-neon-purple/40 border border-white/[0.06] ${u ? "text-white" : "text-neon-purple"}`}
+              className={`${btnCls(u)} transition-colors bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40 hover:bg-neon-cyan/30 disabled:opacity-50`}
             >
               <Settings className={u ? "w-4 h-4" : "w-3.5 h-3.5"} />
               Управление

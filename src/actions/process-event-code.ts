@@ -10,7 +10,6 @@ import {
 interface ProcessEventCodeParams {
   code: string;
   telegramId: number;
-  teamId?: string;
   onSuccess?: (data: {
     event: { title: string };
     newBalance: number;
@@ -49,7 +48,6 @@ export async function validateEventCode(code: string): Promise<ApiValidateCodeRe
 export async function processEventCode({
   code,
   telegramId: _telegramId,
-  teamId,
   onSuccess,
   onError,
 }: ProcessEventCodeParams): Promise<void> {
@@ -59,13 +57,10 @@ export async function processEventCode({
   }
 
   try {
-    const body: Record<string, string> = { code: code.toUpperCase() };
-    if (teamId) body.team_id = teamId;
-
     const response = await authFetch(`${BACKEND_URL}/api/events/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ code: code.toUpperCase() }),
     });
 
     if (!response.ok) {

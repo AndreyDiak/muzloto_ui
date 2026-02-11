@@ -2,7 +2,9 @@ import { useToast } from "@/app/context/toast";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { SCatalogItem } from "@/entities/catalog";
 import { getShopDeepLink } from "@/lib/event-deep-link";
+import { queryKeys } from "@/lib/query-client";
 import { prettifyCoins } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import { Coins, QrCode } from "lucide-react";
 import { useState } from "react";
 
@@ -12,14 +14,21 @@ interface Props {
 	item: SCatalogItem;
 	color: string;
 	isRoot?: boolean;
+	/** Активный (неиспользованный) код для этого товара, если есть */
+	activeCode?: { code: string; item_name: string } | null;
 }
 
-export const CatalogItem = ({ item, color: _color, isRoot }: Props) => {
+export const CatalogItem = ({ item, color: _color, isRoot, activeCode = null }: Props) => {
 	const { showToast } = useToast();
-	const [generatedCode, setGeneratedCode] = useState<{ code: string; itemName: string } | null>(null);
+	const queryClient = useQueryClient();
+	const [shownCode, setShownCode] = useState<{ code: string; itemName: string } | null>(null);
 	const [isGenerating, setIsGenerating] = useState(false);
 
-	const handleGeneratePurchaseCode = async () => {
+	const handleShowCode = async () => {
+		if (activeCode) {
+			setShownCode({ code: activeCode.code, itemName: activeCode.item_name });
+			return;
+		}
 		if (isGenerating) return;
 		setIsGenerating(true);
 		try {
@@ -35,7 +44,8 @@ export const CatalogItem = ({ item, color: _color, isRoot }: Props) => {
 				return;
 			}
 			if (data?.code && data?.item?.name) {
-				setGeneratedCode({ code: data.code, itemName: data.item.name });
+				void queryClient.invalidateQueries({ queryKey: queryKeys.catalogActivePurchaseCodes });
+				setShownCode({ code: data.code, itemName: data.item.name });
 				showToast("Код создан. Покажите QR или код покупателю.", "success");
 			} else {
 				showToast("Неверный ответ сервера", "error");
@@ -64,25 +74,25 @@ export const CatalogItem = ({ item, color: _color, isRoot }: Props) => {
 				{isRoot && (
 					<button
 						type="button"
-						onClick={handleGeneratePurchaseCode}
+						onClick={handleShowCode}
 						disabled={isGenerating}
 						className="w-full py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40 hover:bg-neon-cyan/30 transition-colors disabled:opacity-50"
 					>
 						<QrCode className="w-4 h-4" />
-						{isGenerating ? "Генерация…" : "Сгенерировать код покупки"}
+						{isGenerating ? "Генерация…" : "Показать код"}
 					</button>
 				)}
 			</div>
 
-			{generatedCode && (
+			{shownCode && (
 				<TicketQRModalLazy
-					open={!!generatedCode}
-					onOpenChange={(open) => !open && setGeneratedCode(null)}
-					code={generatedCode.code}
-					itemName={generatedCode.itemName}
+					open={!!shownCode}
+					onOpenChange={(open) => !open && setShownCode(null)}
+					code={shownCode.code}
+					itemName={shownCode.itemName}
 					dialogTitle="Код покупки"
 					showProfileHint={false}
-					qrData={getShopDeepLink(generatedCode.code) || generatedCode.code}
+					qrData={getShopDeepLink(shownCode.code) || shownCode.code}
 				/>
 			)}
 		</>
