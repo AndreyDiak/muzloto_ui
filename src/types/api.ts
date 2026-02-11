@@ -196,6 +196,16 @@ export interface ApiPurchaseResponse {
 	newlyUnlockedAchievements?: ApiNewlyUnlockedAchievement[];
 }
 
+/** Ответ погашения кода покупки (возвращает билет) */
+export interface ApiRedeemPurchaseCodeResponse {
+	success: true;
+	message: string;
+	ticket: { id: string; code: string; created_at: string };
+	item: ApiCatalogItem;
+	newBalance: number;
+	newlyUnlockedAchievements?: ApiNewlyUnlockedAchievement[];
+}
+
 // ——— Event code (process-event-code) ———
 
 export interface ApiProcessEventCodeResponse {

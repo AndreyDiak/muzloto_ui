@@ -32,3 +32,11 @@ export interface PurchaseSuccessPayload {
   newBalance: number;
   newlyUnlockedAchievements?: NewlyUnlockedAchievement[];
 }
+
+/** Результат погашения кода покупки (с билетом) */
+export interface RedeemSuccessPayload {
+  ticket: STicket;
+  item: PurchaseSuccessPayload['item'];
+  newBalance: number;
+  newlyUnlockedAchievements?: NewlyUnlockedAchievement[];
+}

@@ -1,10 +1,10 @@
-import type { PurchaseSuccessPayload } from "../entities/ticket";
+import type { RedeemSuccessPayload } from "../entities/ticket";
 import { authFetch } from "@/lib/auth-fetch";
-import { type ApiPurchaseResponse, type ApiError, parseJson } from "@/types/api";
+import { type ApiRedeemPurchaseCodeResponse, type ApiError, parseJson } from "@/types/api";
 
 interface RedeemPurchaseCodeParams {
   code: string;
-  onSuccess?: (data: PurchaseSuccessPayload) => void;
+  onSuccess?: (data: RedeemSuccessPayload) => void;
   onError?: (message: string, statusCode?: number) => void;
 }
 
@@ -22,7 +22,7 @@ export async function redeemPurchaseCode({
       body: JSON.stringify({ code }),
     });
 
-    const data = await parseJson<ApiPurchaseResponse | ApiError>(res).catch(
+    const data = await parseJson<ApiRedeemPurchaseCodeResponse | ApiError>(res).catch(
       () => ({ error: `Ошибка ${res.status}` }) as ApiError
     );
 
