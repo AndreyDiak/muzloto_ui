@@ -22,7 +22,6 @@ export interface STicketWithItem {
 import type { NewlyUnlockedAchievement } from '@/entities/achievement';
 
 export interface PurchaseSuccessPayload {
-  ticket: STicket;
   item: {
     id: string;
     name: string;

@@ -191,7 +191,6 @@ export interface ApiCatalogResponse {
 export interface ApiPurchaseResponse {
 	success: true;
 	message: string;
-	ticket: { id: string; code: string; created_at: string };
 	item: ApiCatalogItem;
 	newBalance: number;
 	newlyUnlockedAchievements?: ApiNewlyUnlockedAchievement[];

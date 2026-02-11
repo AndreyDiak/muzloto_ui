@@ -1,10 +1,10 @@
 import { purchaseCatalogItem } from "@/actions/purchase-catalog-item";
 import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
+import { PurchaseSuccessModal } from "@/components/purchase-success-modal";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { SCatalogItem } from "@/entities/catalog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
-import { useOnTicketUsed } from "@/hooks/use-on-ticket-used";
 import { getShopDeepLink } from "@/lib/event-deep-link";
 import { queryKeys } from "@/lib/query-client";
 import { prettifyCoins } from "@/lib/utils";
@@ -25,28 +25,19 @@ export const CatalogItem = ({ item, color: _color, isRoot }: Props) => {
 	const { showToast } = useToast();
 	const queryClient = useQueryClient();
 	const [_isPurchasing, setIsPurchasing] = useState(false);
-	const [ticketResult, setTicketResult] = useState<PurchaseSuccessPayload | null>(null);
+	const [purchaseResult, setPurchaseResult] = useState<PurchaseSuccessPayload | null>(null);
 	const [generatedCode, setGeneratedCode] = useState<{ code: string; itemName: string } | null>(null);
 	const [isGenerating, setIsGenerating] = useState(false);
-
-	useOnTicketUsed((ticketId) => {
-		if (ticketResult?.ticket?.id === ticketId) {
-			showToast("Билет активирован", "success");
-			setTicketResult(null);
-		}
-	});
 
 	const handlePurchase = () => {
 		setIsPurchasing(true);
 		purchaseCatalogItem({
 			catalogItemId: item.id,
 			onSuccess: async (data) => {
-				setTicketResult(data);
-				queryClient.invalidateQueries({ queryKey: ["tickets"] });
+				setPurchaseResult(data);
 				void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
 				await refetchProfile().catch(() => {});
 				setIsPurchasing(false);
-				showToast("Покупка оформлена. Сохраните код билета.", "success");
 				(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 					setTimeout(() => {
 						const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
@@ -93,7 +84,7 @@ export const CatalogItem = ({ item, color: _color, isRoot }: Props) => {
 		<>
 			<div
 				key={item.id}
-				className="bg-surface-card border border-white/[0.06] rounded-xl p-4 flex flex-col"
+				className="bg-surface-card border border-white/6 rounded-xl p-4 flex flex-col"
 			>
 				<h3 className="text-white text-lg font-bold mb-2 flex-1">{item.name}</h3>
 				<p className="text-xs text-gray-400 mb-3">{item.description ?? ""}</p>
@@ -117,24 +108,22 @@ export const CatalogItem = ({ item, color: _color, isRoot }: Props) => {
 
 				<button
 					onClick={handlePurchase}
-					disabled={true}
-					title="Покупка временно недоступна"
-					className="w-full py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-					style={{
-						background: "#333",
-						boxShadow: "none",
-					}}
+					disabled={_isPurchasing}
+					className="w-full py-2 rounded-lg text-sm font-medium bg-neon-cyan text-black hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
 				>
-					Покупка временно недоступна
+					{_isPurchasing ? "Оформление..." : "Купить"}
 				</button>
 			</div>
 
-			<TicketQRModalLazy
-				open={!!ticketResult}
-				onOpenChange={(open) => !open && setTicketResult(null)}
-				code={ticketResult?.ticket.code ?? ""}
-				itemName={ticketResult?.item.name ?? ""}
-			/>
+			{purchaseResult && (
+				<PurchaseSuccessModal
+					open={!!purchaseResult}
+					onOpenChange={(open) => !open && setPurchaseResult(null)}
+					itemName={purchaseResult.item.name}
+					itemPrice={purchaseResult.item.price}
+					newBalance={purchaseResult.newBalance}
+				/>
+			)}
 
 			{generatedCode && (
 				<TicketQRModalLazy

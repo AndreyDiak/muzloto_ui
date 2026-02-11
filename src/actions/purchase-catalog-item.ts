@@ -29,13 +29,12 @@ export async function purchaseCatalogItem({
       return;
     }
 
-    if (!("success" in data) || !data.success || !data.ticket || !data.item || typeof data.newBalance !== 'number') {
+    if (!("success" in data) || !data.success || !data.item || typeof data.newBalance !== 'number') {
       onError?.('Неверный ответ сервера.');
       return;
     }
 
     onSuccess?.({
-      ticket: data.ticket,
       item: data.item,
       newBalance: data.newBalance,
       newlyUnlockedAchievements: data.newlyUnlockedAchievements,
