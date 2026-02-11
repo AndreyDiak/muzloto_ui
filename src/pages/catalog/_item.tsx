@@ -1,14 +1,8 @@
-import { purchaseCatalogItem } from "@/actions/purchase-catalog-item";
-import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
-import { PurchaseSuccessModal } from "@/components/purchase-success-modal";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { SCatalogItem } from "@/entities/catalog";
-import type { PurchaseSuccessPayload } from "@/entities/ticket";
 import { getShopDeepLink } from "@/lib/event-deep-link";
-import { queryKeys } from "@/lib/query-client";
 import { prettifyCoins } from "@/lib/utils";
-import { useQueryClient } from "@tanstack/react-query";
 import { Coins, QrCode } from "lucide-react";
 import { useState } from "react";
 
@@ -21,36 +15,9 @@ interface Props {
 }
 
 export const CatalogItem = ({ item, color: _color, isRoot }: Props) => {
-	const { refetchProfile } = useSession();
 	const { showToast } = useToast();
-	const queryClient = useQueryClient();
-	const [_isPurchasing, setIsPurchasing] = useState(false);
-	const [purchaseResult, setPurchaseResult] = useState<PurchaseSuccessPayload | null>(null);
 	const [generatedCode, setGeneratedCode] = useState<{ code: string; itemName: string } | null>(null);
 	const [isGenerating, setIsGenerating] = useState(false);
-
-	const handlePurchase = () => {
-		setIsPurchasing(true);
-		purchaseCatalogItem({
-			catalogItemId: item.id,
-			onSuccess: async (data) => {
-				setPurchaseResult(data);
-				void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-				await refetchProfile().catch(() => {});
-				setIsPurchasing(false);
-				(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
-					setTimeout(() => {
-						const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
-						showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
-					}, 600 + i * 400);
-				});
-			},
-			onError: (msg) => {
-				showToast(msg, "error");
-				setIsPurchasing(false);
-			},
-		});
-	};
 
 	const handleGeneratePurchaseCode = async () => {
 		if (isGenerating) return;
@@ -99,31 +66,13 @@ export const CatalogItem = ({ item, color: _color, isRoot }: Props) => {
 						type="button"
 						onClick={handleGeneratePurchaseCode}
 						disabled={isGenerating}
-						className="w-full py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 mb-2 bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40 hover:bg-neon-cyan/30 transition-colors disabled:opacity-50"
+						className="w-full py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40 hover:bg-neon-cyan/30 transition-colors disabled:opacity-50"
 					>
 						<QrCode className="w-4 h-4" />
 						{isGenerating ? "Генерация…" : "Сгенерировать код покупки"}
 					</button>
 				)}
-
-				<button
-					onClick={handlePurchase}
-					disabled={_isPurchasing}
-					className="w-full py-2 rounded-lg text-sm font-medium bg-neon-cyan text-black hover:opacity-95 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-				>
-					{_isPurchasing ? "Оформление..." : "Купить"}
-				</button>
 			</div>
-
-			{purchaseResult && (
-				<PurchaseSuccessModal
-					open={!!purchaseResult}
-					onOpenChange={(open) => !open && setPurchaseResult(null)}
-					itemName={purchaseResult.item.name}
-					itemPrice={purchaseResult.item.price}
-					newBalance={purchaseResult.newBalance}
-				/>
-			)}
 
 			{generatedCode && (
 				<TicketQRModalLazy
