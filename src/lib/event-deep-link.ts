@@ -65,19 +65,19 @@ export function isBingoCodeLike(value: string): boolean {
 	return BINGO_CODE_REGEX.test(String(value).trim().toUpperCase());
 }
 
-/** Код покупки каталога: 6 символов (C + 5) или 5 символов. */
-export const SHOP_CODE_REGEX = /^C[A-Za-z0-9]{5}$/;
-const SHOP_CODE_REGEX_5 = /^[A-Za-z0-9]{5}$/;
+/** Код покупки каталога: 5 символов (новый формат) или 6 (C + 5, старый). */
+export const SHOP_CODE_REGEX_5 = /^[A-Za-z0-9]{5}$/;
+const SHOP_CODE_REGEX_6 = /^C[A-Za-z0-9]{5}$/;
 
 export function isShopCodeLike(value: string): boolean {
 	const t = (value ?? "").trim().toUpperCase();
-	return SHOP_CODE_REGEX.test(t) || (t.length === 5 && SHOP_CODE_REGEX_5.test(t));
+	return (t.length === 5 && SHOP_CODE_REGEX_5.test(t)) || SHOP_CODE_REGEX_6.test(t);
 }
 
 export function normalizeShopCode(input: string): string {
 	const t = (input ?? "").trim().toUpperCase();
+	if (t.length === 5 && SHOP_CODE_REGEX_5.test(t)) return t;
 	if (t.length === 6 && t[0] === "C") return t;
-	if (t.length === 5) return "C" + t;
 	return t;
 }
 
@@ -124,7 +124,7 @@ export function parseStartPayload(raw: string | undefined): ParsedStartPayload |
 	if (lower.startsWith(SHOP_PREFIX) || lower.startsWith(SHOP_PREFIX_SHORT)) {
 		const idx = trimmed.indexOf(SEP);
 		const value = (idx >= 0 ? trimmed.slice(idx + 1) : trimmed).trim().toUpperCase();
-		if (value && (value.length === 5 || (value.length === 6 && value[0] === "C"))) return { type: "shop", value: normalizeShopCode(value) };
+		if (value && (value.length === 5 || (value.length === 6 && value[0] === "C"))) return { type: "shop", value: normalizeShopCode(value).toUpperCase() };
 		return null;
 	}
 	if (isBingoCodeLike(trimmed)) return { type: "prize", value: trimmed.toUpperCase() };
@@ -149,7 +149,7 @@ export function getPrizeDeepLink(token: string): string {
 export function getShopDeepLink(code: string): string {
 	if (!code || typeof code !== "string") return "";
 	const normalized = normalizeShopCode(code);
-	if (normalized.length !== 6) return "";
+	if (normalized.length !== 5 && normalized.length !== 6) return "";
 	if (!BOT_USERNAME || !WEB_APP_SHORT_NAME) return "";
 	const appSlug = WEB_APP_SHORT_NAME.replace(/^@/, "").replace(/\s+/g, "_");
 	const base = `https://t.me/${BOT_USERNAME.replace(/^@/, "")}/${appSlug}`;

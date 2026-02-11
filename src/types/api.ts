@@ -196,11 +196,10 @@ export interface ApiPurchaseResponse {
 	newlyUnlockedAchievements?: ApiNewlyUnlockedAchievement[];
 }
 
-/** Ответ погашения кода покупки (возвращает билет) */
+/** Ответ погашения кода покупки (без билета — только списание и инфо) */
 export interface ApiRedeemPurchaseCodeResponse {
 	success: true;
 	message: string;
-	ticket: { id: string; code: string; created_at: string };
 	item: ApiCatalogItem;
 	newBalance: number;
 	newlyUnlockedAchievements?: ApiNewlyUnlockedAchievement[];

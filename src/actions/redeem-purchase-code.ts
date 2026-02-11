@@ -1,10 +1,10 @@
-import type { RedeemSuccessPayload } from "../entities/ticket";
+import type { PurchaseSuccessPayload } from "../entities/ticket";
 import { authFetch } from "@/lib/auth-fetch";
 import { type ApiRedeemPurchaseCodeResponse, type ApiError, parseJson } from "@/types/api";
 
 interface RedeemPurchaseCodeParams {
   code: string;
-  onSuccess?: (data: RedeemSuccessPayload) => void;
+  onSuccess?: (data: PurchaseSuccessPayload) => void;
   onError?: (message: string, statusCode?: number) => void;
 }
 
@@ -34,7 +34,6 @@ export async function redeemPurchaseCode({
     if (
       !("success" in data) ||
       !data.success ||
-      !data.ticket ||
       !data.item ||
       typeof data.newBalance !== "number"
     ) {
@@ -43,7 +42,6 @@ export async function redeemPurchaseCode({
     }
 
     onSuccess?.({
-      ticket: data.ticket,
       item: data.item,
       newBalance: data.newBalance,
       newlyUnlockedAchievements: data.newlyUnlockedAchievements,

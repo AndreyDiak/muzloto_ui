@@ -5,6 +5,7 @@ import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
+import { PurchaseSuccessModal } from "@/components/purchase-success-modal";
 import { RegistrationModal } from "@/components/registration-modal";
 import {
     Dialog,
@@ -12,6 +13,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import type { PurchaseSuccessPayload } from "@/entities/ticket";
 import { extractPayloadFromInput, isBingoCodeLike, isShopCodeLike } from "@/lib/event-deep-link";
 import { queryKeys } from "@/lib/query-client";
 import type { ApiValidateCodeResponse } from "@/types/api";
@@ -25,7 +27,7 @@ export const ProfileSqan = memo(() => {
 	const queryClient = useQueryClient();
 	const { showCoinAnimation } = useCoinAnimation();
 	const { tg } = useTelegram();
-	// 6 символов: код покупки каталога (Cxxxxx) или 5 символов: мероприятие/бинго
+	// 6 полей: код покупки 5 символов или 6 (Cxxxxx), мероприятие/бинго — 5
 	const CODE_LENGTH = 6;
 	const [codeInputs, setCodeInputs] = useState<string[]>(Array(CODE_LENGTH).fill(''));
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -40,6 +42,8 @@ export const ProfileSqan = memo(() => {
 
 	// Модалка ручного ввода кода
 	const [manualCodeModalOpen, setManualCodeModalOpen] = useState(false);
+	// Результат погашения кода покупки — показываем модалку
+	const [redeemResult, setRedeemResult] = useState<PurchaseSuccessPayload | null>(null);
 
 	const handleScanQR = () => {
 		if (tg?.showScanQrPopup) {
@@ -145,10 +149,9 @@ export const ProfileSqan = memo(() => {
 				onSuccess: async (data) => {
 					setCodeInputs(Array(CODE_LENGTH).fill(''));
 					setManualCodeModalOpen(false);
-					showToast(`Покупка оформлена: ${data.item.name}. Билет в профиле.`, 'success');
+					setRedeemResult(data);
 					refetchProfile().catch(() => {});
 					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-					void queryClient.invalidateQueries({ queryKey: ['tickets'] });
 					isProcessingQRRef.current = false;
 					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 						setTimeout(() => {
@@ -269,13 +272,13 @@ export const ProfileSqan = memo(() => {
 	const handleSubmitCode = async (codeOverride?: string) => {
 		const raw = (codeOverride ?? codeInputs.join('')).toUpperCase();
 		if (raw.length < 5) return;
-		// Код покупки каталога: 6 символов, первый C
-		if (raw.length === 6 && isShopCodeLike(raw)) {
-			await handleRedeemPurchaseCode(raw);
+		const code5 = raw.length >= 5 ? raw.slice(0, 5) : raw;
+		// Код покупки каталога: 5 символов (новый) или 6 (Cxxxxx, старый)
+		if (isShopCodeLike(raw)) {
+			await handleRedeemPurchaseCode(raw.slice(0, raw.length >= 6 ? 6 : 5));
 			return;
 		}
 		// 5 символов: бинго или мероприятие
-		const code5 = raw.length >= 5 ? raw.slice(0, 5) : raw;
 		if (isBingoCodeLike(code5)) {
 			await handleProcessBingoCode(code5);
 		} else {
@@ -302,8 +305,8 @@ export const ProfileSqan = memo(() => {
 
 		if (char && (index === 4 || index === CODE_LENGTH - 1)) {
 			const fullCode = newInputs.join('');
-			// Авто-отправка: 6 символов — всегда; 5 символов — только если не начинается с C (иначе ждём 6-й для кода покупки)
-			const shouldSubmit5 = fullCode.length === 5 && fullCode[0] !== 'C';
+			// Авто-отправка при 5 или 6 символах
+			const shouldSubmit5 = fullCode.length === 5;
 			const shouldSubmit6 = fullCode.length === 6;
 			if (shouldSubmit5 || shouldSubmit6) {
 				setTimeout(() => handleSubmitCode(fullCode), 100);
@@ -386,7 +389,7 @@ export const ProfileSqan = memo(() => {
 				<DialogContent className="bg-surface-card border-white/10 text-white sm:max-w-sm max-w-[calc(100vw-2rem)]">
 					<DialogHeader>
 						<DialogTitle className="text-white">Введите код</DialogTitle>
-						<p className="text-sm text-gray-400">5 символов — мероприятие/приз, 6 (начинается с C) — код покупки</p>
+						<p className="text-sm text-gray-400">5 символов — код покупки, мероприятие или приз</p>
 					</DialogHeader>
 					<div className="space-y-4 pt-2">
 						<div className="grid grid-cols-6 gap-1.5 sm:gap-2 w-full max-w-full">
@@ -431,6 +434,16 @@ export const ProfileSqan = memo(() => {
 					</div>
 				</DialogContent>
 			</Dialog>
+
+			{redeemResult && (
+				<PurchaseSuccessModal
+					open={!!redeemResult}
+					onOpenChange={(open) => !open && setRedeemResult(null)}
+					itemName={redeemResult.item.name}
+					itemPrice={redeemResult.item.price}
+					newBalance={redeemResult.newBalance}
+				/>
+			)}
 		</>
 	);
 });

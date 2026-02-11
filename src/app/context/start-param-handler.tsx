@@ -127,8 +127,7 @@ export function StartParamHandler() {
 						sessionStorage.setItem(STORAGE_KEY, storageKey);
 						refetchProfile();
 						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-						void queryClient.invalidateQueries({ queryKey: ["tickets"] });
-						showToast(`Покупка по коду оформлена: ${data.item.name}. Билет в профиле.`, "success");
+						showToast(`Покупка по коду оформлена: ${data.item.name}.`, "success");
 						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 							setTimeout(() => {
 								const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
