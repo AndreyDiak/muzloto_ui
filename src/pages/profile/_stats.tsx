@@ -69,7 +69,7 @@ const ProfileStat = memo(({ stat }: { stat: IProfileStats }) => {
 		return (
 			<Tooltip key={stat.label}>
 				<TooltipTrigger asChild>
-					<Link to={stat.path} className={`block ${cardClassName} hover:bg-white/[0.06] transition-colors`}>
+					<Link to={stat.path} className={`block ${cardClassName} hover:bg-white/6 transition-colors`}>
 						{statCardContent(stat)}
 					</Link>
 				</TooltipTrigger>

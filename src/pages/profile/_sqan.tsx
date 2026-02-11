@@ -1,15 +1,22 @@
 import { processBingoCode } from "@/actions/process-bingo-code";
 import { processEventCode, validateEventCode } from "@/actions/process-event-code";
+import { redeemPurchaseCode } from "@/actions/redeem-purchase-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { RegistrationModal } from "@/components/registration-modal";
-import { extractPayloadFromInput, isBingoCodeLike } from "@/lib/event-deep-link";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { extractPayloadFromInput, isBingoCodeLike, isShopCodeLike } from "@/lib/event-deep-link";
 import { queryKeys } from "@/lib/query-client";
 import type { ApiValidateCodeResponse } from "@/types/api";
 import { useQueryClient } from "@tanstack/react-query";
-import { QrCode } from "lucide-react";
+import { Keyboard, QrCode } from "lucide-react";
 import { memo, useCallback, useRef, useState } from "react";
 
 export const ProfileSqan = memo(() => {
@@ -18,17 +25,21 @@ export const ProfileSqan = memo(() => {
 	const queryClient = useQueryClient();
 	const { showCoinAnimation } = useCoinAnimation();
 	const { tg } = useTelegram();
-	const [codeInputs, setCodeInputs] = useState<string[]>(Array(5).fill(''));
+	// 6 символов: код покупки каталога (Cxxxxx) или 5 символов: мероприятие/бинго
+	const CODE_LENGTH = 6;
+	const [codeInputs, setCodeInputs] = useState<string[]>(Array(CODE_LENGTH).fill(''));
 	const [isProcessing, setIsProcessing] = useState(false);
-	const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(5).fill(null));
+	const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(CODE_LENGTH).fill(null));
 	const isProcessingQRRef = useRef(false);
-	const CODE_LENGTH = 5;
 
 	// Registration modal state
 	const [regModalOpen, setRegModalOpen] = useState(false);
 	const [regModalData, setRegModalData] = useState<ApiValidateCodeResponse | null>(null);
 	const [pendingRegCode, setPendingRegCode] = useState<string>("");
 	const [isRegistering, setIsRegistering] = useState(false);
+
+	// Модалка ручного ввода кода
+	const [manualCodeModalOpen, setManualCodeModalOpen] = useState(false);
 
 	const handleScanQR = () => {
 		if (tg?.showScanQrPopup) {
@@ -50,7 +61,7 @@ export const ProfileSqan = memo(() => {
 						isProcessingQRRef.current = true;
 						const trimmedText = text.trim();
 
-						// Пробуем распарсить как raw payload, URL с startapp, или 5-символьный код
+						// Пробуем распарсить как raw payload, URL с startapp, или код (5/6 символов)
 						const parsed = extractPayloadFromInput(trimmedText);
 						if (parsed) {
 							if (parsed.type === "prize") {
@@ -61,9 +72,13 @@ export const ProfileSqan = memo(() => {
 								handleProcessEventCode(parsed.value);
 								return true;
 							}
+							if (parsed.type === "shop") {
+								handleRedeemPurchaseCode(parsed.value);
+								return true;
+							}
 						}
 
-						showToast(`Неверный формат. Ожидается код из ${CODE_LENGTH} символов или ссылка.`, 'error');
+						showToast('Неверный формат. Ожидается код из 5–6 символов или ссылка.', 'error');
 						isProcessingQRRef.current = false;
 						return false;
 						} catch {
@@ -95,6 +110,7 @@ export const ProfileSqan = memo(() => {
 				telegramId: user.id,
 				onSuccess: (data) => {
 					setCodeInputs(Array(5).fill(''));
+					setManualCodeModalOpen(false);
 					showCoinAnimation(data.coinsEarned, undefined, () => {
 						refetchProfile().catch(() => {});
 						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
@@ -109,6 +125,40 @@ export const ProfileSqan = memo(() => {
 				},
 				onError: (err) => {
 					showToast(err ?? 'Не удалось засчитать победу.', 'error');
+					isProcessingQRRef.current = false;
+				},
+			});
+		} finally {
+			setIsProcessing(false);
+		}
+	};
+
+	const handleRedeemPurchaseCode = async (code: string) => {
+		if (isProcessing || !user?.id) {
+			if (!user?.id) showToast('Ошибка: не удалось определить пользователя.', 'error');
+			return;
+		}
+		setIsProcessing(true);
+		try {
+			await redeemPurchaseCode({
+				code,
+				onSuccess: async (data) => {
+					setCodeInputs(Array(CODE_LENGTH).fill(''));
+					setManualCodeModalOpen(false);
+					showToast(`Покупка оформлена: ${data.item.name}. Билет в профиле.`, 'success');
+					refetchProfile().catch(() => {});
+					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+					void queryClient.invalidateQueries({ queryKey: ['tickets'] });
+					isProcessingQRRef.current = false;
+					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
+						setTimeout(() => {
+							const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
+							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
+						}, 600 + i * 400);
+					});
+				},
+				onError: (err) => {
+					showToast(err ?? 'Не удалось погасить код.', 'error');
 					isProcessingQRRef.current = false;
 				},
 			});
@@ -148,6 +198,7 @@ export const ProfileSqan = memo(() => {
 			setPendingRegCode(code);
 			setRegModalData(data);
 			setCodeInputs(Array(5).fill(''));
+			setManualCodeModalOpen(false);
 			setRegModalOpen(true);
 		} catch (err: unknown) {
 			const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при обработке кода';
@@ -174,6 +225,7 @@ export const ProfileSqan = memo(() => {
 					setRegModalOpen(false);
 					setRegModalData(null);
 					setPendingRegCode("");
+					setManualCodeModalOpen(false);
 
 					showCoinAnimation(coinsEarned, undefined, async () => {
 						try {
@@ -215,12 +267,19 @@ export const ProfileSqan = memo(() => {
 	}, [user?.id, pendingRegCode, showCoinAnimation, refetchProfile, queryClient, showToast]);
 
 	const handleSubmitCode = async (codeOverride?: string) => {
-		const code = (codeOverride || codeInputs.join('')).toUpperCase();
-		if (code.length !== CODE_LENGTH) return;
-		if (isBingoCodeLike(code)) {
-			await handleProcessBingoCode(code);
+		const raw = (codeOverride ?? codeInputs.join('')).toUpperCase();
+		if (raw.length < 5) return;
+		// Код покупки каталога: 6 символов, первый C
+		if (raw.length === 6 && isShopCodeLike(raw)) {
+			await handleRedeemPurchaseCode(raw);
+			return;
+		}
+		// 5 символов: бинго или мероприятие
+		const code5 = raw.length >= 5 ? raw.slice(0, 5) : raw;
+		if (isBingoCodeLike(code5)) {
+			await handleProcessBingoCode(code5);
 		} else {
-			await handleProcessEventCode(code);
+			await handleProcessEventCode(code5);
 		}
 	};
 
@@ -241,13 +300,13 @@ export const ProfileSqan = memo(() => {
 			}, 0);
 		}
 
-		if (char && index === CODE_LENGTH - 1) {
+		if (char && (index === 4 || index === CODE_LENGTH - 1)) {
 			const fullCode = newInputs.join('');
-			// Проверяем, что все 5 символов заполнены (не пустые)
-			if (fullCode.length === CODE_LENGTH && newInputs.every(input => input.length > 0)) {
-				setTimeout(() => {
-					handleSubmitCode(fullCode);
-				}, 100);
+			// Авто-отправка: 6 символов — всегда; 5 символов — только если не начинается с C (иначе ждём 6-й для кода покупки)
+			const shouldSubmit5 = fullCode.length === 5 && fullCode[0] !== 'C';
+			const shouldSubmit6 = fullCode.length === 6;
+			if (shouldSubmit5 || shouldSubmit6) {
+				setTimeout(() => handleSubmitCode(fullCode), 100);
 			}
 		}
 	};
@@ -302,48 +361,76 @@ export const ProfileSqan = memo(() => {
 				</button>
 			</div>
 
-			{/* Ввод кода вручную: инпут на 5 букв + кнопка */}
-			<div className="bg-card-neutral rounded-2xl p-4 space-y-4">
-				<p className="text-sm text-gray-400">Введите код из {CODE_LENGTH} букв</p>
-				<div className="flex gap-2 w-full">
-					{Array.from({ length: CODE_LENGTH }).map((_, index) => {
-						const value = codeInputs[index] || '';
-						const isFilled = value !== '';
-						return (
-							<input
-								key={index}
-								ref={(el) => {
-									inputRefs.current[index] = el;
-								}}
-								type="text"
-								inputMode="text"
-								autoComplete="off"
-								value={value}
-								onChange={(e) => handleInputChange(index, e.target.value)}
-								onKeyDown={(e) => handleInputKeyDown(index, e)}
-								onFocus={(e) => e.target.select()}
-								maxLength={1}
-								className={`
-									flex-1 min-w-0 h-16 rounded-lg border text-center text-2xl font-bold
-									transition-all duration-200 focus:outline-none
-									${isFilled
-										? 'bg-surface-card text-white border-white/[0.12]'
-										: 'bg-surface-dark border-white/[0.08] text-gray-500 focus:border-white/20 focus:ring-2 focus:ring-white/10'
-									}
-								`}
-							/>
-						);
-					})}
-				</div>
+			{/* Ввод кода вручную: такой же блок, по клику — модалка */}
+			<div className="bg-linear-to-r from-neon-cyan/15 to-neon-purple/15 rounded-2xl overflow-hidden border border-neon-cyan/30">
 				<button
 					type="button"
-					onClick={handleSubmitButtonClick}
-					disabled={codeInputs.join('').length !== CODE_LENGTH || isProcessing}
-					className="w-full py-3 rounded-xl bg-linear-to-r from-neon-cyan to-neon-purple text-white font-semibold hover:opacity-95 transition-opacity active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+					onClick={() => setManualCodeModalOpen(true)}
+					className="w-full flex items-center gap-3 p-4 hover:opacity-90 transition-opacity active:scale-[0.98]"
 				>
-					{isProcessing ? 'Обработка...' : 'Активировать код'}
+					<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-neon-cyan to-neon-purple flex items-center justify-center">
+						<Keyboard className="w-6 h-6 text-white" />
+					</div>
+					<div className="flex-1 text-left">
+						<h3 className="text-base font-semibold text-white mb-0.5">Ввести код вручную</h3>
+						<p className="text-xs text-gray-400">Открыть ввод кода</p>
+					</div>
 				</button>
 			</div>
+
+			{/* Модалка ручного ввода кода */}
+			<Dialog open={manualCodeModalOpen} onOpenChange={(open) => {
+				setManualCodeModalOpen(open);
+				if (!open) setCodeInputs(Array(CODE_LENGTH).fill(''));
+			}}>
+				<DialogContent className="bg-surface-card border-white/10 text-white sm:max-w-sm max-w-[calc(100vw-2rem)]">
+					<DialogHeader>
+						<DialogTitle className="text-white">Введите код</DialogTitle>
+						<p className="text-sm text-gray-400">5 символов — мероприятие/приз, 6 (начинается с C) — код покупки</p>
+					</DialogHeader>
+					<div className="space-y-4 pt-2">
+						<div className="grid grid-cols-6 gap-1.5 sm:gap-2 w-full max-w-full">
+							{Array.from({ length: CODE_LENGTH }).map((_, index) => {
+								const value = codeInputs[index] || '';
+								const isFilled = value !== '';
+								return (
+									<div key={index} className="aspect-square min-w-0">
+										<input
+											ref={(el) => {
+												inputRefs.current[index] = el;
+											}}
+											type="text"
+											inputMode="text"
+											autoComplete="off"
+											value={value}
+											onChange={(e) => handleInputChange(index, e.target.value)}
+											onKeyDown={(e) => handleInputKeyDown(index, e)}
+											onFocus={(e) => e.target.select()}
+											maxLength={1}
+											className={`
+												w-full h-full rounded-lg border text-center text-lg sm:text-xl font-bold
+												transition-all duration-200 focus:outline-none
+												${isFilled
+													? 'bg-surface-dark text-white border-white/12'
+													: 'bg-surface-dark border-white/8 text-gray-500 focus:border-white/20 focus:ring-2 focus:ring-white/10'
+												}
+											`}
+										/>
+									</div>
+								);
+							})}
+						</div>
+						<button
+							type="button"
+							onClick={handleSubmitButtonClick}
+							disabled={codeInputs.join('').length < 5 || isProcessing}
+							className="w-full py-3 rounded-xl bg-linear-to-r from-neon-cyan to-neon-purple text-white font-semibold hover:opacity-95 transition-opacity active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							{isProcessing ? 'Обработка...' : 'Активировать код'}
+						</button>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 });

@@ -81,7 +81,9 @@ export default function RafflePage() {
 				<div className="relative flex items-center gap-3 min-h-10 w-full">
 					{backLink}
 					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-						<img src="/app_logo.png" alt="" className="h-8 w-auto max-w-[180px] object-contain" />
+						<span className="text-lg font-bold text-neon-gold tracking-tight drop-shadow-[0_0_8px_var(--color-neon-gold)]">
+							Караоке Лото
+						</span>
 					</div>
 				</div>
 				<p className="text-gray-400 text-sm">Загрузка…</p>

@@ -152,9 +152,21 @@ export interface ApiAchievementItem {
 
 export interface ApiAchievementsResponse {
 	achievements: ApiAchievementItem[];
+	/** Прогресс до награды за посещения (0–5). Вычисляется: games_visited - (visit_rewards_claimed * 5). При 5 — показывается кнопка «Забрать приз». */
+	visit_reward_progress?: number;
+	/** true: награда за 5 посещений готова, можно забрать кнопкой (когда visit_reward_progress >= 5). */
+	visit_reward_pending?: boolean;
+	/** Монет за приз за 5 посещений (для отображения на кнопке). */
+	visit_reward_coins?: number;
 }
 
 export interface ApiClaimAchievementResponse {
+	success: true;
+	coinsAdded: number;
+	newBalance: number;
+}
+
+export interface ApiClaimVisitRewardResponse {
 	success: true;
 	coinsAdded: number;
 	newBalance: number;

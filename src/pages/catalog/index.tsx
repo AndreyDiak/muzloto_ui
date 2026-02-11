@@ -1,3 +1,4 @@
+import { useSession } from "@/app/context/session";
 import { useCatalog } from "@/hooks/use-catalog";
 import { useCssColor } from "@/hooks/use-css-color";
 import { CatalogItem } from "./_item";
@@ -11,6 +12,7 @@ const colorVars = [
 ];
 
 export default function Catalog() {
+	const { isRoot } = useSession();
 	const colors = useCssColor(colorVars);
 	const { error, isLoading, items } = useCatalog();
 
@@ -45,7 +47,7 @@ export default function Catalog() {
 			</h2> */}
 
 			{items.map((item, index) => (
-				<CatalogItem key={item.id} item={item} color={colors[index % colors.length]} />
+				<CatalogItem key={item.id} item={item} color={colors[index % colors.length]} isRoot={isRoot} />
 			))}
 		</div>
 	);

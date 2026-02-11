@@ -1,5 +1,6 @@
 import { processBingoCode } from "@/actions/process-bingo-code";
 import { processEventCode, validateEventCode } from "@/actions/process-event-code";
+import { redeemPurchaseCode } from "@/actions/redeem-purchase-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
@@ -112,6 +113,32 @@ export function StartParamHandler() {
 					onError: (message) => {
 						processedRef.current = false;
 						showToast(message || "Не удалось получить приз.", "error");
+					},
+				});
+			}, 150);
+			return () => clearTimeout(timeoutId);
+		}
+
+		if (payload.type === "shop") {
+			const timeoutId = setTimeout(() => {
+				redeemPurchaseCode({
+					code: payload.value,
+					onSuccess: (data) => {
+						sessionStorage.setItem(STORAGE_KEY, storageKey);
+						refetchProfile();
+						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+						void queryClient.invalidateQueries({ queryKey: ["tickets"] });
+						showToast(`Покупка по коду оформлена: ${data.item.name}. Билет в профиле.`, "success");
+						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
+							setTimeout(() => {
+								const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
+								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
+							}, 600 + i * 400);
+						});
+					},
+					onError: (message) => {
+						processedRef.current = false;
+						showToast(message || "Не удалось погасить код покупки.", "error");
 					},
 				});
 			}, 150);

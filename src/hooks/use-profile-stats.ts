@@ -1,7 +1,7 @@
 import { useSession } from "@/app/context/session";
+import type { IProfileStats } from "@/entities/profile";
 import { useAchievements } from "@/hooks/use-achievements";
 import { useRegistrationsCount } from "@/hooks/use-registrations-count";
-import type { IProfileStats } from "@/entities/profile";
 import { Award, Trophy } from "lucide-react";
 
 export function useProfileStats(): {
@@ -32,14 +32,14 @@ export function useProfileStats(): {
     },
     {
       icon: Award,
-      label: "Достижения",
+      label: "Награды",
       value: String(achievementsUnlockedCount),
       textColor: "var(--accent-pink)",
       bgColor: "bg-surface-card",
       description:
         achievementsUnlockedCount === 0
-          ? "У вас пока нет достижений"
-          : `У вас ${achievementsUnlockedCount} ${achievementsUnlockedCount === 1 ? "достижение" : achievementsUnlockedCount < 5 ? "достижения" : "достижений"}`,
+          ? "Раздел наград и достижений"
+          : `Получено наград: ${achievementsUnlockedCount}`,
       path: "/achievements",
     },
   ];

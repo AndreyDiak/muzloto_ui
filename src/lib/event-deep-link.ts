@@ -20,6 +20,7 @@ const EVENT_CODE_REGEX = /^[A-Za-z0-9]{5}$/;
 
 const PAYLOAD_REG = "reg";
 const PAYLOAD_PRIZE = "prize";
+const PAYLOAD_SHOP = "shop";
 
 /** Прямая ссылка на Mini App: startapp=reg-CODE (только допустимые символы для Telegram). */
 export function getEventCodeDeepLink(code: string): string {
@@ -64,10 +65,26 @@ export function isBingoCodeLike(value: string): boolean {
 	return BINGO_CODE_REGEX.test(String(value).trim().toUpperCase());
 }
 
+/** Код покупки каталога: 6 символов (C + 5) или 5 символов. */
+export const SHOP_CODE_REGEX = /^C[A-Za-z0-9]{5}$/;
+const SHOP_CODE_REGEX_5 = /^[A-Za-z0-9]{5}$/;
+
+export function isShopCodeLike(value: string): boolean {
+	const t = (value ?? "").trim().toUpperCase();
+	return SHOP_CODE_REGEX.test(t) || (t.length === 5 && SHOP_CODE_REGEX_5.test(t));
+}
+
+export function normalizeShopCode(input: string): string {
+	const t = (input ?? "").trim().toUpperCase();
+	if (t.length === 6 && t[0] === "C") return t;
+	if (t.length === 5) return "C" + t;
+	return t;
+}
+
 /**
- * Тип действия в payload: 'registration' | 'prize'.
+ * Тип действия в payload: 'registration' | 'prize' | 'shop'.
  */
-export type StartPayloadType = "registration" | "prize";
+export type StartPayloadType = "registration" | "prize" | "shop";
 
 export interface ParsedStartPayload {
 	type: StartPayloadType;
@@ -79,6 +96,8 @@ const REG_PREFIX = "registration-";
 const REG_PREFIX_SHORT = "reg-";
 const PRIZE_PREFIX = "prize-";
 const PRIZE_PREFIX_SHORT = "p-";
+const SHOP_PREFIX = "shop-";
+const SHOP_PREFIX_SHORT = "c-";
 
 /**
  * Разбирает сырой payload: тип и значение через дефис (допустимо в Telegram startapp).
@@ -102,7 +121,14 @@ export function parseStartPayload(raw: string | undefined): ParsedStartPayload |
 		if (value) return { type: "prize", value };
 		return null;
 	}
+	if (lower.startsWith(SHOP_PREFIX) || lower.startsWith(SHOP_PREFIX_SHORT)) {
+		const idx = trimmed.indexOf(SEP);
+		const value = (idx >= 0 ? trimmed.slice(idx + 1) : trimmed).trim().toUpperCase();
+		if (value && (value.length === 5 || (value.length === 6 && value[0] === "C"))) return { type: "shop", value: normalizeShopCode(value) };
+		return null;
+	}
 	if (isBingoCodeLike(trimmed)) return { type: "prize", value: trimmed.toUpperCase() };
+	if (isShopCodeLike(trimmed)) return { type: "shop", value: normalizeShopCode(trimmed) };
 	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.toUpperCase() };
 	return null;
 }
@@ -116,6 +142,18 @@ export function getPrizeDeepLink(token: string): string {
 	const appSlug = WEB_APP_SHORT_NAME.replace(/^@/, "").replace(/\s+/g, "_");
 	const base = `https://t.me/${BOT_USERNAME.replace(/^@/, "")}/${appSlug}`;
 	const payload = `${PAYLOAD_PRIZE}-${trimmed.replace(/[^A-Za-z0-9_-]/g, "")}`;
+	return `${base}?startapp=${payload}`;
+}
+
+/** Прямая ссылка для кода покупки каталога: t.me/bot/app?startapp=shop-CODE. */
+export function getShopDeepLink(code: string): string {
+	if (!code || typeof code !== "string") return "";
+	const normalized = normalizeShopCode(code);
+	if (normalized.length !== 6) return "";
+	if (!BOT_USERNAME || !WEB_APP_SHORT_NAME) return "";
+	const appSlug = WEB_APP_SHORT_NAME.replace(/^@/, "").replace(/\s+/g, "_");
+	const base = `https://t.me/${BOT_USERNAME.replace(/^@/, "")}/${appSlug}`;
+	const payload = `${PAYLOAD_SHOP}-${normalized}`;
 	return `${base}?startapp=${payload}`;
 }
 

@@ -28,11 +28,12 @@ export const BasicLayout = () => {
       <header className="sticky top-0 z-50 bg-surface-card/90 backdrop-blur-md border-b border-white/[0.06] px-4 py-3">
         <div className="flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <img
-              src="/app_logo.png"
-              alt="Караоке Лото"
-              className="h-8 w-auto max-w-[180px] object-contain object-left"
-            />
+            <span
+              className="text-lg font-bold text-neon-gold tracking-tight drop-shadow-[0_0_8px_var(--color-neon-gold)]"
+              aria-label="Караоке Лото"
+            >
+              Караоке Лото
+            </span>
           </div>
           <div className="flex h-9 min-w-22 shrink-0 items-center justify-end">
             {showBalanceSkeleton ? <BalanceSkeleton /> : <Balance coins={coins} />}

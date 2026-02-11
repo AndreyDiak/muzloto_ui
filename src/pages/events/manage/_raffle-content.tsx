@@ -267,7 +267,9 @@ export function RaffleContent({
 				<div className="relative flex items-center gap-3 shrink-0 min-h-10">
 					{headerLeft}
 					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-						<img src="/app_logo.png" alt="" className="h-8 w-auto max-w-[180px] object-contain" />
+						<span className="text-lg font-bold text-neon-gold tracking-tight drop-shadow-[0_0_8px_var(--color-neon-gold)]">
+						Караоке Лото
+					</span>
 					</div>
 				</div>
 				<p className="text-gray-400 text-sm py-4">Нет участников для розыгрыша.</p>
@@ -284,7 +286,9 @@ export function RaffleContent({
 					<div className="relative flex items-center gap-3 min-h-10">
 						{headerLeft}
 						<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-							<img src="/app_logo.png" alt="" className="h-8 w-auto max-w-[180px] object-contain" />
+							<span className="text-lg font-bold text-neon-gold tracking-tight drop-shadow-[0_0_8px_var(--color-neon-gold)]">
+						Караоке Лото
+					</span>
 						</div>
 					</div>
 				</header>
@@ -327,7 +331,9 @@ export function RaffleContent({
 				<div className="relative flex items-center gap-3 min-h-10">
 					{headerLeft}
 					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-						<img src="/app_logo.png" alt="" className="h-8 w-auto max-w-[180px] object-contain" />
+						<span className="text-lg font-bold text-neon-gold tracking-tight drop-shadow-[0_0_8px_var(--color-neon-gold)]">
+						Караоке Лото
+					</span>
 					</div>
 				</div>
 			</header>
