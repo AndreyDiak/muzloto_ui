@@ -249,3 +249,11 @@
   background-color: color-mix(in oklch, var(--color-neon-gold) 5%, var(--color-surface-card));
   border: 1px solid var(--color-edge);
 }
+
+/* Фон на весь viewport: при расширении в Telegram по краям не белые полосы */
+html,
+body,
+#root {
+  background-color: var(--color-surface-dark);
+  min-height: 100%;
+}

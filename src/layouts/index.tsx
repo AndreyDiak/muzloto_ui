@@ -15,7 +15,7 @@ export const BasicLayout = () => {
   const showBalanceSkeleton = profile === undefined;
 
   return (
-    <div className="min-h-screen bg-surface-dark flex flex-col max-w-md mx-auto">
+    <div className="min-h-screen bg-surface-dark flex flex-col w-full max-w-xl mx-auto">
       <header className="sticky top-0 z-50 bg-surface-card/90 backdrop-blur-md border-b border-white/[0.06] px-4 py-3">
         <div className="flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -50,7 +50,7 @@ const Navigation = ({ isRoot = false }: { isRoot?: boolean }) => {
     ...(isRoot ? [{ path: '/admin', icon: Shield, label: 'Админка' }] : []),
   ];
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-surface-card/95 backdrop-blur-md border-t border-white/[0.06]">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-xl mx-auto bg-surface-card/95 backdrop-blur-md border-t border-white/[0.06]">
       <div className="flex items-center py-2">
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
