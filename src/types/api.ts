@@ -52,18 +52,6 @@ export interface ApiRaffleResponse {
 	winner_coins?: number;
 }
 
-export interface ApiAwardCoinsResponse {
-	success: true;
-	newBalance: number;
-	amount: number;
-}
-
-export interface ApiPrizeCodesResponse {
-	code: string;
-	id: string;
-	created_at: string;
-}
-
 // ——— Shared: newly unlocked achievement (matches server NewlyUnlockedAchievement) ———
 
 export interface ApiNewlyUnlockedAchievement {
