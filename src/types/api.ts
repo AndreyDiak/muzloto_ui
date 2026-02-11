@@ -129,6 +129,12 @@ export interface ApiPurchaseResponse {
 	newlyUnlockedAchievements?: ApiNewlyUnlockedAchievement[];
 }
 
+/** Ответ превью кода покупки (товар, цена, баланс — без списания) */
+export interface ApiPreviewPurchaseCodeResponse {
+	item: { id: string; name: string; price: number };
+	balance: number;
+}
+
 /** Ответ погашения кода покупки (без билета — только списание и инфо) */
 export interface ApiRedeemPurchaseCodeResponse {
 	success: true;

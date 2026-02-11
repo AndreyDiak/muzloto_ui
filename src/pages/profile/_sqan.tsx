@@ -1,9 +1,11 @@
 import { processEventCode, validateEventCode } from "@/actions/process-event-code";
+import { previewPurchaseCode } from "@/actions/preview-purchase-code";
 import { redeemPurchaseCode } from "@/actions/redeem-purchase-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
+import { PurchaseConfirmModal } from "@/components/purchase-confirm-modal";
 import { PurchaseSuccessModal } from "@/components/purchase-success-modal";
 import { RegistrationModal } from "@/components/registration-modal";
 import {
@@ -40,6 +42,15 @@ export const ProfileSqan = memo(() => {
 
 	// Модалка ручного ввода кода
 	const [manualCodeModalOpen, setManualCodeModalOpen] = useState(false);
+	// Покупка по коду: превью → модалка подтверждения → погашение
+	const [purchaseConfirmOpen, setPurchaseConfirmOpen] = useState(false);
+	const [purchaseConfirmData, setPurchaseConfirmData] = useState<{
+		itemName: string;
+		itemPrice: number;
+		balance: number;
+	} | null>(null);
+	const [pendingPurchaseCode, setPendingPurchaseCode] = useState<string>("");
+	const [isConfirmingPurchase, setIsConfirmingPurchase] = useState(false);
 	// Результат погашения кода покупки — показываем модалку
 	const [redeemResult, setRedeemResult] = useState<PurchaseSuccessPayload | null>(null);
 
@@ -96,6 +107,14 @@ export const ProfileSqan = memo(() => {
 		}
 	};
 
+	const openPurchaseConfirm = (code: string, data: { itemName: string; itemPrice: number; balance: number }) => {
+		setPendingPurchaseCode(code);
+		setPurchaseConfirmData(data);
+		setPurchaseConfirmOpen(true);
+		setCodeInputs(Array(CODE_LENGTH).fill(''));
+		setManualCodeModalOpen(false);
+	};
+
 	const handleRedeemPurchaseCode = async (code: string) => {
 		if (isProcessing || !user?.id) {
 			if (!user?.id) showToast('Ошибка: не удалось определить пользователя.', 'error');
@@ -103,11 +122,32 @@ export const ProfileSqan = memo(() => {
 		}
 		setIsProcessing(true);
 		try {
+			const preview = await previewPurchaseCode(code);
+			if (!preview) {
+				showToast('Код не найден или уже использован.', 'error');
+				isProcessingQRRef.current = false;
+				return;
+			}
+			openPurchaseConfirm(code, {
+				itemName: preview.item.name,
+				itemPrice: preview.item.price,
+				balance: preview.balance,
+			});
+		} finally {
+			setIsProcessing(false);
+		}
+	};
+
+	const handlePurchaseConfirm = async () => {
+		if (!pendingPurchaseCode) return;
+		setIsConfirmingPurchase(true);
+		try {
 			await redeemPurchaseCode({
-				code,
+				code: pendingPurchaseCode,
 				onSuccess: async (data) => {
-					setCodeInputs(Array(CODE_LENGTH).fill(''));
-					setManualCodeModalOpen(false);
+					setPurchaseConfirmOpen(false);
+					setPurchaseConfirmData(null);
+					setPendingPurchaseCode('');
 					setRedeemResult(data);
 					refetchProfile().catch(() => {});
 					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
@@ -121,11 +161,10 @@ export const ProfileSqan = memo(() => {
 				},
 				onError: (err) => {
 					showToast(err ?? 'Не удалось погасить код.', 'error');
-					isProcessingQRRef.current = false;
 				},
 			});
 		} finally {
-			setIsProcessing(false);
+			setIsConfirmingPurchase(false);
 		}
 	};
 
@@ -399,6 +438,23 @@ export const ProfileSqan = memo(() => {
 				</DialogContent>
 			</Dialog>
 
+			{purchaseConfirmData && (
+				<PurchaseConfirmModal
+					open={purchaseConfirmOpen}
+					onOpenChange={(open) => {
+						setPurchaseConfirmOpen(open);
+						if (!open) {
+							setPurchaseConfirmData(null);
+							setPendingPurchaseCode("");
+						}
+					}}
+					itemName={purchaseConfirmData.itemName}
+					itemPrice={purchaseConfirmData.itemPrice}
+					balance={purchaseConfirmData.balance}
+					isConfirming={isConfirmingPurchase}
+					onConfirm={handlePurchaseConfirm}
+				/>
+			)}
 			{redeemResult && (
 				<PurchaseSuccessModal
 					open={!!redeemResult}

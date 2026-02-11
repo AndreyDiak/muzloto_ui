@@ -1,9 +1,11 @@
 import { processEventCode, validateEventCode } from "@/actions/process-event-code";
+import { previewPurchaseCode } from "@/actions/preview-purchase-code";
 import { redeemPurchaseCode } from "@/actions/redeem-purchase-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
+import { PurchaseConfirmModal } from "@/components/purchase-confirm-modal";
 import { RegistrationModal } from "@/components/registration-modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-client";
@@ -56,6 +58,17 @@ export function StartParamHandler() {
 	const [pendingStorageKey, setPendingStorageKey] = useState("");
 	const [isRegistering, setIsRegistering] = useState(false);
 
+	// Purchase confirm modal (shop code from start param)
+	const [purchaseConfirmOpen, setPurchaseConfirmOpen] = useState(false);
+	const [purchaseConfirmData, setPurchaseConfirmData] = useState<{
+		itemName: string;
+		itemPrice: number;
+		balance: number;
+	} | null>(null);
+	const [pendingShopCode, setPendingShopCode] = useState("");
+	const [pendingShopStorageKey, setPendingShopStorageKey] = useState("");
+	const [isConfirmingPurchase, setIsConfirmingPurchase] = useState(false);
+
 	useEffect(() => {
 		const payload = (() => {
 			const raw = getRawPayload(tg);
@@ -92,26 +105,26 @@ export function StartParamHandler() {
 		}
 
 		if (payload.type === "shop") {
-			const timeoutId = setTimeout(() => {
-				redeemPurchaseCode({
-					code: payload.value,
-					onSuccess: (data) => {
-						sessionStorage.setItem(STORAGE_KEY, storageKey);
-						refetchProfile();
-						void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
-						showToast(`Покупка по коду оформлена: ${data.item.name}.`, "success");
-						(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
-							setTimeout(() => {
-								const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
-								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
-							}, 600 + i * 400);
-						});
-					},
-					onError: (message) => {
+			const timeoutId = setTimeout(async () => {
+				try {
+					const preview = await previewPurchaseCode(payload.value);
+					if (!preview) {
 						processedRef.current = false;
-						showToast(message || "Не удалось погасить код покупки.", "error");
-					},
-				});
+						showToast("Код не найден или уже использован.", "error");
+						return;
+					}
+					setPendingShopCode(payload.value);
+					setPendingShopStorageKey(storageKey);
+					setPurchaseConfirmData({
+						itemName: preview.item.name,
+						itemPrice: preview.item.price,
+						balance: preview.balance,
+					});
+					setPurchaseConfirmOpen(true);
+				} catch {
+					processedRef.current = false;
+					showToast("Ошибка при загрузке данных кода.", "error");
+				}
 			}, 150);
 			return () => clearTimeout(timeoutId);
 		}
@@ -157,6 +170,37 @@ export function StartParamHandler() {
 		}
 	}, [user?.id, pendingCode, pendingStorageKey, refetchProfile, showCoinAnimation, queryClient, showToast]);
 
+	const handlePurchaseConfirm = useCallback(async () => {
+		if (!pendingShopCode) return;
+		setIsConfirmingPurchase(true);
+		try {
+			await redeemPurchaseCode({
+				code: pendingShopCode,
+				onSuccess: (data) => {
+					sessionStorage.setItem(STORAGE_KEY, pendingShopStorageKey);
+					setPurchaseConfirmOpen(false);
+					setPurchaseConfirmData(null);
+					setPendingShopCode("");
+					refetchProfile();
+					void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+					showToast(`Покупка по коду оформлена: ${data.item.name}.`, "success");
+					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
+						setTimeout(() => {
+							const hint = a.coinReward ? " Заберите награду в разделе «Достижения»." : "";
+							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
+						}, 600 + i * 400);
+					});
+				},
+				onError: (message) => {
+					processedRef.current = false;
+					showToast(message || "Не удалось погасить код покупки.", "error");
+				},
+			});
+		} finally {
+			setIsConfirmingPurchase(false);
+		}
+	}, [pendingShopCode, pendingShopStorageKey, refetchProfile, queryClient, showToast]);
+
 	// start_param иногда приходит с задержкой — перепроверяем через 0.8 с
 	useEffect(() => {
 		if (!user?.id || !isSupabaseSessionReady) return;
@@ -164,20 +208,43 @@ export function StartParamHandler() {
 		return () => clearTimeout(t);
 	}, [user?.id, isSupabaseSessionReady]);
 
-	if (!regModalData) return null;
+	if (regModalData) {
+		return (
+			<RegistrationModal
+				open={regModalOpen}
+				onOpenChange={(open) => {
+					setRegModalOpen(open);
+					if (!open) processedRef.current = false;
+				}}
+				eventTitle={regModalData.event.title}
+				coinsReward={regModalData.coinsReward}
+				isRegistering={isRegistering}
+				onConfirm={handleRegistrationConfirm}
+			/>
+		);
+	}
 
-	return (
-		<RegistrationModal
-			open={regModalOpen}
-			onOpenChange={(open) => {
-				setRegModalOpen(open);
-				if (!open) processedRef.current = false;
-			}}
-			eventTitle={regModalData.event.title}
-			coinsReward={regModalData.coinsReward}
-			isRegistering={isRegistering}
-			onConfirm={handleRegistrationConfirm}
-		/>
-	);
+	if (purchaseConfirmData) {
+		return (
+			<PurchaseConfirmModal
+				open={purchaseConfirmOpen}
+				onOpenChange={(open) => {
+					setPurchaseConfirmOpen(open);
+					if (!open) {
+						processedRef.current = false;
+						setPurchaseConfirmData(null);
+						setPendingShopCode("");
+					}
+				}}
+				itemName={purchaseConfirmData.itemName}
+				itemPrice={purchaseConfirmData.itemPrice}
+				balance={purchaseConfirmData.balance}
+				isConfirming={isConfirmingPurchase}
+				onConfirm={handlePurchaseConfirm}
+			/>
+		);
+	}
+
+	return null;
 }
 
