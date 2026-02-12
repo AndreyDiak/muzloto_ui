@@ -1,12 +1,14 @@
+import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
 import { ImageWithFallback } from "@/components/image-with-fallback";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { SCatalogItem } from "@/entities/catalog";
+import { http } from "@/http";
 import { queryKeys } from "@/lib/query-client";
 import { prettifyCoins } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { Coins, QrCode } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001").replace(/\/$/, "");
 
@@ -21,6 +23,7 @@ interface Props {
 export const CatalogItem = ({ item, color: _color, isRoot, activeCode = null }: Props) => {
 	const { showToast } = useToast();
 	const queryClient = useQueryClient();
+	const { user, isSupabaseSessionReady } = useSession();
 	const [shownCode, setShownCode] = useState<{ code: string; itemName: string } | null>(null);
 	const [isGenerating, setIsGenerating] = useState(false);
 
@@ -56,6 +59,37 @@ export const CatalogItem = ({ item, color: _color, isRoot, activeCode = null }: 
 			setIsGenerating(false);
 		}
 	};
+
+	// Realtime: как только у кода появляется владелец (погашение) — закрываем модалку
+	useEffect(() => {
+		if (!shownCode?.code || !isRoot || user?.id == null || !isSupabaseSessionReady) return;
+
+		const channel = http
+			.channel(`catalog-code-${shownCode.code}-${user.id}`)
+			.on(
+				"postgres_changes",
+				{
+					event: "UPDATE",
+					schema: "public",
+					table: "codes",
+					filter: `code=eq.${shownCode.code}`,
+				},
+				(payload: { new?: { type?: string; used_at?: string | null; owner_telegram_id?: number | null } }) => {
+					const rec = payload.new;
+					if (rec?.type !== "purchase") return;
+					if (rec.used_at ?? rec.owner_telegram_id) {
+						setShownCode(null);
+						showToast("Код использован. Нажмите «Показать код» для нового.", "success");
+						void queryClient.invalidateQueries({ queryKey: queryKeys.catalogActivePurchaseCodes });
+					}
+				}
+			)
+			.subscribe();
+
+		return () => {
+			channel.unsubscribe();
+		};
+	}, [shownCode?.code, isRoot, user?.id, isSupabaseSessionReady, showToast, queryClient]);
 
 	return (
 		<>

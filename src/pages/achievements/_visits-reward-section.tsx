@@ -2,6 +2,7 @@ import { claimVisitReward } from "@/actions/claim-visit-reward";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useAchievements } from "@/hooks/use-achievements";
+import { prettifyCoins } from "@/lib/utils";
 import { Music2 } from "lucide-react";
 import { useState } from "react";
 
@@ -10,8 +11,9 @@ const VISIT_REWARD_EVERY = 5;
 export function VisitsRewardSection() {
   const { isSupabaseSessionReady, refetchProfile } = useSession();
   const { showCoinAnimation } = useCoinAnimation();
-  const { visitRewardProgress, visitRewardPending, isLoading, refetch } =
+  const { visitRewardProgress, visitRewardPending, visitRewardCoins, isLoading, refetch } =
     useAchievements(isSupabaseSessionReady);
+  const coinsLabel = prettifyCoins(visitRewardCoins);
   const [isClaimingVisit, setIsClaimingVisit] = useState(false);
 
   const displayProgress = visitRewardPending ? VISIT_REWARD_EVERY : visitRewardProgress;
@@ -50,7 +52,8 @@ export function VisitsRewardSection() {
     <section className="rounded-xl p-3 border border-white/10 bg-surface-card">
       <h3 className="text-base font-semibold text-white flex items-center gap-2">
         <Music2 className="w-5 h-5 text-neon-cyan" />
-        Каждое {VISIT_REWARD_EVERY}-е посещение - награда!
+        Каждое {VISIT_REWARD_EVERY}-е посещение —{" "}
+        <span className="text-neon-gold/90">{coinsLabel} монет</span>
       </h3>
       <div className="flex w-full gap-1.5 sm:gap-2 mt-2 mb-1.5">
         {Array.from({ length: VISIT_REWARD_EVERY }).map((_, i) => (
@@ -67,15 +70,19 @@ export function VisitsRewardSection() {
           </div>
         ))}
       </div>
-      <p className="text-xs text-gray-400 text-center">
-        {visitRewardPending
-          ? "Награда готова!"
-          : (() => {
-              const left = VISIT_REWARD_EVERY - displayProgress;
-              const word = left === 1 ? "посещение" : left >= 2 && left <= 4 ? "посещения" : "посещений";
-              return `До награды осталось ${left} ${word}`;
-            })()}
-      </p>
+      {!visitRewardPending && (
+        <p className="text-xs text-gray-400 text-center">
+          {(() => {
+            const left = VISIT_REWARD_EVERY - displayProgress;
+            const word = left === 1 ? "посещение" : left >= 2 && left <= 4 ? "посещения" : "посещений";
+            return (
+              <>
+                До <span className="text-neon-gold/90">{coinsLabel} монет</span> осталось {left} {word}
+              </>
+            );
+          })()}
+        </p>
+      )}
       {visitRewardPending && (
         <div className="mt-2 flex flex-col items-center gap-2">
           <button
@@ -84,7 +91,7 @@ export function VisitsRewardSection() {
             disabled={isClaimingVisit}
             className="w-full py-2.5 rounded-xl bg-linear-to-r from-neon-cyan to-neon-purple text-white font-semibold hover:opacity-95 transition-opacity active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isClaimingVisit ? "Загрузка…" : "Забрать награду"}
+            {isClaimingVisit ? "Загрузка…" : "Забрать монеты"}
           </button>
         </div>
       )}
