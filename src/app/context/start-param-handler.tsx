@@ -151,7 +151,7 @@ export function StartParamHandler() {
 					);
 					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 						setTimeout(() => {
-							const hint = a.coinReward ? " Заберите награду в профиле." : "";
+							const hint = a.coinReward ? " Заберите награду в разделе «Награды»." : "";
 							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
 						}, 600 + i * 400);
 					});
@@ -186,7 +186,7 @@ export function StartParamHandler() {
 					showToast(`Покупка по коду оформлена: ${data.item.name}.`, "success");
 					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 						setTimeout(() => {
-							const hint = a.coinReward ? " Заберите награду в профиле." : "";
+							const hint = a.coinReward ? " Заберите награду в разделе «Награды»." : "";
 							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, "success");
 						}, 600 + i * 400);
 					});

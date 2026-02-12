@@ -18,6 +18,7 @@ function RaffleRoute() {
 	);
 }
 const Catalog = lazy(() => import("./pages/catalog"));
+const Achievements = lazy(() => import("./pages/achievements"));
 const Scanner = lazy(() => import("./pages/scanner"));
 const Admin = lazy(() => import("./pages/admin"));
 
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
 		Component: LayoutWithSuspense,
 		children: [
 			{ index: true, Component: Profile },
+			{ path: "/achievements", Component: Achievements },
 			{ path: "/events", Component: Events },
 			{ path: "/events/:eventId/manage", Component: EventManage },
 			{ path: "/catalog", Component: Catalog },

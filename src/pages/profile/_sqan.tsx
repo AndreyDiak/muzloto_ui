@@ -154,7 +154,7 @@ export const ProfileSqan = memo(() => {
 					isProcessingQRRef.current = false;
 					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 						setTimeout(() => {
-							const hint = a.coinReward ? ' Заберите награду в профиле.' : '';
+							const hint = a.coinReward ? ' Заберите награду в разделе «Награды».' : '';
 							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
 						}, 600 + i * 400);
 					});
@@ -232,7 +232,7 @@ export const ProfileSqan = memo(() => {
 						void queryClient.invalidateQueries({ queryKey: queryKeys.myRegistration });
 						newlyUnlocked.forEach((a, i) => {
 							setTimeout(() => {
-								const hint = a.coinReward ? ' Заберите награду в профиле.' : '';
+								const hint = a.coinReward ? ' Заберите награду в разделе «Награды».' : '';
 								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
 							}, 600 + i * 400);
 						});
@@ -355,7 +355,7 @@ export const ProfileSqan = memo(() => {
 				<button
 					type="button"
 					onClick={handleScanQR}
-					className="w-full flex items-center gap-3 p-4 hover:opacity-90 transition-opacity active:scale-[0.98]"
+					className="w-full flex items-center gap-3 p-3 hover:opacity-90 transition-opacity active:scale-[0.98]"
 				>
 					<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-neon-cyan to-neon-purple flex items-center justify-center">
 						<QrCode className="w-6 h-6 text-white" />
@@ -372,7 +372,7 @@ export const ProfileSqan = memo(() => {
 				<button
 					type="button"
 					onClick={() => setManualCodeModalOpen(true)}
-					className="w-full flex items-center gap-3 p-4 hover:opacity-90 transition-opacity active:scale-[0.98]"
+					className="w-full flex items-center gap-3 p-3 hover:opacity-90 transition-opacity active:scale-[0.98]"
 				>
 					<div className="shrink-0 w-12 h-12 rounded-xl bg-linear-to-br from-neon-cyan to-neon-purple flex items-center justify-center">
 						<Keyboard className="w-6 h-6 text-white" />
@@ -394,7 +394,7 @@ export const ProfileSqan = memo(() => {
 						<DialogTitle className="text-white">Введите код</DialogTitle>
 						<p className="text-sm text-gray-400">5 символов — регистрация на мероприятие или код покупки</p>
 					</DialogHeader>
-					<div className="space-y-4 pt-2">
+					<div className="space-y-3 pt-1">
 						<div className="grid grid-cols-5 gap-1.5 sm:gap-2 w-full max-w-full">
 							{Array.from({ length: CODE_LENGTH }).map((_, index) => {
 								const value = codeInputs[index] || '';

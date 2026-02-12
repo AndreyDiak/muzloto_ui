@@ -1,15 +1,15 @@
 import { ProfileEventRegistration } from "./_event-registration";
 import { ProfileInfo } from "./_info";
+import { ProfileStatsSection } from "./_profile-stats";
 import { ProfileSqan } from "./_sqan";
-import { ProfileVisitsCard } from "./_visits-card";
 
 export default function Profile() {
   return (
-    <div className="p-4 space-y-4">
+    <div className="p-3 space-y-3">
       <ProfileInfo />
       <ProfileEventRegistration />
       <ProfileSqan />
-      <ProfileVisitsCard />
+      <ProfileStatsSection />
     </div>
   );
 }

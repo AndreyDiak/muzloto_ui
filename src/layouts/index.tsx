@@ -1,7 +1,7 @@
 import { useSession } from '@/app/context/session';
 import { useTelegramBack } from '@/hooks/use-telegram-back';
 import { cn, prettifyCoins } from '@/lib/utils';
-import { Calendar, Coins, Shield, ShoppingBag, User } from 'lucide-react';
+import { Award, Calendar, Coins, Shield, ShoppingBag, User } from 'lucide-react';
 import { memo, Suspense } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { Skeleton } from '../components/ui/skeleton';
@@ -16,15 +16,12 @@ export const BasicLayout = () => {
 
   return (
     <div className="min-h-screen bg-surface-dark flex flex-col w-full max-w-xl mx-auto">
-      <header className="sticky top-0 z-50 bg-surface-card/90 backdrop-blur-md border-b border-white/[0.06] px-4 py-3">
+      <header className="sticky top-0 z-50 bg-surface-card/90 backdrop-blur-md border-b border-white/[0.06] px-3 py-2">
         <div className="flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span
-              className="text-xl font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink"
-              aria-label="Караоке Лото"
-            >
+          <h1 className="text-transparent text-xl bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple truncate min-w-0">
               КараокеЛото
-            </span>
+            </h1>
           </div>
           <div className="flex h-9 min-w-22 shrink-0 items-center justify-end">
             {showBalanceSkeleton ? <BalanceSkeleton /> : <Balance coins={coins} />}
@@ -47,6 +44,7 @@ const Navigation = ({ isRoot = false }: { isRoot?: boolean }) => {
     { path: '/', icon: User, label: 'Профиль' },
     { path: '/catalog', icon: ShoppingBag, label: 'Лавка удачи' },
     { path: '/events', icon: Calendar, label: 'Афиша' },
+    { path: '/achievements', icon: Award, label: 'Награды' },
     ...(isRoot ? [{ path: '/admin', icon: Shield, label: 'Админка' }] : []),
   ];
   return (

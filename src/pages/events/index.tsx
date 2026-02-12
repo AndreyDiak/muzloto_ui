@@ -9,7 +9,7 @@ export default function Events() {
 
 	if (isLoading) {
 		return (
-			<div className="p-4">
+			<div className="p-3">
 				<div className="text-gray-400">Загрузка событий...</div>
 			</div>
 		);
@@ -17,7 +17,7 @@ export default function Events() {
 
 	if (error) {
 		return (
-			<div className="p-4">
+			<div className="p-3">
 				<div className="text-red-400">Ошибка загрузки: {error.message}</div>
 			</div>
 		);
@@ -25,7 +25,7 @@ export default function Events() {
 
 	if (events.length === 0) {
 		return (
-			<div className="p-4">
+			<div className="p-3">
 				<div className="text-gray-400">Нет предстоящих событий</div>
 			</div>
 		);
@@ -36,7 +36,7 @@ export default function Events() {
 	const remainingCount = restEvents.length - displayedEvents.length;
 
 	return (
-		<div className="p-4 space-y-6">
+		<div className="p-3 space-y-4">
 
 			{/* Featured Event - Ближайшее */}
 			<EventCard event={firstEvent} isRoot={isRoot} isUpcoming />

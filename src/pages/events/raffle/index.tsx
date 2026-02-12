@@ -4,7 +4,7 @@ import type { ApiRaffleResponse, ApiRegistrationsResponse } from "@/types/api";
 import { parseJson } from "@/types/api";
 import { ChevronLeft } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { Link, Navigate, useParams, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate, useParams } from "react-router";
 import { RaffleContent } from "../manage/_raffle-content";
 
 const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001").replace(

@@ -198,7 +198,7 @@ export default function Scanner() {
 
 	return (
 		<>
-			<div className="p-4 space-y-6">
+			<div className="p-3 space-y-4">
 				<h2 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple">
 					Сканер билетов
 				</h2>

@@ -23,7 +23,7 @@ export const ProfileVisitsCard = memo(() => {
 
   if (isLoading || !isSupabaseSessionReady) {
     return (
-      <section className="rounded-xl p-4 border border-white/10 bg-surface-card">
+      <section className="rounded-xl p-3 border border-white/10 bg-surface-card">
         <div className="flex items-center justify-between mb-3">
           <Skeleton className="h-6 w-32 rounded-lg" />
         </div>
@@ -67,7 +67,7 @@ export const ProfileVisitsCard = memo(() => {
   return (
     <section className="space-y-2">
       <div
-        className={`block rounded-xl p-4 border transition-colors ${
+        className={`block rounded-xl p-3 border transition-colors ${
           visitRewardPending
             ? "border-neon-gold/40 bg-neon-gold/5"
             : "border-white/10 bg-surface-card"
@@ -80,7 +80,7 @@ export const ProfileVisitsCard = memo(() => {
               key={i}
               className={`flex-1 min-w-0 aspect-square rounded-full border-2 flex items-center justify-center ${
                 i < displayProgress
-                  ? "border-neon-cyan/40 text-white bg-linear-to-br from-neon-cyan to-neon-purple"
+                  ? "border-neon-gold/50 text-white bg-linear-to-br from-neon-gold to-amber-500"
                   : "border-white/20 bg-white/5 text-white/40"
               }`}
               aria-hidden

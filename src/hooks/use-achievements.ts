@@ -9,6 +9,7 @@ const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001"
 async function fetchAchievements(): Promise<{
   achievements: AchievementItem[];
   games_visited: number;
+  tickets_purchased: number;
   visit_reward_progress: number;
   visit_reward_pending: boolean;
   visit_reward_coins: number;
@@ -24,6 +25,7 @@ async function fetchAchievements(): Promise<{
   return {
     achievements: data.achievements ?? [],
     games_visited: data.games_visited ?? 0,
+    tickets_purchased: data.tickets_purchased ?? 0,
     visit_reward_progress: data.visit_reward_progress ?? 0,
     visit_reward_pending: data.visit_reward_pending ?? false,
     visit_reward_coins: data.visit_reward_coins ?? 0,
@@ -33,6 +35,7 @@ async function fetchAchievements(): Promise<{
 export function useAchievements(enabled: boolean): {
   achievements: AchievementItem[];
   gamesVisited: number;
+  ticketsPurchased: number;
   visitRewardProgress: number;
   visitRewardPending: boolean;
   visitRewardCoins: number;
@@ -50,6 +53,7 @@ export function useAchievements(enabled: boolean): {
   return {
     achievements: data?.achievements ?? [],
     gamesVisited: data?.games_visited ?? 0,
+    ticketsPurchased: data?.tickets_purchased ?? 0,
     visitRewardProgress: data?.visit_reward_progress ?? 0,
     visitRewardPending: data?.visit_reward_pending ?? false,
     visitRewardCoins: data?.visit_reward_coins ?? 0,

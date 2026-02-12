@@ -20,7 +20,7 @@ export default function Catalog() {
 
 	if (isLoading) {
 		return (
-			<div className="p-4">
+			<div className="p-3">
 				<span className="text-gray-400">Загрузка каталога...</span>
 			</div>
 		);
@@ -28,7 +28,7 @@ export default function Catalog() {
 
 	if (error) {
 		return (
-			<div className="p-4">
+			<div className="p-3">
 				<div className="text-red-400">Ошибка загрузки: {error.message}</div>
 			</div>
 		);
@@ -36,14 +36,14 @@ export default function Catalog() {
 
 	if (items.length === 0) {
 		return (
-			<div className="p-4">
+			<div className="p-3">
 				<div className="text-gray-400">Каталог пуст :(</div>
 			</div>
 		);
 	}
 
 	return (
-		<div className="p-4 space-y-6">
+		<div className="p-3 space-y-4">
 			{items.map((item, index) => (
 				<CatalogItem
 					key={item.id}

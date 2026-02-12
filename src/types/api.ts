@@ -85,6 +85,8 @@ export interface ApiAchievementsResponse {
 	achievements: ApiAchievementItem[];
 	/** Количество посещённых мероприятий (user_stats.games_visited). */
 	games_visited?: number;
+	/** Количество покупок в магазине (user_stats.tickets_purchased). */
+	tickets_purchased?: number;
 	/** Прогресс до награды за посещения (0–5). Вычисляется: games_visited - (visit_rewards_claimed * 5). При 5 — показывается кнопка «Забрать приз». */
 	visit_reward_progress?: number;
 	/** true: награда за 5 посещений готова, можно забрать кнопкой (когда visit_reward_progress >= 5). */

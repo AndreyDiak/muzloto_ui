@@ -124,7 +124,7 @@ export default function EventManage() {
 
   if (eventLoading || !event) {
     return (
-      <div className="p-4 space-y-6">
+      <div className="p-3 space-y-4">
         <div className="flex items-center gap-3">
           <Skeleton className="w-10 h-10 rounded-lg" />
           <Skeleton className="h-6 w-48 rounded-lg" />
@@ -142,7 +142,7 @@ export default function EventManage() {
   }
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-3 space-y-4">
       <div className="flex items-center gap-3">
         <Link
           to="/events"

@@ -8,7 +8,7 @@ export const ProfileEventRegistration = memo(() => {
   if (isLoading || !data || !data.event) return null;
 
   return (
-    <div className="-mx-4 flex items-center gap-3 bg-surface-card py-3 px-4 border-y border-white/10">
+    <div className="-mx-3 flex items-center gap-3 bg-surface-card py-2.5 px-3 border-y border-white/10">
       <div className="w-9 h-9 rounded-lg bg-neon-cyan/20 flex items-center justify-center shrink-0 border border-neon-cyan/30">
         <CalendarCheck className="w-4 h-4 text-neon-cyan" />
       </div>
