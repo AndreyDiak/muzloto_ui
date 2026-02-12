@@ -154,7 +154,7 @@ export const ProfileSqan = memo(() => {
 					isProcessingQRRef.current = false;
 					(data.newlyUnlockedAchievements ?? []).forEach((a, i) => {
 						setTimeout(() => {
-							const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
+							const hint = a.coinReward ? ' Заберите награду в профиле.' : '';
 							showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
 						}, 600 + i * 400);
 					});
@@ -232,7 +232,7 @@ export const ProfileSqan = memo(() => {
 						void queryClient.invalidateQueries({ queryKey: queryKeys.myRegistration });
 						newlyUnlocked.forEach((a, i) => {
 							setTimeout(() => {
-								const hint = a.coinReward ? ' Заберите награду в разделе «Достижения».' : '';
+								const hint = a.coinReward ? ' Заберите награду в профиле.' : '';
 								showToast(`${a.badge} Достижение: ${a.name}. ${a.label}.${hint}`, 'success');
 							}, 600 + i * 400);
 						});

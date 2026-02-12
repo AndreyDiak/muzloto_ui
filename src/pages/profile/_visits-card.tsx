@@ -3,7 +3,6 @@ import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAchievements } from "@/hooks/use-achievements";
-import { prettifyCoins } from "@/lib/utils";
 import { Music2 } from "lucide-react";
 import { memo, useState } from "react";
 import { Link } from "react-router";
@@ -17,7 +16,6 @@ export const ProfileVisitsCard = memo(() => {
     gamesVisited,
     visitRewardProgress,
     visitRewardPending,
-    visitRewardCoins,
     isLoading,
     refetch,
   } = useAchievements(isSupabaseSessionReady);
@@ -106,9 +104,9 @@ export const ProfileVisitsCard = memo(() => {
               type="button"
               onClick={handleClaimVisitReward}
               disabled={isClaimingVisit}
-              className="w-full py-2.5 rounded-xl bg-neon-gold/20 text-neon-gold font-medium hover:bg-neon-gold/30 disabled:opacity-50 transition-colors"
+              className="w-full py-2.5 rounded-xl bg-linear-to-r from-neon-cyan to-neon-purple text-white font-semibold hover:opacity-95 transition-opacity active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isClaimingVisit ? "Загрузка…" : `Забрать приз (+${prettifyCoins(visitRewardCoins)} монет)`}
+              {isClaimingVisit ? "Загрузка…" : "Забрать награду"}
             </button>
             <Link
               to="/events"
