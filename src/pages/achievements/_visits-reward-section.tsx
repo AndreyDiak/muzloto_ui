@@ -82,7 +82,7 @@ export function VisitsRewardSection() {
             type="button"
             onClick={handleClaimVisitReward}
             disabled={isClaimingVisit}
-            className="w-full py-2.5 rounded-xl bg-neon-gold/15 text-neon-gold font-semibold border border-neon-gold/40 hover:bg-neon-gold/25 transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2.5 rounded-xl bg-linear-to-r from-neon-cyan to-neon-purple text-white font-semibold hover:opacity-95 transition-opacity active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isClaimingVisit ? "Загрузка…" : "Забрать награду"}
           </button>
