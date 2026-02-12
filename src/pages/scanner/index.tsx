@@ -17,16 +17,18 @@ const VISIBLE_RECENT_COUNT = 10;
 function normalizeScannedCode(raw: string): string | null {
 	const t = raw.trim();
 	if (t.length === CODE_LENGTH && /^[A-Za-z0-9]+$/.test(t)) return t.toUpperCase();
-	if (t.length === 10 && /^shop-[A-Za-z0-9]{5}$/i.test(t)) return t.slice(5).toUpperCase();
+	const shopMatch = t.match(/^shop-([A-Za-z0-9]{5})/i);
+	if (shopMatch) return shopMatch[1].toUpperCase();
 	try {
 		const url = new URL(t);
-		const start = url.searchParams.get("start") ?? url.searchParams.get("startapp");
+		const start = (url.searchParams.get("start") ?? url.searchParams.get("startapp") ?? "").trim();
 		if (start) {
-			if (start.toLowerCase().startsWith("shop-") && start.length === 10) return start.slice(5).toUpperCase();
+			const shopParam = start.match(/^shop-([A-Za-z0-9]{5})/i);
+			if (shopParam) return shopParam[1].toUpperCase();
 			if (start.length === CODE_LENGTH && /^[A-Za-z0-9]+$/.test(start)) return start.toUpperCase();
 		}
 	} catch {
-		// не URL — уже проверили выше
+		// не URL
 	}
 	return null;
 }
