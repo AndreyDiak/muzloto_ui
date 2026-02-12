@@ -21,11 +21,12 @@ export function TicketUsedSubscription() {
 				{
 					event: "UPDATE",
 					schema: "public",
-					table: "tickets",
-					filter: `telegram_id=eq.${user.id}`,
+					table: "codes",
+					filter: `owner_telegram_id=eq.${user.id}`,
 				},
-				(payload: { new?: { id?: string; used_at?: string | null } }) => {
+				(payload: { new?: { id?: string; type?: string; used_at?: string | null } }) => {
 					const rec = payload.new;
+					if (rec?.type !== "purchase") return;
 					const id = rec?.id;
 					const usedAt = rec?.used_at;
 					if (id != null && usedAt) {

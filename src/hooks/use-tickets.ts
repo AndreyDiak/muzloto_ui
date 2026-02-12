@@ -12,9 +12,10 @@ interface UseTicketsReturn {
 
 async function fetchTickets(telegramId: number): Promise<STicketWithItem[]> {
   const { data, error: fetchError } = await http
-    .from("tickets")
+    .from("codes")
     .select("id, code, created_at, used_at, catalog:catalog_item_id(id, name, description, price, photo)")
-    .eq("telegram_id", telegramId)
+    .eq("type", "purchase")
+    .eq("owner_telegram_id", telegramId)
     .order("created_at", { ascending: false });
 
   if (fetchError) {

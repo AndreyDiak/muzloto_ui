@@ -13,6 +13,24 @@ import { Navigate } from "react-router";
 const CODE_LENGTH = 5;
 const VISIBLE_RECENT_COUNT = 10;
 
+/** Из скана QR или ввода извлекает 5-символьный код: билет или покупка (лавка удачи). */
+function normalizeScannedCode(raw: string): string | null {
+	const t = raw.trim();
+	if (t.length === CODE_LENGTH && /^[A-Za-z0-9]+$/.test(t)) return t.toUpperCase();
+	if (t.length === 10 && /^shop-[A-Za-z0-9]{5}$/i.test(t)) return t.slice(5).toUpperCase();
+	try {
+		const url = new URL(t);
+		const start = url.searchParams.get("start") ?? url.searchParams.get("startapp");
+		if (start) {
+			if (start.toLowerCase().startsWith("shop-") && start.length === 10) return start.slice(5).toUpperCase();
+			if (start.length === CODE_LENGTH && /^[A-Za-z0-9]+$/.test(start)) return start.toUpperCase();
+		}
+	} catch {
+		// не URL — уже проверили выше
+	}
+	return null;
+}
+
 function formatUsedAt(iso: string): string {
 	const d = new Date(iso);
 	const now = new Date();
@@ -115,18 +133,15 @@ export default function Scanner() {
 					{ text: "Отсканируйте QR код билета" },
 					(text: string) => {
 						if (isProcessingRef.current) return true;
-						const trimmed = typeof text === "string" ? text.trim() : "";
-						if (!trimmed) {
-							showToast("QR код не распознан. Попробуйте еще раз.", "error");
-							return false;
-						}
-						if (trimmed.length !== CODE_LENGTH) {
-							showToast(`Ожидается код из ${CODE_LENGTH} символов.`, "error");
+						const raw = typeof text === "string" ? text : "";
+						const code = normalizeScannedCode(raw);
+						if (!code) {
+							showToast("QR не распознан или неверный формат. Ожидается код из 5 символов или ссылка лавки удачи.", "error");
 							return false;
 						}
 						isProcessingRef.current = true;
 						scanTicket({
-							code: trimmed.toUpperCase(),
+							code,
 							onSuccess: onScanSuccess,
 							onError: (msg) => {
 								showToast(msg, "error");
