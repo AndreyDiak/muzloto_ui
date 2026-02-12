@@ -1,5 +1,5 @@
-import { processEventCode, validateEventCode } from "@/actions/process-event-code";
 import { previewPurchaseCode } from "@/actions/preview-purchase-code";
+import { processEventCode, validateEventCode } from "@/actions/process-event-code";
 import { redeemPurchaseCode } from "@/actions/redeem-purchase-code";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
@@ -7,10 +7,10 @@ import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { PurchaseConfirmModal } from "@/components/purchase-confirm-modal";
 import { RegistrationModal } from "@/components/registration-modal";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/query-client";
 import { parseStartPayload } from "@/lib/event-deep-link";
+import { queryKeys } from "@/lib/query-client";
 import type { ApiValidateCodeResponse } from "@/types/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "muzloto_start_param_processed";

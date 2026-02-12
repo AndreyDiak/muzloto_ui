@@ -1,4 +1,4 @@
-import { claimPurchaseRewards } from "@/actions/claim-purchase-rewards";
+import { claimPurchaseReward } from "@/actions/claim-purchase-rewards";
 import { useCoinAnimation } from "@/app/context/coin_animation";
 import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
@@ -17,29 +17,25 @@ export function PurchasesAchievementsSection({ achievements }: PurchasesAchievem
   const { showCoinAnimation } = useCoinAnimation();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
-  const [isClaiming, setIsClaiming] = useState(false);
+  const [claimingThreshold, setClaimingThreshold] = useState<number | null>(null);
 
   const purchaseAchievements = achievements.filter(
     (a) => a.stat_key === "tickets_purchased"
   );
 
-  const hasUnclaimedReward = purchaseAchievements.some(
-    (a) => a.unlocked && a.coin_reward != null && !a.reward_claimed_at
-  );
-
-  const handleClaimRewards = async () => {
-    if (!hasUnclaimedReward || isClaiming) return;
-    setIsClaiming(true);
+  const handleClaimReward = async (threshold: number) => {
+    if (claimingThreshold !== null) return;
+    setClaimingThreshold(threshold);
     try {
-      const result = await claimPurchaseRewards();
+      const result = await claimPurchaseReward(threshold);
       showCoinAnimation(result.coinsAdded);
       void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
       void refetchProfile({ silent: true });
-      showToast(`Награда за покупки: +${result.coinsAdded} монет`, "success");
+      showToast(`Награда: +${result.coinsAdded} монет`, "success");
     } catch (e) {
       showToast(e instanceof Error ? e.message : "Не удалось забрать награду", "error");
     } finally {
-      setIsClaiming(false);
+      setClaimingThreshold(null);
     }
   };
 
@@ -89,11 +85,11 @@ export function PurchasesAchievementsSection({ achievements }: PurchasesAchievem
               {canClaimThis && (
                 <button
                   type="button"
-                  onClick={handleClaimRewards}
-                  disabled={isClaiming}
+                  onClick={() => handleClaimReward(ach.threshold)}
+                  disabled={claimingThreshold !== null}
                   className="mb-2 w-full py-2 rounded-lg bg-neon-gold/15 text-neon-gold text-sm font-semibold border border-neon-gold/40 hover:bg-neon-gold/25 transition-colors disabled:opacity-50"
                 >
-                  {isClaiming ? "Загрузка…" : "Забрать награду"}
+                  {claimingThreshold === ach.threshold ? "Загрузка…" : "Забрать награду"}
                 </button>
               )}
               <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">

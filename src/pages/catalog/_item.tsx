@@ -1,4 +1,5 @@
 import { useToast } from "@/app/context/toast";
+import { ImageWithFallback } from "@/components/image-with-fallback";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { SCatalogItem } from "@/entities/catalog";
 import { getShopDeepLink } from "@/lib/event-deep-link";
@@ -65,12 +66,7 @@ export const CatalogItem = ({ item, color: _color, isRoot, activeCode = null }: 
 			>
 				{item.photo && (
 					<div className="w-full h-48 bg-white/5 shrink-0 overflow-hidden">
-						<img
-							src={item.photo}
-							alt={item.name}
-							className="w-full h-full object-cover object-center"
-							loading="lazy"
-						/>
+						<ImageWithFallback src={item.photo} alt={item.name} />
 					</div>
 				)}
 				<div className="p-3 flex flex-col flex-1">
