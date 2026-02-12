@@ -29,7 +29,7 @@ export function PurchasesAchievementsSection({ achievements }: PurchasesAchievem
     try {
       const result = await claimPurchaseReward(threshold);
       showCoinAnimation(result.coinsAdded);
-      void queryClient.invalidateQueries({ queryKey: queryKeys.achievements });
+      await queryClient.refetchQueries({ queryKey: queryKeys.achievements });
       void refetchProfile({ silent: true });
       showToast(`Награда: +${result.coinsAdded} монет`, "success");
     } catch (e) {

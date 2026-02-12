@@ -2,7 +2,7 @@ import { useToast } from "@/app/context/toast";
 import { ImageWithFallback } from "@/components/image-with-fallback";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { SCatalogItem } from "@/entities/catalog";
-import { getShopDeepLink } from "@/lib/event-deep-link";
+import { getShopBotStartLink } from "@/lib/event-deep-link";
 import { queryKeys } from "@/lib/query-client";
 import { prettifyCoins } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -99,7 +99,7 @@ export const CatalogItem = ({ item, color: _color, isRoot, activeCode = null }: 
 					itemName={shownCode.itemName}
 					dialogTitle="Код покупки"
 					showProfileHint={false}
-					qrData={getShopDeepLink(shownCode.code) || shownCode.code}
+					qrData={getShopBotStartLink(shownCode.code) || shownCode.code}
 				/>
 			)}
 		</>

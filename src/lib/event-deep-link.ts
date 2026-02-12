@@ -133,6 +133,20 @@ export function getShopDeepLink(code: string): string {
 }
 
 /**
+ * Ссылка на бота с кодом покупки: t.me/bot?start=shop-CODE.
+ * Пользователь открывает чат с ботом (отправляет /start), после чего бот может писать ему в ЛС (в т.ч. подтверждение покупки).
+ * В QR лучше использовать эту ссылку, чтобы после погашения кода пришло сообщение в ЛС.
+ */
+export function getShopBotStartLink(code: string): string {
+	if (!code || typeof code !== "string") return "";
+	const normalized = normalizeShopCode(code);
+	if (normalized.length !== 5) return "";
+	if (!BOT_USERNAME) return "";
+	const payload = `${PAYLOAD_SHOP}-${normalized}`;
+	return `https://t.me/${BOT_USERNAME.replace(/^@/, "")}?start=${payload}`;
+}
+
+/**
  * Извлекает payload из произвольного ввода: raw payload, URL с startapp=..., или 5-символьный код.
  * Возвращает ParsedStartPayload (registration | prize) или null.
  */

@@ -1,4 +1,5 @@
 import { useSession } from "@/app/context/session";
+import { APP_HEADER_TITLE } from "@/lib/constants";
 import { authFetch } from "@/lib/auth-fetch";
 import type { ApiRaffleResponse, ApiRegistrationsResponse } from "@/types/api";
 import { parseJson } from "@/types/api";
@@ -82,8 +83,8 @@ export default function RafflePage() {
 					<div className="relative flex items-center gap-3 min-h-10 w-full">
 						{backLink}
 						<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-							<span className="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink">
-								Караоке Лото
+							<span className="text-transparent text-xl bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple truncate min-w-0">
+								{APP_HEADER_TITLE}
 							</span>
 						</div>
 					</div>

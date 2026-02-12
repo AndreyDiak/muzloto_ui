@@ -1,15 +1,34 @@
+import type { ComponentType, LazyExoticComponent } from "react";
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router";
 import { LazyLoadingFallback } from "./layouts/fallback";
 
-const BasicLayout = lazy(() =>
+/** Lazy-загрузка с повтором при ошибке (failed to fetch dynamically в WebView/сети). */
+function lazyWithRetry<T extends ComponentType<unknown>>(
+	importFn: () => Promise<{ default: T }>,
+	retries = 2
+): LazyExoticComponent<T> {
+	return lazy(async () => {
+		let last: unknown;
+		for (let i = 0; i <= retries; i++) {
+			try {
+				return await importFn();
+			} catch (e) {
+				last = e;
+			}
+		}
+		throw last;
+	});
+}
+
+const BasicLayout = lazyWithRetry(() =>
 	import("./layouts").then((m) => ({ default: m.BasicLayout }))
 );
 
-const Profile = lazy(() => import("./pages/profile"));
-const Events = lazy(() => import("./pages/events"));
-const EventManage = lazy(() => import("./pages/events/manage"));
-const RafflePage = lazy(() => import("./pages/events/raffle"));
+const Profile = lazyWithRetry(() => import("./pages/profile"));
+const Events = lazyWithRetry(() => import("./pages/events"));
+const EventManage = lazyWithRetry(() => import("./pages/events/manage"));
+const RafflePage = lazyWithRetry(() => import("./pages/events/raffle"));
 function RaffleRoute() {
 	return (
 		<Suspense fallback={<LayoutFallback />}>
@@ -17,10 +36,10 @@ function RaffleRoute() {
 		</Suspense>
 	);
 }
-const Catalog = lazy(() => import("./pages/catalog"));
-const Achievements = lazy(() => import("./pages/achievements"));
-const Scanner = lazy(() => import("./pages/scanner"));
-const Admin = lazy(() => import("./pages/admin"));
+const Catalog = lazyWithRetry(() => import("./pages/catalog"));
+const Achievements = lazyWithRetry(() => import("./pages/achievements"));
+const Scanner = lazyWithRetry(() => import("./pages/scanner"));
+const Admin = lazyWithRetry(() => import("./pages/admin"));
 
 function LayoutFallback() {
 	return (

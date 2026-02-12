@@ -1,4 +1,5 @@
 import { authFetch } from "@/lib/auth-fetch";
+import { APP_HEADER_TITLE } from "@/lib/constants";
 import type { ApiRaffleResponse, ApiRegistrationsResponse } from "@/types/api";
 import { parseJson } from "@/types/api";
 import { Loader2, User } from "lucide-react";
@@ -267,8 +268,8 @@ export function RaffleContent({
 				<div className="relative flex items-center gap-3 shrink-0 min-h-10">
 					{headerLeft}
 					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-						<span className="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink">
-						Караоке Лото
+						<span className="text-transparent text-xl bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple truncate min-w-0">
+						{APP_HEADER_TITLE}
 					</span>
 					</div>
 				</div>
@@ -286,8 +287,8 @@ export function RaffleContent({
 					<div className="relative flex items-center gap-3 min-h-10">
 						{headerLeft}
 						<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-							<span className="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink">
-						Караоке Лото
+							<span className="text-transparent text-xl bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple truncate min-w-0">
+						{APP_HEADER_TITLE}
 					</span>
 						</div>
 					</div>
@@ -331,8 +332,8 @@ export function RaffleContent({
 				<div className="relative flex items-center gap-3 min-h-10">
 					{headerLeft}
 					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center w-full pointer-events-none">
-						<span className="text-lg font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-neon-purple via-neon-cyan to-neon-pink">
-						Караоке Лото
+						<span className="text-transparent text-xl bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple truncate min-w-0">
+						{APP_HEADER_TITLE}
 					</span>
 					</div>
 				</div>
