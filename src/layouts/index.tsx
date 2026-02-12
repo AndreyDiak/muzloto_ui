@@ -1,8 +1,9 @@
 import { useSession } from '@/app/context/session';
+import { useAchievements } from '@/hooks/use-achievements';
 import { useTelegramBack } from '@/hooks/use-telegram-back';
 import { cn, prettifyCoins } from '@/lib/utils';
 import { Award, Calendar, Coins, Shield, ShoppingBag, User } from 'lucide-react';
-import { memo, Suspense } from 'react';
+import { memo, Suspense, useMemo } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { Skeleton } from '../components/ui/skeleton';
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
@@ -10,7 +11,14 @@ import { LazyLoadingFallback } from './fallback';
 
 export const BasicLayout = () => {
   useTelegramBack();
-  const { profile, isRoot } = useSession();
+  const { profile, isRoot, isSupabaseSessionReady } = useSession();
+  const { visitRewardPending, achievements } = useAchievements(isSupabaseSessionReady);
+  const hasUnclaimedReward = useMemo(
+    () =>
+      visitRewardPending ||
+      achievements.some((a) => a.unlocked && a.coin_reward != null && !a.reward_claimed_at),
+    [visitRewardPending, achievements]
+  );
   const coins = profile?.balance ?? 0;
   const showBalanceSkeleton = profile === undefined;
 
@@ -33,12 +41,18 @@ export const BasicLayout = () => {
           <Outlet />
         </Suspense>
       </main>
-      <Navigation isRoot={isRoot} />
+      <Navigation isRoot={isRoot} hasUnclaimedReward={hasUnclaimedReward} />
     </div>
   );
 };
 
-const Navigation = ({ isRoot = false }: { isRoot?: boolean }) => {
+const Navigation = ({
+  isRoot = false,
+  hasUnclaimedReward = false,
+}: {
+  isRoot?: boolean;
+  hasUnclaimedReward?: boolean;
+}) => {
   const location = useLocation();
   const navItems = [
     { path: '/', icon: User, label: 'Профиль' },
@@ -52,6 +66,7 @@ const Navigation = ({ isRoot = false }: { isRoot?: boolean }) => {
       <div className="flex items-center py-2">
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
+          const showRewardBadge = path === '/achievements' && hasUnclaimedReward;
           return (
             <Link
               key={path}
@@ -59,10 +74,19 @@ const Navigation = ({ isRoot = false }: { isRoot?: boolean }) => {
               className={cn(
                 'flex flex-1 min-w-0 flex-col items-center gap-0.5 px-1 py-2 rounded-lg transition-all relative',
                 isActive ? 'text-neon-cyan' : 'text-gray-400 hover:text-gray-200',
+                showRewardBadge && !isActive && 'text-neon-gold',
               )}
               aria-label={label}
             >
-              <Icon className="w-5 h-5 shrink-0" />
+              <span className="relative inline-flex shrink-0">
+                <Icon className="w-5 h-5" />
+                {showRewardBadge && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-neon-gold ring-2 ring-surface-card"
+                    aria-hidden
+                  />
+                )}
+              </span>
               <span className="text-[10px] leading-tight truncate w-full text-center">{label}</span>
             </Link>
           );

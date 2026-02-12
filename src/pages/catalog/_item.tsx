@@ -61,14 +61,25 @@ export const CatalogItem = ({ item, color: _color, isRoot, activeCode = null }: 
 		<>
 			<div
 				key={item.id}
-				className="bg-surface-card border border-white/6 rounded-xl p-3 flex flex-col"
+				className="bg-surface-card border border-white/6 rounded-xl overflow-hidden flex flex-col"
 			>
-				<h3 className="text-white text-lg font-bold mb-2 flex-1">{item.name}</h3>
-				<p className="text-xs text-gray-400 mb-2">{item.description ?? ""}</p>
-				<div className="flex items-center gap-1 mb-2">
-					<Coins className="w-4 h-4 text-neon-gold" />
-					<span className="text-neon-gold font-semibold text-sm">{prettifyCoins(item.price)}</span>
-				</div>
+				{item.photo && (
+					<div className="w-full h-48 bg-white/5 shrink-0 overflow-hidden">
+						<img
+							src={item.photo}
+							alt={item.name}
+							className="w-full h-full object-cover object-center"
+							loading="lazy"
+						/>
+					</div>
+				)}
+				<div className="p-3 flex flex-col flex-1">
+					<h3 className="text-white text-lg font-bold mb-2">{item.name}</h3>
+					<p className="text-xs text-gray-400 mb-2">{item.description ?? ""}</p>
+					<div className="flex items-center gap-1 mb-2">
+						<Coins className="w-4 h-4 text-neon-gold" />
+						<span className="text-neon-gold font-semibold text-sm">{prettifyCoins(item.price)}</span>
+					</div>
 
 				{isRoot && (
 					<button
@@ -81,6 +92,7 @@ export const CatalogItem = ({ item, color: _color, isRoot, activeCode = null }: 
 						{isGenerating ? "Генерация…" : "Показать код"}
 					</button>
 				)}
+				</div>
 			</div>
 
 			{shownCode && (
