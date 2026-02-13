@@ -10,6 +10,13 @@ const NEON_PURPLE = "#b829ff";
 const LOGO_URL = "/logo_for_qr.png";
 const SVG_NS = "http://www.w3.org/2000/svg";
 
+/** Размер QR на экране (px) */
+const QR_DISPLAY_SIZE = 240;
+/** Размер QR при скачивании по умолчанию (билеты, коды покупки) */
+const QR_DEFAULT_SIZE = 240;
+/** Размер QR при скачивании для кода мероприятия (печать) */
+const QR_EVENT_REGISTRATION_SIZE = 1024;
+
 /** Делает центральное изображение в QR круглым через clipPath */
 function makeQrLogoRound(container: HTMLDivElement) {
 	const svg = container.querySelector("svg");
@@ -43,6 +50,8 @@ export interface TicketQRModalProps {
 	dialogTitle?: string;
 	/** Данные для QR (например ссылка t.me/...?startapp=CODE). Если не задано — в QR кодируется code */
 	qrData?: string;
+	/** true = высокое разрешение при скачивании (для кода мероприятия на печать). По умолчанию false */
+	highResolutionDownload?: boolean;
 }
 
 export function TicketQRModal({
@@ -53,11 +62,13 @@ export function TicketQRModal({
 	showProfileHint = true,
 	dialogTitle = "Ваш билет",
 	qrData,
+	highResolutionDownload = false,
 }: TicketQRModalProps) {
 	const { showToast } = useToast();
 	const qrInstanceRef = useRef<InstanceType<typeof QRCodeStyling> | null>(null);
 	const dataForQr = (qrData ?? code).trim() || code;
 	const [isQrReady, setIsQrReady] = useState(false);
+	const qrPixelSize = highResolutionDownload ? QR_EVENT_REGISTRATION_SIZE : QR_DEFAULT_SIZE;
 
 	useEffect(() => {
 		if (open) setIsQrReady(false);
@@ -72,8 +83,8 @@ export function TicketQRModal({
 			setIsQrReady(false);
 			node.replaceChildren();
 			const qr = new QRCodeStyling({
-				width: 240,
-				height: 240,
+				width: qrPixelSize,
+				height: qrPixelSize,
 				type: "svg",
 				data: dataForQr,
 				qrOptions: { errorCorrectionLevel: "H" },
@@ -109,7 +120,7 @@ export function TicketQRModal({
 			});
 			setTimeout(() => setIsQrReady(true), 350);
 		},
-		[dataForQr],
+		[dataForQr, qrPixelSize],
 	);
 
 	const handleCopyCode = useCallback(() => {
@@ -124,71 +135,32 @@ export function TicketQRModal({
 			return;
 		}
 		const fileName = `event-${code}.png`;
-		const isMobile = /iPhone|iPad|iPod|Android|webOS/i.test(navigator.userAgent) || "ontouchstart" in window;
 
-		const tryFallbackForMobile = async () => {
-			const blob = await qr.getRawData("png");
-			if (!blob || !(blob instanceof Blob)) throw new Error("No blob");
-			const url = URL.createObjectURL(blob);
-
-			// Web Share API (на мобильных часто есть «Сохранить» в шаринге)
-			if (isMobile && navigator.share && navigator.canShare) {
-				try {
-					const file = new File([blob], fileName, { type: "image/png" });
-					if (navigator.canShare({ files: [file] })) {
-						await navigator.share({
-							files: [file],
-							title: itemName,
-						});
-						URL.revokeObjectURL(url);
-						showToast("QR-код сохранён или отправлен", "success");
-						return;
-					}
-				} catch (shareErr) {
-					// Пользователь отменил или share не сработал — идём в открытие в новой вкладке
-				}
-			}
-
-			// Открыть изображение в новой вкладке: на мобильных можно удержать и «Сохранить изображение»
-			const opened = window.open(url, "_blank", "noopener");
-			if (opened) {
-				setTimeout(() => URL.revokeObjectURL(url), 5000);
-				showToast("Удерживайте изображение, чтобы сохранить", "info");
-			} else {
-				URL.revokeObjectURL(url);
-				// Попупы могли быть заблокированы — последняя попытка через <a> click
-				const a = document.createElement("a");
-				a.href = url;
-				a.download = fileName;
-				a.rel = "noopener";
-				document.body.appendChild(a);
-				a.click();
-				document.body.removeChild(a);
-				setTimeout(() => URL.revokeObjectURL(url), 500);
-				showToast("Если не сохранилось: удерживайте QR на экране для сохранения", "info");
-			}
-		};
+		const blob = await qr.getRawData("png");
+		if (!blob || !(blob instanceof Blob)) {
+			showToast("Не удалось сформировать изображение", "error");
+			return;
+		}
+		const url = URL.createObjectURL(blob);
 
 		try {
-			if (isMobile) {
-				// На мобильных qr.download() почти всегда не срабатывает — сразу fallback
-				await tryFallbackForMobile();
-			} else {
-				await qr.download({
-					name: `event-${code}`,
-					extension: "png",
-				});
-				showToast("QR-код сохранён", "success");
-			}
-		} catch {
-			try {
-				await tryFallbackForMobile();
-			} catch (e) {
-				console.error(e);
-				showToast("Не удалось сохранить QR-код. Скопируйте код вручную.", "error");
-			}
+			// Всегда прямой скачивание по ссылке — не используем navigator.share(),
+			// иначе на Windows/Telegram Desktop открывается диалог «Поделиться»
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = fileName;
+			a.rel = "noopener";
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			setTimeout(() => URL.revokeObjectURL(url), 500);
+			showToast("QR-код сохранён", "success");
+		} catch (e) {
+			console.error(e);
+			URL.revokeObjectURL(url);
+			showToast("Не удалось сохранить QR-код. Скопируйте код вручную.", "error");
 		}
-	}, [code, itemName, showToast]);
+	}, [code, showToast]);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -200,10 +172,11 @@ export function TicketQRModal({
 					<p className="text-sm text-center text-transparent bg-clip-text bg-linear-to-r from-neon-cyan to-neon-purple font-semibold">
 						{itemName}
 					</p>
-					<div className="relative" style={{ width: 240, height: 240 }}>
+					<div className="relative" style={{ width: QR_DISPLAY_SIZE, height: QR_DISPLAY_SIZE }}>
 						<div
 							ref={setQrContainer}
-							className="rounded-lg overflow-hidden [&>svg]:max-w-[240px] [&>svg]:max-h-[240px] [&>svg]:w-full [&>svg]:h-auto size-full"
+							className="rounded-lg overflow-hidden size-full flex items-center justify-center [&>svg]:max-w-full [&>svg]:max-h-full [&>svg]:w-full [&>svg]:h-auto"
+							style={{ maxWidth: QR_DISPLAY_SIZE, maxHeight: QR_DISPLAY_SIZE }}
 							aria-hidden
 						/>
 						{!isQrReady && (

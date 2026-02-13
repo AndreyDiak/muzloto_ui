@@ -2,26 +2,26 @@ import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SEvent } from "@/entities/event";
 import { http } from "@/http";
 import { authFetch } from "@/lib/auth-fetch";
 import {
-	getEventCodeBotStartLink,
-	getEventCodeDeepLink,
+  getEventCodeBotStartLink,
+  getEventCodeDeepLink,
 } from "@/lib/event-deep-link";
 import { prettifyCoins } from "@/lib/utils";
 import {
-	type ApiRaffleResponse,
-	type ApiRegistrationsResponse,
-	parseJson,
+  type ApiRaffleResponse,
+  type ApiRegistrationsResponse,
+  parseJson,
 } from "@/types/api";
-import { ChevronLeft, Coins, Gift, User } from "lucide-react";
+import { ChevronLeft, Coins, Gift, MessageCircle, User } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { EventQRSection } from "./_event-qr-section";
@@ -48,6 +48,7 @@ export default function EventManage() {
 
   const [raffleWinner, setRaffleWinner] = useState<ApiRaffleResponse["winner"]>(null);
   const [raffleWinnerCoins, setRaffleWinnerCoins] = useState<number | null>(null);
+  const [broadcastSending, setBroadcastSending] = useState(false);
 
   const fetchEvent = useCallback(async () => {
     if (!eventId) return;
@@ -118,6 +119,34 @@ export default function EventManage() {
     }
   }, [location.state?.raffleConfirmed, eventId, fetchRaffle, navigate]);
 
+  const handleBroadcastFeedback = useCallback(async () => {
+    if (!eventId || broadcastSending) return;
+    setBroadcastSending(true);
+    try {
+      const res = await authFetch(
+        `${BACKEND_URL}/api/events/${eventId}/broadcast-feedback`,
+        { method: "POST" }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showToast(data?.error ?? "Ошибка рассылки", "error");
+        return;
+      }
+      const { total = 0, sent = 0, failed = 0 } = data;
+      if (total === 0) {
+        showToast("Нет зарегистрированных участников для рассылки", "info");
+      } else if (failed === 0) {
+        showToast(`Разослано ${sent} из ${total} участникам`, "success");
+      } else {
+        showToast(`Разослано ${sent} из ${total}, не доставлено: ${failed}`, "success");
+      }
+    } catch {
+      showToast("Ошибка рассылки", "error");
+    } finally {
+      setBroadcastSending(false);
+    }
+  }, [eventId, broadcastSending, showToast]);
+
   if (!isRoot) {
     return <Navigate to="/events" replace />;
   }
@@ -182,6 +211,25 @@ export default function EventManage() {
         </Accordion>
       </div>
 
+      {/* ——— Рассылка участникам ——— */}
+      <div className="bg-card-neutral rounded-2xl p-5 border border-white/[0.06]">
+        <div className="flex items-center gap-2 text-white text-base font-medium mb-2">
+          <MessageCircle className="w-5 h-5 text-neon-cyan" />
+          Рассылка участникам
+        </div>
+        <p className="text-gray-400 text-sm mb-4">
+          Отправить всем зарегистрированным сообщение с просьбой об обратной связи (от бота в личку).
+        </p>
+        <button
+          type="button"
+          onClick={handleBroadcastFeedback}
+          disabled={broadcastSending || registrations.length === 0}
+          className="w-full py-3 rounded-xl bg-neon-cyan/15 text-neon-cyan font-medium border border-neon-cyan/30 hover:bg-neon-cyan/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {broadcastSending ? "Отправка…" : "Получить обратную связь!"}
+        </button>
+      </div>
+
       {/* ——— Розыгрыш ——— */}
       <div className="bg-card-neutral rounded-2xl p-5 border border-white/[0.06]">
         <div className="flex items-center gap-2 text-white text-base font-medium mb-2">
@@ -240,6 +288,7 @@ export default function EventManage() {
           itemName={event.title}
           showProfileHint={false}
           dialogTitle="Код мероприятия"
+          highResolutionDownload
           qrData={
             getEventCodeDeepLink(event.code) ||
             getEventCodeBotStartLink(event.code) ||
