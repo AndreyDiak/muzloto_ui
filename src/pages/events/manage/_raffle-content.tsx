@@ -81,32 +81,28 @@ function RaffleCard({
 				transformStyle: "preserve-3d",
 			}}
 		>
-			<div className="absolute inset-0 rounded-xl overflow-hidden" style={{ transformStyle: "preserve-3d" }}>
+			<div className="absolute inset-0 rounded-full overflow-hidden" style={{ transformStyle: "preserve-3d" }}>
 				<div
-					className="absolute inset-0 flex items-center justify-center rounded-xl border border-neon-gold/30 bg-neon-gold/10 z-0"
+					className="absolute inset-0 flex items-center justify-center rounded-full border-2 border-neon-gold/30 bg-neon-gold/10 z-0"
 					style={{ opacity: showNumber && !showWinnerFace ? 1 : 0 }}
 				>
 					<span className="text-2xl sm:text-3xl font-bold text-neon-gold">{number}</span>
 				</div>
 				<div
-					className="absolute inset-0 rounded-xl border border-white/10 bg-surface-card z-10 transition-transform duration-500 ease-in-out"
+					className="absolute inset-0 rounded-full border-2 border-white/10 bg-surface-card z-10 transition-transform duration-500 ease-in-out overflow-hidden"
 					style={{
 						backfaceVisibility: "hidden",
 						WebkitBackfaceVisibility: "hidden",
 						transform: showNumber && !showWinnerFace ? "rotateY(180deg)" : "rotateY(0deg)",
 					}}
 				>
-					<div className="absolute inset-0 flex flex-col items-center justify-center p-2 rounded-xl">
-						<div className="w-full h-full min-h-0 rounded-lg bg-white/5 flex flex-col items-center justify-center">
-							<div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-neon-cyan/10 flex items-center justify-center shrink-0 overflow-hidden">
-								{registration.avatar_url ? (
-									<img src={registration.avatar_url} alt="" className="w-full h-full object-cover" />
-								) : (
-									<User className="w-6 h-6 sm:w-7 sm:h-7 text-neon-cyan" />
-								)}
-							</div>
+					{registration.avatar_url ? (
+						<img src={registration.avatar_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+					) : (
+						<div className="absolute inset-0 flex items-center justify-center rounded-full bg-white/5">
+							<User className="w-8 h-8 sm:w-10 sm:h-10 text-white/50 shrink-0" />
 						</div>
-					</div>
+					)}
 				</div>
 			</div>
 		</div>
@@ -298,11 +294,11 @@ export function RaffleContent({
 						{displayNumber != null ? `Выпал номер ${displayNumber}` : "Победитель"}
 					</p>
 					<div className="flex flex-col items-center gap-3 p-4 min-w-0 max-w-sm">
-						<div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-neon-cyan/10 flex items-center justify-center shrink-0 overflow-hidden border-2 border-neon-gold/40">
+						<div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/5 flex items-center justify-center shrink-0 overflow-hidden border-2 border-neon-gold/40">
 							{existingWinner.avatar_url ? (
 								<img src={existingWinner.avatar_url} alt="" className="w-full h-full object-cover" />
 							) : (
-								<User className="w-10 h-10 sm:w-12 sm:h-12 text-neon-cyan" />
+								<User className="w-10 h-10 sm:w-12 sm:h-12 text-white/50" />
 							)}
 						</div>
 						<div className="text-center min-w-0">
@@ -356,7 +352,7 @@ export function RaffleContent({
 						</p>
 						<div className="flex flex-col items-center gap-3 p-4 min-w-0 max-w-sm">
 							<div
-								className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-neon-cyan/10 flex items-center justify-center shrink-0 overflow-hidden border-2 border-neon-gold/40"
+								className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/5 flex items-center justify-center shrink-0 overflow-hidden border-2 border-neon-gold/40"
 								style={{
 									animation: "raffle-avatar-in 0.4s ease-out both",
 									animationDelay: "0.75s",
@@ -369,7 +365,7 @@ export function RaffleContent({
 										className="w-full h-full object-cover"
 									/>
 								) : (
-									<User className="w-10 h-10 sm:w-12 sm:h-12 text-neon-cyan" />
+									<User className="w-10 h-10 sm:w-12 sm:h-12 text-white/50" />
 								)}
 							</div>
 							<div

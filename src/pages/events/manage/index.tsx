@@ -196,7 +196,7 @@ export default function EventManage() {
         </p>
         {raffleWinner ? (
           <div className="flex items-center gap-4 py-2">
-            <div className="w-14 h-14 rounded-full bg-neon-cyan/10 flex items-center justify-center overflow-hidden border-2 border-neon-gold/40 shrink-0">
+            <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center overflow-hidden border-2 border-neon-gold/40 shrink-0">
               {raffleWinner.avatar_url ? (
                 <img
                   src={raffleWinner.avatar_url}
@@ -204,7 +204,7 @@ export default function EventManage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="w-7 h-7 text-neon-cyan" />
+                <User className="w-7 h-7 text-white/50" />
               )}
             </div>
             <div className="min-w-0 flex-1">

@@ -81,7 +81,7 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
         <div>
           {u && (
             <span className="inline-block px-2 py-1 bg-neon-cyan/22 text-neon-cyan text-xs rounded-full mb-2">
-              Скоро
+              Сегодня
             </span>
           )}
           <h3

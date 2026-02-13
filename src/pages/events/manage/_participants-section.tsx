@@ -51,7 +51,7 @@ export function ParticipantsSection({
             key={r.telegram_id}
             className="flex items-center gap-3 p-3 rounded-xl bg-surface-card border border-white/[0.08]"
           >
-            <div className="w-10 h-10 rounded-full bg-neon-cyan/10 flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center shrink-0 overflow-hidden">
               {r.avatar_url ? (
                 <img
                   src={r.avatar_url}
@@ -59,7 +59,7 @@ export function ParticipantsSection({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="w-5 h-5 text-neon-cyan" />
+                <User className="w-5 h-5 text-white/50" />
               )}
             </div>
             <div className="min-w-0 flex-1">

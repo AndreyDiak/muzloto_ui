@@ -77,7 +77,7 @@ export function VisitsRewardSection() {
             const word = left === 1 ? "посещение" : left >= 2 && left <= 4 ? "посещения" : "посещений";
             return (
               <>
-                До <span className="text-neon-gold/90">{coinsLabel} монет</span> осталось {left} {word}
+                До награды осталось {left} {word}
               </>
             );
           })()}
