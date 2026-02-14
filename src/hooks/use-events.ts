@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { SEvent } from "../entities/event/types";
 import { http } from "../http";
+import { getStartOfTodayMoscow } from "../lib/moscow-date";
 import { queryKeys, STALE_TIME_MS } from "../lib/query-client";
 
 interface UseEventsReturn {
@@ -19,7 +20,9 @@ async function fetchEvents(): Promise<SEvent[]> {
   if (error) {
     throw new Error(error.message);
   }
-  return (data ?? []) as SEvent[];
+  const all = (data ?? []) as SEvent[];
+  const startOfToday = getStartOfTodayMoscow();
+  return all.filter((e) => new Date(e.event_date) >= startOfToday);
 }
 
 export function useEvents(): UseEventsReturn {

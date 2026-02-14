@@ -12,7 +12,7 @@ export interface ApiError {
 
 export interface ApiMyRegistrationResponse {
 	registration: {
-		event: { id: string; title: string } | null;
+		event: { id: string; title: string; event_date: string } | null;
 		registered_at: string;
 	} | null;
 }

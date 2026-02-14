@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { authFetch } from "@/lib/auth-fetch";
 import { ADMIN_BACKEND_URL } from "./constants";
 import type { AdminEvent } from "./types";
+import { moscowDateTimeLocalToISO } from "@/lib/moscow-date";
 import { formatAdminDate } from "./utils";
 import { Calendar, Loader2, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -54,7 +55,7 @@ export function EventsSection() {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					title: trimmed,
-					event_date: date || undefined,
+					event_date: date ? moscowDateTimeLocalToISO(date) : undefined,
 					location: location.trim() || undefined,
 					location_href: locationHref.trim() || undefined,
 					price: price >= 0 ? price : undefined,

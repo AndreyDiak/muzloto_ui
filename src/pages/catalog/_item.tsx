@@ -103,8 +103,10 @@ export const CatalogItem = ({ item, color: _color, isRoot, activeCode = null }: 
 					</div>
 				)}
 				<div className="p-3 flex flex-col flex-1">
-					<h3 className="text-white text-lg font-bold mb-2">{item.name}</h3>
-					<p className="text-xs text-gray-400 mb-2">{item.description ?? ""}</p>
+					<h3 className="text-white text-lg font-bold mb-1.5 leading-tight">{item.name}</h3>
+					{(item.description?.trim() ?? "") && (
+						<p className="text-sm text-gray-300 leading-relaxed mb-3">{item.description}</p>
+					)}
 					<div className="flex items-center gap-1 mb-2">
 						<Coins className="w-4 h-4 text-neon-gold" />
 						<span className="text-neon-gold font-semibold text-sm">{prettifyCoins(item.price)}</span>

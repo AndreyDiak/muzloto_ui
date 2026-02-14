@@ -1,4 +1,5 @@
 import { useMyRegistration } from "@/hooks/use-my-registration";
+import { getStartOfTodayMoscow } from "@/lib/moscow-date";
 import { CalendarCheck } from "lucide-react";
 import { memo } from "react";
 
@@ -6,6 +7,9 @@ export const ProfileEventRegistration = memo(() => {
   const { registration: data, isLoading } = useMyRegistration();
 
   if (isLoading || !data || !data.event) return null;
+
+  const startOfToday = getStartOfTodayMoscow();
+  if (new Date(data.event.event_date) < startOfToday) return null;
 
   return (
     <div className="-mx-3 flex items-center gap-3 bg-surface-card py-2.5 px-3 border-y border-white/10">

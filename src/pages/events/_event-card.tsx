@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router";
-import { formatEventDate, useEventColors } from "./_utils";
+import { formatEventDate, getEventSoonLabel, useEventColors } from "./_utils";
 
 interface Props {
   event: SEvent;
@@ -44,6 +44,7 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
   const eventColors = useEventColors();
   const eventColor = getEventColor(colorIndex, eventColors);
   const eventDate = formatEventDate(event.event_date);
+  const soonLabel = isUpcoming ? getEventSoonLabel(event.event_date) : null;
   const u = !!isUpcoming;
 
   return (
@@ -79,9 +80,11 @@ export const EventCard = memo(({ event, isRoot, isUpcoming, colorIndex = 0 }: Pr
 
       <div className="p-5 flex flex-col gap-5">
         <div>
-          {u && (
-            <span className="inline-block px-2 py-1 bg-neon-cyan/22 text-neon-cyan text-xs rounded-full mb-2">
-              Сегодня
+          {soonLabel && (
+            <span
+              className={`inline-block px-2 py-1 text-xs rounded-full mb-2 ${soonLabel.className}`}
+            >
+              {soonLabel.label}
             </span>
           )}
           <h3

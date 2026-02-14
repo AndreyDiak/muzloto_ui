@@ -44,6 +44,8 @@ export default function Catalog() {
 
 	return (
 		<div className="p-3 space-y-4">
+			<h2 className="text-xl font-bold text-white">Лавка удачи</h2>
+			<p className="text-sm text-gray-400 -mt-2">Товары за монеты</p>
 			{items.map((item, index) => (
 				<CatalogItem
 					key={item.id}
