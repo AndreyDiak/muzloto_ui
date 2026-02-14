@@ -20,7 +20,8 @@ import { queryKeys } from "@/lib/query-client";
 import type { ApiValidateCodeResponse } from "@/types/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Keyboard, QrCode } from "lucide-react";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 
 export const ProfileSqan = memo(() => {
 	const { user, refetchProfile } = useSession();
@@ -42,6 +43,15 @@ export const ProfileSqan = memo(() => {
 
 	// Модалка ручного ввода кода
 	const [manualCodeModalOpen, setManualCodeModalOpen] = useState(false);
+	const [searchParams, setSearchParams] = useSearchParams();
+
+	// Открыть модалку ввода кода по ссылке из чата бота (?openCode=1) — там откроется числовая клавиатура
+	useEffect(() => {
+		if (searchParams.get('openCode') === '1') {
+			setManualCodeModalOpen(true);
+			setSearchParams({}, { replace: true });
+		}
+	}, [searchParams, setSearchParams]);
 	// Покупка по коду: превью → модалка подтверждения → погашение
 	const [purchaseConfirmOpen, setPurchaseConfirmOpen] = useState(false);
 	const [purchaseConfirmData, setPurchaseConfirmData] = useState<{
@@ -390,7 +400,13 @@ export const ProfileSqan = memo(() => {
 				setManualCodeModalOpen(open);
 				if (!open) setCodeInputs(Array(CODE_LENGTH).fill(''));
 			}}>
-				<DialogContent className="bg-surface-card border-white/10 text-white sm:max-w-sm max-w-[calc(100vw-2rem)]">
+				<DialogContent
+					className="bg-surface-card border-white/10 text-white sm:max-w-sm max-w-[calc(100vw-2rem)]"
+					onOpenAutoFocus={(e) => {
+						e.preventDefault();
+						setTimeout(() => inputRefs.current[0]?.focus(), 0);
+					}}
+				>
 					<DialogHeader>
 						<DialogTitle className="text-white">Введите код</DialogTitle>
 						<p className="text-sm text-gray-400">5 цифр — регистрация на мероприятие или код покупки</p>

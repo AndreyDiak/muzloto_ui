@@ -310,7 +310,13 @@ export default function Scanner() {
 					if (!open) setCodeInputs(Array(CODE_LENGTH).fill(""));
 				}}
 			>
-				<DialogContent className="bg-surface-card border-neon-cyan/30 max-w-sm">
+				<DialogContent
+					className="bg-surface-card border-neon-cyan/30 max-w-sm"
+					onOpenAutoFocus={(e) => {
+						e.preventDefault();
+						setTimeout(() => inputRefs.current[0]?.focus(), 0);
+					}}
+				>
 					<DialogHeader>
 						<DialogTitle className="text-white text-center">Введите код билета</DialogTitle>
 					</DialogHeader>
