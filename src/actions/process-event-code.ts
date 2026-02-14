@@ -27,14 +27,15 @@ const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'
  * Не создаёт регистрацию — только проверяет.
  */
 export async function validateEventCode(code: string): Promise<ApiValidateCodeResponse> {
-  if (!code || code.length !== CODE_LENGTH) {
-    throw new Error('Неверный формат кода. Код должен состоять из 5 символов.');
+  const normalized = (code ?? '').trim().replace(/\D/g, '');
+  if (normalized.length !== CODE_LENGTH) {
+    throw new Error('Неверный формат кода. Код должен состоять из 5 цифр.');
   }
 
   const response = await authFetch(`${BACKEND_URL}/api/events/validate-code`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code: code.toUpperCase() }),
+    body: JSON.stringify({ code: normalized }),
   });
 
   if (!response.ok) {
@@ -51,8 +52,9 @@ export async function processEventCode({
   onSuccess,
   onError,
 }: ProcessEventCodeParams): Promise<void> {
-  if (!code || code.length !== CODE_LENGTH) {
-    onError?.('Неверный формат кода. Код должен состоять из 5 символов.');
+  const normalized = (code ?? '').trim().replace(/\D/g, '');
+  if (normalized.length !== CODE_LENGTH) {
+    onError?.('Неверный формат кода. Код должен состоять из 5 цифр.');
     return;
   }
 
@@ -60,7 +62,7 @@ export async function processEventCode({
     const response = await authFetch(`${BACKEND_URL}/api/events/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: code.toUpperCase() }),
+      body: JSON.stringify({ code: normalized }),
     });
 
     if (!response.ok) {

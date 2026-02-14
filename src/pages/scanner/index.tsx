@@ -13,19 +13,21 @@ import { Navigate } from "react-router";
 const CODE_LENGTH = 5;
 const VISIBLE_RECENT_COUNT = 10;
 
-/** Из скана QR или ввода извлекает 5-символьный код: билет или покупка (лавка удачи). */
+/** Из скана QR или ввода извлекает 5-цифровой код: билет или покупка (лавка удачи). */
 function normalizeScannedCode(raw: string): string | null {
 	const t = raw.trim();
-	if (t.length === CODE_LENGTH && /^[A-Za-z0-9]+$/.test(t)) return t.toUpperCase();
-	const shopMatch = t.match(/^shop-([A-Za-z0-9]{5})/i);
-	if (shopMatch) return shopMatch[1].toUpperCase();
+	const digits = t.replace(/\D/g, "");
+	if (digits.length === CODE_LENGTH) return digits;
+	const shopMatch = t.match(/^shop-(\d{5})/i);
+	if (shopMatch) return shopMatch[1];
 	try {
 		const url = new URL(t);
 		const start = (url.searchParams.get("start") ?? url.searchParams.get("startapp") ?? "").trim();
 		if (start) {
-			const shopParam = start.match(/^shop-([A-Za-z0-9]{5})/i);
-			if (shopParam) return shopParam[1].toUpperCase();
-			if (start.length === CODE_LENGTH && /^[A-Za-z0-9]+$/.test(start)) return start.toUpperCase();
+			const m = start.match(/^shop-(\d{5})/i);
+			if (m) return m[1];
+			const d = start.replace(/\D/g, "");
+			if (d.length === CODE_LENGTH) return d;
 		}
 	} catch {
 		// не URL
@@ -138,7 +140,7 @@ export default function Scanner() {
 						const raw = typeof text === "string" ? text : "";
 						const code = normalizeScannedCode(raw);
 						if (!code) {
-							showToast("QR не распознан или неверный формат. Ожидается код из 5 символов или ссылка лавки удачи.", "error");
+							showToast("QR не распознан или неверный формат. Ожидается код из 5 цифр или ссылка лавки удачи.", "error");
 							return false;
 						}
 						isProcessingRef.current = true;
@@ -163,10 +165,11 @@ export default function Scanner() {
 	};
 
 	const handleManualSubmit = (code: string) => {
-		if (code.length !== CODE_LENGTH || isProcessing) return;
+		const digits = code.replace(/\D/g, "");
+		if (digits.length !== CODE_LENGTH || isProcessing) return;
 		setIsProcessing(true);
 		scanTicket({
-			code: code.toUpperCase(),
+			code: digits,
 			onSuccess: (data) => {
 				onScanSuccess(data);
 				setIsManualOpen(false);
@@ -181,7 +184,8 @@ export default function Scanner() {
 	};
 
 	const handleInputChange = (index: number, value: string) => {
-		const char = value.length > 0 ? value.slice(-1).toUpperCase() : "";
+		const digits = value.replace(/\D/g, "");
+		const char = digits.length > 0 ? digits.slice(-1) : "";
 		const next = [...codeInputs];
 		next[index] = char;
 		setCodeInputs(next);
@@ -316,7 +320,9 @@ export default function Scanner() {
 								key={i}
 								ref={(el) => { inputRefs.current[i] = el; }}
 								type="text"
-								inputMode="text"
+								inputMode="numeric"
+								pattern="[0-9]*"
+								autoComplete="one-time-code"
 								value={codeInputs[i] || ""}
 								onChange={(e) => handleInputChange(i, e.target.value)}
 								onKeyDown={(e) => handleInputKeyDown(i, e)}
@@ -325,7 +331,7 @@ export default function Scanner() {
 							/>
 						))}
 					</div>
-					<p className="text-center text-gray-400 text-xs mb-4">Код из {CODE_LENGTH} символов</p>
+					<p className="text-center text-gray-400 text-xs mb-4">Код из {CODE_LENGTH} цифр</p>
 					<button
 						type="button"
 						disabled={codeInputs.join("").length !== CODE_LENGTH || isProcessing}

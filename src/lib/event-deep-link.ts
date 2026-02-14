@@ -2,7 +2,7 @@
  * Ссылки и payload при открытии приложения по ссылке.
  *
  * Типы: registration (регистрация на мероприятие), shop (код покупки).
- * Формат: "reg-CODE" (регистрация), "shop-CODE" (покупка). Голые 5 символов — registration или shop (по контексту).
+ * Формат: "reg-CODE" (регистрация), "shop-CODE" (покупка). Код — 5 цифр.
  */
 
 const BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? "";
@@ -10,16 +10,16 @@ const WEB_APP_SHORT_NAME = import.meta.env.VITE_TELEGRAM_WEB_APP_SHORT_NAME ?? "
 const APP_BASE_URL = import.meta.env.VITE_APP_BASE_URL ?? "";
 
 const EVENT_CODE_LENGTH = 5;
-const EVENT_CODE_REGEX = /^[A-Za-z0-9]{5}$/;
+const EVENT_CODE_REGEX = /^\d{5}$/;
 
 const PAYLOAD_REG = "reg";
 const PAYLOAD_SHOP = "shop";
 const PAYLOAD_PRIZE = "prize"; // для getPrizeDeepLink (админ/сертификаты)
 
-/** Прямая ссылка на Mini App: startapp=reg-CODE (только допустимые символы для Telegram). */
+/** Прямая ссылка на Mini App: startapp=reg-CODE (код — 5 цифр). */
 export function getEventCodeDeepLink(code: string): string {
 	if (!code || typeof code !== "string") return "";
-	const normalized = code.trim().toUpperCase();
+	const normalized = code.trim().replace(/\D/g, "");
 	if (normalized.length !== EVENT_CODE_LENGTH) return "";
 	if (!BOT_USERNAME || !WEB_APP_SHORT_NAME) return "";
 	const appSlug = WEB_APP_SHORT_NAME.replace(/^@/, "").replace(/\s+/g, "_");
@@ -31,7 +31,7 @@ export function getEventCodeDeepLink(code: string): string {
 /** Ссылка на чат с ботом: ?start=reg-CODE. Бот отвечает кнопкой Web App → [APP_BASE_URL]?code=reg-CODE. */
 export function getEventCodeBotStartLink(code: string): string {
 	if (!code || typeof code !== "string") return "";
-	const normalized = code.trim().toUpperCase();
+	const normalized = code.trim().replace(/\D/g, "");
 	if (normalized.length !== EVENT_CODE_LENGTH) return "";
 	if (!BOT_USERNAME) return "";
 	const payload = `${PAYLOAD_REG}-${normalized}`;
@@ -41,29 +41,29 @@ export function getEventCodeBotStartLink(code: string): string {
 /** URL приложения с payload в query (для кнопки Web App в ответе бота на /start reg-CODE). */
 export function getEventCodeAppUrl(code: string): string {
 	if (!APP_BASE_URL) return "";
-	const normalized = (code ?? "").trim().toUpperCase();
+	const normalized = (code ?? "").trim().replace(/\D/g, "");
 	if (normalized.length !== EVENT_CODE_LENGTH) return "";
 	const payload = `${PAYLOAD_REG}-${normalized}`;
 	return `${APP_BASE_URL.replace(/\/$/, "")}?code=${encodeURIComponent(payload)}`;
 }
 
-/** Проверяет, что строка похожа на код мероприятия (5 букв/цифр). */
+/** Проверяет, что строка похожа на код мероприятия (5 цифр). */
 export function isEventCodeLike(value: string): boolean {
-	return EVENT_CODE_REGEX.test(String(value).trim());
+	return EVENT_CODE_REGEX.test(String(value).trim().replace(/\D/g, ""));
 }
 
-/** Код покупки каталога: 5 символов. */
-export const SHOP_CODE_REGEX_5 = /^[A-Za-z0-9]{5}$/;
+/** Код покупки каталога: 5 цифр. */
+export const SHOP_CODE_REGEX_5 = /^\d{5}$/;
 
 export function isShopCodeLike(value: string): boolean {
-	const t = (value ?? "").trim().toUpperCase();
+	const t = (value ?? "").trim().replace(/\D/g, "");
 	return t.length === 5 && SHOP_CODE_REGEX_5.test(t);
 }
 
 export function normalizeShopCode(input: string): string {
-	const t = (input ?? "").trim().toUpperCase();
-	if (t.length === 5 && SHOP_CODE_REGEX_5.test(t)) return t;
-	return t;
+	const t = (input ?? "").trim().replace(/\D/g, "");
+	if (t.length === 5) return t;
+	return (input ?? "").trim();
 }
 
 /**
@@ -93,18 +93,18 @@ export function parseStartPayload(raw: string | undefined): ParsedStartPayload |
 	const lower = trimmed.toLowerCase();
 	if (lower.startsWith(REG_PREFIX) || lower.startsWith(REG_PREFIX_SHORT)) {
 		const idx = trimmed.indexOf(SEP);
-		const value = (idx >= 0 ? trimmed.slice(idx + 1) : "").trim().toUpperCase();
-		if (value && isEventCodeLike(value)) return { type: "registration", value };
+		const value = (idx >= 0 ? trimmed.slice(idx + 1) : "").trim().replace(/\D/g, "");
+		if (value.length === 5) return { type: "registration", value };
 		return null;
 	}
 	if (lower.startsWith(SHOP_PREFIX) || lower.startsWith(SHOP_PREFIX_SHORT)) {
 		const idx = trimmed.indexOf(SEP);
-		const value = (idx >= 0 ? trimmed.slice(idx + 1) : trimmed).trim().toUpperCase();
-		if (value && value.length === 5) return { type: "shop", value: normalizeShopCode(value).toUpperCase() };
+		const value = (idx >= 0 ? trimmed.slice(idx + 1) : trimmed).trim().replace(/\D/g, "");
+		if (value.length === 5) return { type: "shop", value };
 		return null;
 	}
 	if (isShopCodeLike(trimmed)) return { type: "shop", value: normalizeShopCode(trimmed) };
-	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.toUpperCase() };
+	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.trim().replace(/\D/g, "").slice(0, 5) };
 	return null;
 }
 
@@ -155,14 +155,14 @@ export function extractPayloadFromInput(input: string): ParsedStartPayload | nul
 	const trimmed = input.trim();
 	const parsed = parseStartPayload(trimmed);
 	if (parsed) return parsed;
-	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.toUpperCase() };
+	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.trim().replace(/\D/g, "").slice(0, 5) };
 	try {
 		const url = trimmed.startsWith("http") ? new URL(trimmed) : new URL(trimmed, "https://t.me");
 		const startapp = url.searchParams.get("startapp");
 		if (startapp) {
 			const p = parseStartPayload(startapp);
 			if (p) return p;
-			if (isEventCodeLike(startapp)) return { type: "registration", value: startapp.toUpperCase() };
+			if (isEventCodeLike(startapp)) return { type: "registration", value: startapp.trim().replace(/\D/g, "").slice(0, 5) };
 		}
 	} catch {
 		// не URL

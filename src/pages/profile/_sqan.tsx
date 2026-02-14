@@ -74,7 +74,7 @@ export const ProfileSqan = memo(() => {
 						isProcessingQRRef.current = true;
 						const trimmedText = text.trim();
 
-						// Пробуем распарсить как raw payload, URL с startapp, или код (5 символов)
+						// Пробуем распарсить как raw payload, URL с startapp, или код (5 цифр)
 						const parsed = extractPayloadFromInput(trimmedText);
 						if (parsed) {
 							if (parsed.type === "registration") {
@@ -87,7 +87,7 @@ export const ProfileSqan = memo(() => {
 							}
 						}
 
-						showToast('Неверный формат. Ожидается код из 5 символов или ссылка.', 'error');
+						showToast('Неверный формат. Ожидается код из 5 цифр или ссылка.', 'error');
 						isProcessingQRRef.current = false;
 						return false;
 						} catch {
@@ -262,10 +262,10 @@ export const ProfileSqan = memo(() => {
 	}, [user?.id, pendingRegCode, showCoinAnimation, refetchProfile, queryClient, showToast]);
 
 	const handleSubmitCode = async (codeOverride?: string) => {
-		const raw = (codeOverride ?? codeInputs.join('')).trim().toUpperCase();
+		const raw = (codeOverride ?? codeInputs.join('')).trim().replace(/\D/g, '');
 		if (raw.length < 5) return;
-		const code5 = raw.slice(0, 5);
-		// 5 символов: сначала пробуем мероприятие, при 404 — код покупки
+		const code5 = raw.replace(/\D/g, '').slice(0, 5);
+		// 5 цифр: сначала пробуем мероприятие, при 404 — код покупки
 		setIsProcessing(true);
 		try {
 			const data = await validateEventCode(code5);
@@ -297,7 +297,8 @@ export const ProfileSqan = memo(() => {
 	};
 
 	const handleInputChange = (index: number, value: string) => {
-		const char = value.length > 0 ? value.slice(-1).toUpperCase() : '';
+		const digits = value.replace(/\D/g, '');
+		const char = digits.length > 0 ? digits.slice(-1) : '';
 
 		const newInputs = [...codeInputs];
 		newInputs[index] = char;
@@ -311,7 +312,7 @@ export const ProfileSqan = memo(() => {
 
 		if (char && (index === 4 || index === CODE_LENGTH - 1)) {
 			const fullCode = newInputs.join('');
-			// Авто-отправка при 5 символах
+			// Авто-отправка при 5 цифрах
 			if (fullCode.length === 5) {
 				setTimeout(() => handleSubmitCode(fullCode), 100);
 			}
@@ -392,7 +393,7 @@ export const ProfileSqan = memo(() => {
 				<DialogContent className="bg-surface-card border-white/10 text-white sm:max-w-sm max-w-[calc(100vw-2rem)]">
 					<DialogHeader>
 						<DialogTitle className="text-white">Введите код</DialogTitle>
-						<p className="text-sm text-gray-400">5 символов — регистрация на мероприятие или код покупки</p>
+						<p className="text-sm text-gray-400">5 цифр — регистрация на мероприятие или код покупки</p>
 					</DialogHeader>
 					<div className="space-y-3 pt-1">
 						<div className="grid grid-cols-5 gap-1.5 sm:gap-2 w-full max-w-full">
@@ -406,8 +407,9 @@ export const ProfileSqan = memo(() => {
 												inputRefs.current[index] = el;
 											}}
 											type="text"
-											inputMode="text"
-											autoComplete="off"
+											inputMode="numeric"
+											pattern="[0-9]*"
+											autoComplete="one-time-code"
 											value={value}
 											onChange={(e) => handleInputChange(index, e.target.value)}
 											onKeyDown={(e) => handleInputKeyDown(index, e)}

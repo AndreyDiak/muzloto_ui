@@ -39,8 +39,8 @@ function getRawPayload(tg: { initDataUnsafe?: { start_param?: string } } | undef
 
 /**
  * Обрабатывает payload при заходе по ссылке по типу:
- * - registration (reg-CODE или 5 символов) → валидация + модалка регистрации.
- * - shop (shop-CODE или 5 символов) → погашение кода покупки.
+ * - registration (reg-CODE или 5 цифр) → валидация + модалка регистрации.
+ * - shop (shop-CODE или 5 цифр) → погашение кода покупки.
  */
 export function StartParamHandler() {
 	const { tg } = useTelegram();

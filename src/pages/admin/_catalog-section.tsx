@@ -7,11 +7,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { authFetch } from "@/lib/auth-fetch";
+import { uploadCatalogPhoto } from "@/lib/storage-catalog";
 import { prettifyCoins } from "@/lib/utils";
 import { ADMIN_BACKEND_URL } from "./constants";
 import type { AdminCatalogItem } from "./types";
-import { Loader2, Package, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { ImagePlus, Loader2, Package, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function CatalogSection() {
 	const { showToast } = useToast();
@@ -20,7 +21,10 @@ export function CatalogSection() {
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [price, setPrice] = useState(0);
+	const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+	const [photoUploading, setPhotoUploading] = useState(false);
 	const [creating, setCreating] = useState(false);
+	const photoInputRef = useRef<HTMLInputElement>(null);
 
 	const load = useCallback(async () => {
 		try {
@@ -39,6 +43,22 @@ export function CatalogSection() {
 		load();
 	}, [load]);
 
+	const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		setPhotoUploading(true);
+		try {
+			const { publicUrl } = await uploadCatalogPhoto(file);
+			setPhotoUrl(publicUrl);
+			showToast("Фото загружено", "success");
+		} catch (err) {
+			showToast(err instanceof Error ? err.message : "Ошибка загрузки фото", "error");
+		} finally {
+			setPhotoUploading(false);
+			e.target.value = "";
+		}
+	};
+
 	const handleCreate = async (e: React.FormEvent) => {
 		e.preventDefault();
 		const trimmed = name.trim();
@@ -55,6 +75,7 @@ export function CatalogSection() {
 					name: trimmed,
 					description: description.trim() || undefined,
 					price: price >= 0 ? price : 0,
+					photo: photoUrl ?? undefined,
 				}),
 			});
 			const data = await res.json();
@@ -66,6 +87,7 @@ export function CatalogSection() {
 			setName("");
 			setDescription("");
 			setPrice(0);
+			setPhotoUrl(null);
 			await load();
 		} catch (err) {
 			showToast(err instanceof Error ? err.message : "Ошибка", "error");
@@ -127,6 +149,39 @@ export function CatalogSection() {
 						onChange={(e) => setPrice(Number(e.target.value) || 0)}
 						className="w-full px-3 py-2 rounded-lg bg-surface-dark border border-white/[0.08] text-white placeholder:text-gray-500 text-sm"
 					/>
+					<div className="space-y-1.5">
+						<label className="text-gray-400 text-xs block">Фото товара</label>
+						<input
+							ref={photoInputRef}
+							type="file"
+							accept="image/jpeg,image/png,image/webp"
+							className="hidden"
+							onChange={handlePhotoChange}
+						/>
+						<div className="flex items-center gap-2 flex-wrap">
+							<button
+								type="button"
+								onClick={() => photoInputRef.current?.click()}
+								disabled={photoUploading}
+								className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-dark border border-white/[0.08] text-gray-300 text-sm hover:bg-white/[0.06] disabled:opacity-50"
+							>
+								{photoUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+								{photoUrl ? "Заменить фото" : "Загрузить фото"}
+							</button>
+							{photoUrl && (
+								<>
+									<img src={photoUrl} alt="" className="w-14 h-14 rounded-lg object-cover border border-white/10" />
+									<button
+										type="button"
+										onClick={() => setPhotoUrl(null)}
+										className="text-xs text-gray-400 hover:text-white"
+									>
+										Убрать
+									</button>
+								</>
+							)}
+						</div>
+					</div>
 					<button
 						type="submit"
 						disabled={creating}

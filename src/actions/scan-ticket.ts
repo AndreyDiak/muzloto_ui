@@ -20,7 +20,7 @@ export async function scanTicket(params: {
 		const res = await authFetch(`${BACKEND_URL}/api/scanner/scan`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ code: params.code.trim().toUpperCase() }),
+			body: JSON.stringify({ code: params.code.trim().replace(/\D/g, "") }),
 		});
 
 		const body = await parseJson<ApiScanTicketResponse | ApiError>(res).catch(() => ({ error: "Ошибка сервера" }) as ApiError);

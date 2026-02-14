@@ -6,12 +6,13 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { authFetch } from "@/lib/auth-fetch";
+import { uploadEventPhoto } from "@/lib/storage-events";
 import { ADMIN_BACKEND_URL } from "./constants";
 import type { AdminEvent } from "./types";
 import { moscowDateTimeLocalToISO } from "@/lib/moscow-date";
 import { formatAdminDate } from "./utils";
-import { Calendar, Loader2, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Calendar, ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function EventsSection() {
 	const { showToast } = useToast();
@@ -22,7 +23,9 @@ export function EventsSection() {
 	const [location, setLocation] = useState("");
 	const [locationHref, setLocationHref] = useState("");
 	const [price, setPrice] = useState(0);
+	const [coverUploading, setCoverUploading] = useState(false);
 	const [creating, setCreating] = useState(false);
+	const coverInputRef = useRef<HTMLInputElement>(null);
 
 	const load = useCallback(async () => {
 		try {
@@ -40,6 +43,22 @@ export function EventsSection() {
 	useEffect(() => {
 		load();
 	}, [load]);
+
+	const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		setCoverUploading(true);
+		try {
+			const { publicUrl } = await uploadEventPhoto(file);
+			setLocationHref(publicUrl);
+			showToast("Обложка загружена", "success");
+		} catch (err) {
+			showToast(err instanceof Error ? err.message : "Ошибка загрузки фото", "error");
+		} finally {
+			setCoverUploading(false);
+			e.target.value = "";
+		}
+	};
 
 	const handleCreate = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -131,13 +150,35 @@ export function EventsSection() {
 						onChange={(e) => setLocation(e.target.value)}
 						className="w-full px-3 py-2 rounded-lg bg-surface-dark border border-white/[0.08] text-white placeholder:text-gray-500 text-sm"
 					/>
-					<Input
-						type="url"
-						placeholder="Ссылка на обложку"
-						value={locationHref}
-						onChange={(e) => setLocationHref(e.target.value)}
-						className="w-full px-3 py-2 rounded-lg bg-surface-dark border border-white/[0.08] text-white placeholder:text-gray-500 text-sm"
-					/>
+					<div className="space-y-1.5">
+						<label className="text-gray-400 text-xs block">Обложка</label>
+						<input
+							ref={coverInputRef}
+							type="file"
+							accept="image/jpeg,image/png,image/webp"
+							className="hidden"
+							onChange={handleCoverChange}
+						/>
+						<div className="flex items-center gap-2 flex-wrap">
+							<button
+								type="button"
+								onClick={() => coverInputRef.current?.click()}
+								disabled={coverUploading}
+								className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-dark border border-white/[0.08] text-gray-300 text-sm hover:bg-white/[0.06] disabled:opacity-50"
+							>
+								{coverUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+								{locationHref ? "Заменить обложку" : "Загрузить обложку"}
+							</button>
+							{locationHref && (
+								<>
+									<img src={locationHref} alt="" className="w-24 h-16 object-cover rounded-lg border border-white/10" onError={() => {}} />
+									<button type="button" onClick={() => setLocationHref("")} className="text-xs text-gray-400 hover:text-white">
+										Убрать
+									</button>
+								</>
+							)}
+						</div>
+					</div>
 					<Input
 						type="number"
 						placeholder="Цена (₽)"
