@@ -1,4 +1,30 @@
 import { cn } from "@/lib/utils";
+import { useRouteError } from "react-router";
+
+/** Показывается при ошибке загрузки чанка (failed to fetch dynamically) или другой ошибке маршрута. */
+export function RouteChunkErrorFallback() {
+	const error = useRouteError();
+	const isChunkError =
+		error instanceof Error &&
+		(/fetch|chunk|dynamic|import/i.test(error.message) || error.name === "ChunkLoadError");
+
+	return (
+		<div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface-dark p-6 text-center">
+			<p className="text-white">
+				{isChunkError
+					? "Не удалось загрузить страницу. Проверьте интернет и попробуйте снова."
+					: "Что-то пошло не так."}
+			</p>
+			<button
+				type="button"
+				onClick={() => window.location.reload()}
+				className="rounded-xl bg-neon-cyan/20 px-6 py-3 text-neon-cyan border border-neon-cyan/40 font-medium"
+			>
+				Повторить
+			</button>
+		</div>
+	);
+}
 
 export function LazyLoadingFallback() {
   return (

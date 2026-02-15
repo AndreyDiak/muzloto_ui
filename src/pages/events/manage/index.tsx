@@ -68,7 +68,13 @@ export default function EventManage() {
         .eq("id", eventId)
         .single();
       if (error) throw new Error(error.message);
-      setEvent(data as SEvent);
+      const { data: codeRow } = await http
+        .from("codes")
+        .select("code")
+        .eq("event_id", eventId)
+        .eq("type", "registration")
+        .maybeSingle();
+      setEvent({ ...data, code: codeRow?.code ?? "" } as SEvent);
     } catch (e) {
       showToast("Мероприятие не найдено", "error");
       setEvent(null);
@@ -213,14 +219,14 @@ export default function EventManage() {
         <TicketQRModalLazy
           open={showQR}
           onOpenChange={setShowQR}
-          code={event.code}
+          code={event.code ?? ""}
           itemName={event.title}
           showProfileHint={false}
           dialogTitle="Код мероприятия"
           highResolutionDownload
           qrData={
-            getEventCodeDeepLink(event.code) ||
-            getEventCodeBotStartLink(event.code) ||
+            getEventCodeDeepLink(event.code ?? "") ||
+            getEventCodeBotStartLink(event.code ?? "") ||
             undefined
           }
         />

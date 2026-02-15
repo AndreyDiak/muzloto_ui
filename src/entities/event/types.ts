@@ -7,7 +7,8 @@ export interface SEvent {
   location_href: string;
   price: number;
   max_participants?: number;
-  code: string;
+  /** Код мероприятия (5 цифр); есть только когда подставлен из таблицы codes (страница управления). В списке афиши не приходит. */
+  code?: string;
   created_at: string;
   updated_at: string;
 }

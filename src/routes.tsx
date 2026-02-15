@@ -1,66 +1,22 @@
-import type { ComponentType, LazyExoticComponent } from "react";
-import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router";
-import { LazyLoadingFallback } from "./layouts/fallback";
+import { RouteChunkErrorFallback } from "./layouts/fallback";
+import { BasicLayout } from "./layouts";
 
-/** Lazy-загрузка с повтором при ошибке (failed to fetch dynamically в WebView/сети). */
-function lazyWithRetry<T extends ComponentType<unknown>>(
-	importFn: () => Promise<{ default: T }>,
-	retries = 2
-): LazyExoticComponent<T> {
-	return lazy(async () => {
-		let last: unknown;
-		for (let i = 0; i <= retries; i++) {
-			try {
-				return await importFn();
-			} catch (e) {
-				last = e;
-			}
-		}
-		throw last;
-	});
-}
-
-const BasicLayout = lazyWithRetry(() =>
-	import("./layouts").then((m) => ({ default: m.BasicLayout }))
-);
-
-const Profile = lazyWithRetry(() => import("./pages/profile"));
-const Events = lazyWithRetry(() => import("./pages/events"));
-const EventManage = lazyWithRetry(() => import("./pages/events/manage"));
-const RafflePage = lazyWithRetry(() => import("./pages/events/raffle"));
-function RaffleRoute() {
-	return (
-		<Suspense fallback={<LayoutFallback />}>
-			<RafflePage />
-		</Suspense>
-	);
-}
-const Catalog = lazyWithRetry(() => import("./pages/catalog"));
-const Achievements = lazyWithRetry(() => import("./pages/achievements"));
-const Scanner = lazyWithRetry(() => import("./pages/scanner"));
-const Admin = lazyWithRetry(() => import("./pages/admin"));
-
-function LayoutFallback() {
-	return (
-		<div className="flex min-h-screen flex-col bg-surface-dark">
-			<LazyLoadingFallback />
-		</div>
-	);
-}
-
-function LayoutWithSuspense() {
-	return (
-		<Suspense fallback={<LayoutFallback />}>
-			<BasicLayout />
-		</Suspense>
-	);
-}
+// Все роуты грузятся в основном бандле — при смене вкладки нет запроса чанка, нет "failed to fetch dynamically"
+import Profile from "./pages/profile";
+import Events from "./pages/events";
+import EventManage from "./pages/events/manage";
+import RafflePage from "./pages/events/raffle";
+import Catalog from "./pages/catalog";
+import Achievements from "./pages/achievements";
+import Scanner from "./pages/scanner";
+import Admin from "./pages/admin";
 
 export const router = createBrowserRouter([
 	{
 		path: "/",
-		Component: LayoutWithSuspense,
+		Component: BasicLayout,
+		errorElement: <RouteChunkErrorFallback />,
 		children: [
 			{ index: true, Component: Profile },
 			{ path: "/achievements", Component: Achievements },
@@ -68,8 +24,8 @@ export const router = createBrowserRouter([
 			{ path: "/events/:eventId/manage", Component: EventManage },
 			{ path: "/catalog", Component: Catalog },
 			{ path: "/scanner", Component: Scanner },
-			{ path: "/admin", Component: Admin }
-		]
+			{ path: "/admin", Component: Admin },
+		],
 	},
-	{ path: "/events/:eventId/raffle", Component: RaffleRoute }
+	{ path: "/events/:eventId/raffle", Component: RafflePage },
 ]);

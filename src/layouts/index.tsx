@@ -4,7 +4,7 @@ import { useTelegramBack } from '@/hooks/use-telegram-back';
 import { APP_HEADER_TITLE } from '@/lib/constants';
 import { cn, prettifyCoins } from '@/lib/utils';
 import { Award, Calendar, Coins, Shield, ShoppingBag, User } from 'lucide-react';
-import { memo, Suspense, useEffect, useMemo } from 'react';
+import { memo, Suspense, useMemo } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { Skeleton } from '../components/ui/skeleton';
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from '../components/ui/tooltip';
@@ -14,14 +14,6 @@ export const BasicLayout = () => {
   useTelegramBack();
   const { profile, isRoot, isSupabaseSessionReady } = useSession();
   const { visitRewardPending, achievements } = useAchievements(isSupabaseSessionReady);
-
-  // Префетч чанка «Награды», чтобы при переходе не было failed to fetch dynamically
-  useEffect(() => {
-    const t = setTimeout(() => {
-      import('../pages/achievements').catch(() => {});
-    }, 1500);
-    return () => clearTimeout(t);
-  }, []);
 
   const hasUnclaimedReward = useMemo(
     () =>
