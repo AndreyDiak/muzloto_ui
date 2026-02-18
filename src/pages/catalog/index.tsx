@@ -42,17 +42,20 @@ export default function Catalog() {
 		);
 	}
 
+	// js-index-maps: Map для O(1) lookup вместо O(n) find в цикле
+	const activeCodeByItemId = isRoot
+		? new Map(activeCodes.map((c) => [c.catalog_item_id, c]))
+		: null;
+
 	return (
 		<div className="p-3 space-y-4">
-			<h2 className="text-xl font-bold text-white">Лавка удачи</h2>
-			<p className="text-sm text-gray-400 -mt-2">Товары за монеты</p>
 			{items.map((item, index) => (
 				<CatalogItem
 					key={item.id}
 					item={item}
 					color={colors[index % colors.length]}
 					isRoot={isRoot}
-					activeCode={isRoot ? (activeCodes.find((c) => c.catalog_item_id === item.id) ?? null) : null}
+					activeCode={activeCodeByItemId?.get(item.id) ?? null}
 				/>
 			))}
 		</div>

@@ -13,7 +13,24 @@ import type { ApiValidateCodeResponse } from "@/types/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const STORAGE_KEY = "muzloto_start_param_processed";
+/** client-localstorage-schema: версия для миграций, ключ с префиксом */
+const STORAGE_KEY = "muzloto_start_param_processed:v1";
+
+function getProcessedKey(): string | null {
+	try {
+		return sessionStorage.getItem(STORAGE_KEY);
+	} catch {
+		return null;
+	}
+}
+
+function setProcessedKey(value: string): void {
+	try {
+		sessionStorage.setItem(STORAGE_KEY, value);
+	} catch {
+		// incognito, quota exceeded, disabled
+	}
+}
 
 /**
  * Сырой payload при открытии по ссылке:
@@ -77,7 +94,7 @@ export function StartParamHandler() {
 		if (!payload || !user?.id || !isSupabaseSessionReady) return;
 
 		const storageKey = `${payload.type}:${payload.value}`;
-		if (sessionStorage.getItem(STORAGE_KEY) === storageKey) return;
+		if (getProcessedKey() === storageKey) return;
 		if (processedRef.current) return;
 		processedRef.current = true;
 
@@ -86,7 +103,7 @@ export function StartParamHandler() {
 				try {
 					const data = await validateEventCode(payload.value);
 					if (data.alreadyRegistered) {
-						sessionStorage.setItem(STORAGE_KEY, storageKey);
+						setProcessedKey(storageKey);
 						showToast("Вы уже зарегистрированы на это мероприятие", "error");
 						return;
 					}
@@ -138,7 +155,7 @@ export function StartParamHandler() {
 				code: pendingCode,
 				telegramId: user.id,
 				onSuccess: (data) => {
-					sessionStorage.setItem(STORAGE_KEY, pendingStorageKey);
+					setProcessedKey(pendingStorageKey);
 					setRegModalOpen(false);
 					setRegModalData(null);
 					setPendingCode("");
@@ -177,7 +194,7 @@ export function StartParamHandler() {
 			await redeemPurchaseCode({
 				code: pendingShopCode,
 				onSuccess: (data) => {
-					sessionStorage.setItem(STORAGE_KEY, pendingShopStorageKey);
+					setProcessedKey(pendingShopStorageKey);
 					setPurchaseConfirmOpen(false);
 					setPurchaseConfirmData(null);
 					setPendingShopCode("");

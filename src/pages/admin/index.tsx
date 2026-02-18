@@ -22,8 +22,6 @@ export default function Admin() {
 
 	return (
 		<div className="p-3 pb-24 space-y-4">
-			<h1 className="text-xl font-semibold text-white">Админка</h1>
-
 			<Accordion type="multiple" className="space-y-2">
 				<EventsSection />
 				<CatalogSection />

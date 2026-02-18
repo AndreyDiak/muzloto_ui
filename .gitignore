@@ -14,4 +14,6 @@ dist-ssr
 *.sln
 *.sw?
 src/_mock/*
+.cursor
+.agents
 src/lib/get_tg_init_webapp.ts

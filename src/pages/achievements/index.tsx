@@ -19,7 +19,6 @@ export default function Achievements() {
 
   return (
     <div className="p-3 space-y-3">
-      <h2 className="text-xl font-bold text-white">Награды</h2>
       <VisitsRewardSection />
       <PurchasesAchievementsSection achievements={achievements} />
     </div>

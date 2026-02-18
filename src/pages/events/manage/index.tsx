@@ -62,18 +62,13 @@ export default function EventManage() {
     if (!eventId) return;
     setEventLoading(true);
     try {
-      const { data, error } = await http
-        .from("events")
-        .select("*")
-        .eq("id", eventId)
-        .single();
+      const [eventResult, codeResult] = await Promise.all([
+        http.from("events").select("*").eq("id", eventId).single(),
+        http.from("codes").select("code").eq("event_id", eventId).eq("type", "registration").maybeSingle(),
+      ]);
+      const { data, error } = eventResult;
       if (error) throw new Error(error.message);
-      const { data: codeRow } = await http
-        .from("codes")
-        .select("code")
-        .eq("event_id", eventId)
-        .eq("type", "registration")
-        .maybeSingle();
+      const { data: codeRow } = codeResult;
       setEvent({ ...data, code: codeRow?.code ?? "" } as SEvent);
     } catch (e) {
       showToast("Мероприятие не найдено", "error");

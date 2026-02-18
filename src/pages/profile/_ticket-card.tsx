@@ -1,3 +1,4 @@
+import { preloadTicketQRModal } from "@/components/ticket-qr-modal-preload";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { STicketWithItem } from "@/entities/ticket";
 import { ClickableTooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -88,6 +89,8 @@ export const ProfileTicketCard = memo(({ ticket, isModalOpen, onOpenModal, onClo
 		<>
 			<button
 				type="button"
+				onMouseEnter={preloadTicketQRModal}
+				onFocus={preloadTicketQRModal}
 				onClick={onOpenModal}
 				className={buttonClassName}
 			>
