@@ -147,7 +147,7 @@ export function getShopBotStartLink(code: string): string {
 }
 
 /**
- * Извлекает payload из произвольного ввода: raw payload, URL с startapp=..., или 5-символьный код.
+ * Извлекает payload из произвольного ввода: raw payload, URL с startapp=... или start=..., или 5-символьный код.
  * Возвращает ParsedStartPayload (registration | prize) или null.
  */
 export function extractPayloadFromInput(input: string): ParsedStartPayload | null {
@@ -159,10 +159,12 @@ export function extractPayloadFromInput(input: string): ParsedStartPayload | nul
 	try {
 		const url = trimmed.startsWith("http") ? new URL(trimmed) : new URL(trimmed, "https://t.me");
 		const startapp = url.searchParams.get("startapp");
-		if (startapp) {
-			const p = parseStartPayload(startapp);
+		const start = url.searchParams.get("start");
+		const payload = startapp || start;
+		if (payload) {
+			const p = parseStartPayload(payload);
 			if (p) return p;
-			if (isEventCodeLike(startapp)) return { type: "registration", value: startapp.trim().replace(/\D/g, "").slice(0, 5) };
+			if (isEventCodeLike(payload)) return { type: "registration", value: payload.trim().replace(/\D/g, "").slice(0, 5) };
 		}
 	} catch {
 		// не URL

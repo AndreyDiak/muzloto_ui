@@ -62,14 +62,29 @@ export default function EventManage() {
     if (!eventId) return;
     setEventLoading(true);
     try {
-      const [eventResult, codeResult] = await Promise.all([
+      const [eventResult, adminRes] = await Promise.all([
         http.from("events").select("*").eq("id", eventId).single(),
-        http.from("codes").select("code").eq("event_id", eventId).eq("type", "registration").maybeSingle(),
+        authFetch(`${BACKEND_URL}/api/admin/events`),
       ]);
+
       const { data, error } = eventResult;
       if (error) throw new Error(error.message);
-      const { data: codeRow } = codeResult;
-      setEvent({ ...data, code: codeRow?.code ?? "" } as SEvent);
+
+      let codeFromAdmin: string | null = null;
+      try {
+        const adminJson = await adminRes.json();
+        const events = Array.isArray(adminJson?.events) ? adminJson.events : [];
+        const matched = events.find(
+          (e: { id?: string }) => e.id === data.id,
+        ) as { code?: string | null } | undefined;
+        if (matched && typeof matched.code === "string") {
+          codeFromAdmin = matched.code;
+        }
+      } catch {
+        // если админский эндпоинт недоступен, просто оставим код пустым
+      }
+
+      setEvent({ ...(data as SEvent), code: codeFromAdmin ?? "" });
     } catch (e) {
       showToast("Мероприятие не найдено", "error");
       setEvent(null);
@@ -77,6 +92,7 @@ export default function EventManage() {
       setEventLoading(false);
     }
   }, [eventId, showToast]);
+
 
   const fetchRegistrations = useCallback(async () => {
     if (!eventId) return;

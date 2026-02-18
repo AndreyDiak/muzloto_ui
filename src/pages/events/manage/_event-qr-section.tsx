@@ -1,4 +1,3 @@
-import { preloadTicketQRModal } from "@/components/ticket-qr-modal-preload";
 import { QrCode } from "lucide-react";
 
 interface EventQRSectionProps {
@@ -16,8 +15,6 @@ export function EventQRSection({ onShowQR }: EventQRSectionProps) {
       </h2>
       <button
         type="button"
-        onMouseEnter={preloadTicketQRModal}
-        onFocus={preloadTicketQRModal}
         onClick={onShowQR}
         className={`${btnBase} ${btnCyan}`}
       >

@@ -76,8 +76,10 @@ export function TicketQRModal({
 
 	const setQrContainer = useCallback(
 		(node: HTMLDivElement | null) => {
-			if (!node || !dataForQr) {
+			if (!node) return;
+			if (!dataForQr) {
 				qrInstanceRef.current = null;
+				setIsQrReady(true);
 				return;
 			}
 			setIsQrReady(false);

@@ -1,7 +1,6 @@
 import { useSession } from "@/app/context/session";
 import { useToast } from "@/app/context/toast";
 import { ImageWithFallback } from "@/components/image-with-fallback";
-import { preloadTicketQRModal } from "@/components/ticket-qr-modal-preload";
 import { TicketQRModalLazy } from "@/components/ticket-qr-modal-lazy";
 import type { SCatalogItem } from "@/entities/catalog";
 import { http } from "@/http";
@@ -116,8 +115,6 @@ export const CatalogItem = ({ item, color: _color, isRoot, activeCode = null }: 
 				{isRoot ? (
 					<button
 						type="button"
-						onMouseEnter={preloadTicketQRModal}
-						onFocus={preloadTicketQRModal}
 						onClick={handleShowCode}
 						disabled={isGenerating}
 						className="w-full py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40 hover:bg-neon-cyan/30 transition-colors disabled:opacity-50"
