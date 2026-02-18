@@ -153,9 +153,14 @@ export function getShopBotStartLink(code: string): string {
 export function extractPayloadFromInput(input: string): ParsedStartPayload | null {
 	if (!input || typeof input !== "string") return null;
 	const trimmed = input.trim();
+	if (!trimmed) return null;
+	
+	// Сначала пробуем распарсить как raw payload (reg-12345, shop-12345, или просто 5 цифр)
 	const parsed = parseStartPayload(trimmed);
 	if (parsed) return parsed;
 	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.trim().replace(/\D/g, "").slice(0, 5) };
+	
+	// Пробуем извлечь payload из URL
 	try {
 		const url = trimmed.startsWith("http") ? new URL(trimmed) : new URL(trimmed, "https://t.me");
 		const startapp = url.searchParams.get("startapp");
@@ -164,10 +169,29 @@ export function extractPayloadFromInput(input: string): ParsedStartPayload | nul
 		if (payload) {
 			const p = parseStartPayload(payload);
 			if (p) return p;
+			// Если parseStartPayload не распознала, пробуем извлечь код напрямую
+			const payloadLower = payload.toLowerCase();
+			if (payloadLower.startsWith("reg-") || payloadLower.startsWith("registration-")) {
+				const code = payload.replace(/^[^-]+-/, "").replace(/\D/g, "");
+				if (code.length === 5) return { type: "registration", value: code };
+			}
+			if (payloadLower.startsWith("shop-") || payloadLower.startsWith("c-")) {
+				const code = payload.replace(/^[^-]+-/, "").replace(/\D/g, "");
+				if (code.length === 5) return { type: "shop", value: code };
+			}
 			if (isEventCodeLike(payload)) return { type: "registration", value: payload.trim().replace(/\D/g, "").slice(0, 5) };
 		}
 	} catch {
-		// не URL
+		// не URL, пробуем извлечь код из строки напрямую (на случай если это reg-12345 без URL)
+		const lower = trimmed.toLowerCase();
+		if (lower.startsWith("reg-") || lower.startsWith("registration-")) {
+			const code = trimmed.replace(/^[^-]+-/, "").replace(/\D/g, "");
+			if (code.length === 5) return { type: "registration", value: code };
+		}
+		if (lower.startsWith("shop-") || lower.startsWith("c-")) {
+			const code = trimmed.replace(/^[^-]+-/, "").replace(/\D/g, "");
+			if (code.length === 5) return { type: "shop", value: code };
+		}
 	}
 	return null;
 }
