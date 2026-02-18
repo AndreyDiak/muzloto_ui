@@ -7,6 +7,7 @@ import { useTelegram } from "@/app/context/telegram";
 import { useToast } from "@/app/context/toast";
 import { PurchaseConfirmModal } from "@/components/purchase-confirm-modal";
 import { RegistrationModal } from "@/components/registration-modal";
+import { fetchCodeType } from "@/lib/code-type-lookup";
 import { parseStartPayload } from "@/lib/event-deep-link";
 import { queryKeys } from "@/lib/query-client";
 import type { ApiValidateCodeResponse } from "@/types/api";
@@ -87,11 +88,69 @@ export function StartParamHandler() {
 	const [isConfirmingPurchase, setIsConfirmingPurchase] = useState(false);
 
 	useEffect(() => {
-		const payload = (() => {
-			const raw = getRawPayload(tg);
-			return raw ? parseStartPayload(raw) : null;
-		})();
-		if (!payload || !user?.id || !isSupabaseSessionReady) return;
+		const raw = getRawPayload(tg);
+		const payload = raw ? parseStartPayload(raw) : null;
+		if (!user?.id || !isSupabaseSessionReady) return;
+
+		// Голые 5 цифр — тип узнаём из коллекции codes
+		if (!payload && raw) {
+			const code5 = raw.trim().replace(/\D/g, "").slice(0, 5);
+			if (code5.length === 5) {
+				fetchCodeType(code5).then((type) => {
+					if (!type) {
+						showToast("Код не найден или уже использован.", "error");
+						processedRef.current = false;
+						return;
+					}
+					const storageKey = `${type}:${code5}`;
+					if (getProcessedKey() === storageKey) return;
+					if (processedRef.current) return;
+					processedRef.current = true;
+					if (type === "registration") {
+						validateEventCode(code5)
+							.then((data) => {
+								if (data.alreadyRegistered) {
+									setProcessedKey(storageKey);
+									showToast("Вы уже зарегистрированы на это мероприятие", "error");
+									return;
+								}
+								setPendingCode(code5);
+								setPendingStorageKey(storageKey);
+								setRegModalData(data);
+								setRegModalOpen(true);
+							})
+							.catch(() => {
+								processedRef.current = false;
+								showToast("Не удалось обработать код", "error");
+							});
+					} else if (type === "purchase") {
+						previewPurchaseCode(code5)
+							.then((preview) => {
+								if (!preview) {
+									processedRef.current = false;
+									showToast("Код не найден или уже использован.", "error");
+									return;
+								}
+								setPendingShopCode(code5);
+								setPendingShopStorageKey(storageKey);
+								setPurchaseConfirmData({
+									itemName: preview.item.name,
+									itemPrice: preview.item.price,
+									balance: preview.balance,
+								});
+								setPurchaseConfirmOpen(true);
+							})
+							.catch(() => {
+								processedRef.current = false;
+								showToast("Ошибка при загрузке данных кода.", "error");
+							});
+					}
+				});
+			}
+			return;
+		}
+
+		if (!payload) return;
 
 		const storageKey = `${payload.type}:${payload.value}`;
 		if (getProcessedKey() === storageKey) return;

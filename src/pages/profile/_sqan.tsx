@@ -15,6 +15,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import type { PurchaseSuccessPayload } from "@/entities/ticket";
+import { fetchCodeType } from "@/lib/code-type-lookup";
 import { extractPayloadFromInput } from "@/lib/event-deep-link";
 import { queryKeys } from "@/lib/query-client";
 import type { ApiValidateCodeResponse } from "@/types/api";
@@ -84,7 +85,7 @@ export const ProfileSqan = memo(() => {
 						isProcessingQRRef.current = true;
 						const trimmedText = text.trim();
 
-						// Пробуем распарсить как raw payload, URL с startapp, или код (5 цифр)
+						// Явный префикс (reg- / shop-) или payload из URL
 						const parsed = extractPayloadFromInput(trimmedText);
 						if (parsed) {
 							if (parsed.type === "registration") {
@@ -95,6 +96,20 @@ export const ProfileSqan = memo(() => {
 								handleRedeemPurchaseCode(parsed.value);
 								return true;
 							}
+						}
+
+						// Голые 5 цифр — тип узнаём из коллекции codes
+						const code5 = trimmedText.replace(/\D/g, "").slice(0, 5);
+						if (code5.length === 5) {
+							fetchCodeType(code5).then((type) => {
+								if (type === "registration") handleProcessEventCode(code5);
+								else if (type === "purchase") handleRedeemPurchaseCode(code5);
+								else {
+									showToast("Код не найден или уже использован.", "error");
+									isProcessingQRRef.current = false;
+								}
+							});
+							return true;
 						}
 
 						showToast('Неверный формат. Ожидается код из 5 цифр или ссылка.', 'error');
@@ -275,28 +290,29 @@ export const ProfileSqan = memo(() => {
 		const raw = (codeOverride ?? codeInputs.join('')).trim().replace(/\D/g, '');
 		if (raw.length < 5) return;
 		const code5 = raw.replace(/\D/g, '').slice(0, 5);
-		// 5 цифр: сначала пробуем мероприятие, при 404 — код покупки
 		setIsProcessing(true);
 		try {
-			const data = await validateEventCode(code5);
-			if (data.alreadyRegistered) {
+			const type = await fetchCodeType(code5);
+			if (type === "registration") {
+				const data = await validateEventCode(code5);
+				if (data.alreadyRegistered) {
+					setCodeInputs(Array(CODE_LENGTH).fill(''));
+					showToast('Вы уже зарегистрированы на это мероприятие', 'error');
+					return;
+				}
+				setPendingRegCode(code5);
+				setRegModalData(data);
 				setCodeInputs(Array(CODE_LENGTH).fill(''));
-				showToast('Вы уже зарегистрированы на это мероприятие', 'error');
-				return;
-			}
-			setPendingRegCode(code5);
-			setRegModalData(data);
-			setCodeInputs(Array(CODE_LENGTH).fill(''));
-			setManualCodeModalOpen(false);
-			setRegModalOpen(true);
-		} catch (err) {
-			const msg = err instanceof Error ? err.message : "";
-			const isEventNotFound = msg.includes("Мероприятие не найдено") || msg.includes("404");
-			if (isEventNotFound) {
+				setManualCodeModalOpen(false);
+				setRegModalOpen(true);
+			} else if (type === "purchase") {
 				await handleRedeemPurchaseCode(code5);
 			} else {
-				showToast(msg || "Ошибка при обработке кода", "error");
+				showToast("Код не найден или уже использован.", "error");
 			}
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : "";
+			showToast(msg || "Ошибка при обработке кода", "error");
 		} finally {
 			setIsProcessing(false);
 		}

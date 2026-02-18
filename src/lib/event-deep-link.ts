@@ -103,8 +103,7 @@ export function parseStartPayload(raw: string | undefined): ParsedStartPayload |
 		if (value.length === 5) return { type: "shop", value };
 		return null;
 	}
-	if (isShopCodeLike(trimmed)) return { type: "shop", value: normalizeShopCode(trimmed) };
-	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.trim().replace(/\D/g, "").slice(0, 5) };
+	// Голые 5 цифр без префикса — тип определяет бэкенд (GET /api/codes/lookup).
 	return null;
 }
 
@@ -155,11 +154,10 @@ export function extractPayloadFromInput(input: string): ParsedStartPayload | nul
 	const trimmed = input.trim();
 	if (!trimmed) return null;
 	
-	// Сначала пробуем распарсить как raw payload (reg-12345, shop-12345, или просто 5 цифр)
+	// Сначала пробуем распарсить как raw payload (reg-12345, shop-12345). Голые 5 цифр — через lookup на бэке.
 	const parsed = parseStartPayload(trimmed);
 	if (parsed) return parsed;
-	if (isEventCodeLike(trimmed)) return { type: "registration", value: trimmed.trim().replace(/\D/g, "").slice(0, 5) };
-	
+
 	// Пробуем извлечь payload из URL
 	try {
 		const url = trimmed.startsWith("http") ? new URL(trimmed) : new URL(trimmed, "https://t.me");
@@ -179,7 +177,6 @@ export function extractPayloadFromInput(input: string): ParsedStartPayload | nul
 				const code = payload.replace(/^[^-]+-/, "").replace(/\D/g, "");
 				if (code.length === 5) return { type: "shop", value: code };
 			}
-			if (isEventCodeLike(payload)) return { type: "registration", value: payload.trim().replace(/\D/g, "").slice(0, 5) };
 		}
 	} catch {
 		// не URL, пробуем извлечь код из строки напрямую (на случай если это reg-12345 без URL)
